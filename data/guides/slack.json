@@ -1,0 +1,392 @@
+{
+  "slug": "slack",
+  "name": "Slack",
+  "domain": "slack.com",
+  "portal": "https://api.slack.com/apps",
+  "summary": "Easy for your own workspace and for unlisted installs in other workspaces. Reading message history at scale or using Slack's hosted MCP server outside your own workspace pushes you into a Slack Marketplace review that needs 10 active workspaces and can take weeks.",
+  "needs": [
+    { "id": "bot", "label": "Post messages as a bot" },
+    { "id": "read-history", "label": "Read channel and DM history" },
+    { "id": "mcp", "label": "Use Slack's hosted MCP server" }
+  ],
+  "defaultNeeds": ["bot"],
+  "verdicts": [
+    {
+      "difficulty": "easy",
+      "handsOn": "15 to 30 min",
+      "waiting": "None",
+      "why": "An app that stays in your own workspace needs no review: create it, add scopes, install it.",
+      "sourceIds": ["slack-distribution", "slack-oauth"]
+    },
+    {
+      "difficulty": "moderate",
+      "handsOn": "2 to 4 hours",
+      "waiting": "None documented",
+      "why": "Installing in other workspaces means turning on public (unlisted) distribution and building a full OAuth flow; Slack documents a review only for the Marketplace, not for unlisted apps.",
+      "when": { "audience": ["many"] },
+      "sourceIds": ["slack-distribution", "slack-oauth"]
+    },
+    {
+      "difficulty": "hard",
+      "handsOn": "2 to 5 days",
+      "waiting": "Up to 10 business days, then up to 10 weeks",
+      "why": "Unlisted apps get 1 request per minute on message history and cannot use Slack's MCP server, so a real launch needs Slack Marketplace approval, which needs 10 active workspaces and a demo video first.",
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-rate-change", "slack-mcp", "slack-review"]
+    }
+  ],
+  "skip": {
+    "composioManaged": "yes",
+    "mcpDcr": "no",
+    "mcpServer": "https://mcp.slack.com/mcp",
+    "note": "Composio runs its own Slack app, so you can skip registering one. Slack's hosted MCP server does not support dynamic client registration, so MCP clients need a registered app's client ID and secret.",
+    "whyOwnApp": [
+      "Composio's managed app is still going through Marketplace review, so strict workspaces may need an admin to approve it.",
+      "Composio calls your own app the recommended and safest option for a workspace.",
+      "Using Slack's MCP server needs your own internal or Marketplace app; there is no dynamic registration."
+    ],
+    "sourceIds": ["composio-slack", "slack-mcp", "slack-mcp-asm", "slack-oidc"]
+  },
+  "requirements": [
+    {
+      "id": "workspace",
+      "label": "A Slack workspace you can install apps into",
+      "detail": "You create the app at api.slack.com/apps and pick a workspace to develop it in.",
+      "sourceIds": ["slack-distribution"]
+    },
+    {
+      "id": "https-redirect",
+      "label": "An HTTPS redirect URL",
+      "detail": "The redirect URL in your app settings and the redirect_uri you send must both use HTTPS.",
+      "sourceIds": ["slack-oauth"]
+    },
+    {
+      "id": "ssl-endpoints",
+      "label": "SSL on every app URL",
+      "detail": "Public distribution needs SSL on your OAuth redirect, interactivity, options load and Events API URLs.",
+      "when": { "audience": ["many"] },
+      "sourceIds": ["slack-distribution"]
+    },
+    {
+      "id": "privacy-policy",
+      "label": "Privacy policy and public landing page",
+      "detail": "Marketplace apps need a privacy policy that covers collection, use, retention and deletion, linked from a public landing page built for the Slack app.",
+      "agentCanDraft": true,
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-guidelines"]
+    },
+    {
+      "id": "support",
+      "label": "A public support contact",
+      "detail": "An email or contact form that needs no extra account, with replies expected within 2 business days.",
+      "agentCanDraft": true,
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-guidelines"]
+    },
+    {
+      "id": "ten-workspaces",
+      "label": "10 or more active workspaces",
+      "detail": "The app must already be installed on 10+ workspaces used in the past 28 days before you can submit to the Marketplace.",
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-review"]
+    },
+    {
+      "id": "demo-video",
+      "label": "Review demo video",
+      "detail": "Show install, OAuth, setup, end-to-end use and uninstall, with no code editors, terminals or marketing intros.",
+      "agentCanDraft": true,
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-review"]
+    },
+    {
+      "id": "scope-justification",
+      "label": "A reason for every scope",
+      "detail": "Reviewers check why you request each scope, and scopes for features you have not built yet are not allowed.",
+      "agentCanDraft": true,
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-review", "slack-guidelines"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "create-app",
+      "title": "Create the Slack app",
+      "detail": "Sign in at api.slack.com/apps, create an app and choose your development workspace.",
+      "actor": "you",
+      "duration": "5 min",
+      "sourceIds": ["slack-distribution"]
+    },
+    {
+      "id": "pick-scopes",
+      "title": "Pick the smallest scope list",
+      "detail": "Bot scopes go in the scope parameter and user scopes in user_scope; request only what the feature uses today.",
+      "actor": "agent",
+      "duration": "5 min",
+      "sourceIds": ["slack-oauth", "slack-guidelines"]
+    },
+    {
+      "id": "write-oauth",
+      "title": "Write the OAuth flow",
+      "detail": "Redirect to slack.com/oauth/v2/authorize, check the state value, then exchange the code at oauth.v2.access and store the token per workspace.",
+      "actor": "agent",
+      "duration": "30 min",
+      "sourceIds": ["slack-oauth"]
+    },
+    {
+      "id": "add-redirect",
+      "title": "Add scopes and the HTTPS redirect URL",
+      "detail": "Paste the scopes and redirect URL into OAuth & Permissions in the app settings.",
+      "actor": "you",
+      "duration": "5 min",
+      "sourceIds": ["slack-oauth"]
+    },
+    {
+      "id": "install-test",
+      "title": "Install in your workspace and test",
+      "detail": "Run the Connect flow yourself and check the token can do what your agent needs.",
+      "actor": "you",
+      "duration": "10 min",
+      "sourceIds": ["slack-oauth"]
+    },
+    {
+      "id": "activate-distribution",
+      "title": "Turn on public distribution",
+      "detail": "Finish the checklist on the app's distribution page so other workspaces can install it as an unlisted app.",
+      "actor": "you",
+      "duration": "15 min",
+      "when": { "audience": ["many"] },
+      "sourceIds": ["slack-distribution"]
+    },
+    {
+      "id": "draft-listing",
+      "title": "Draft the Marketplace pack",
+      "detail": "Privacy policy, landing page, support page, scope reasons and the demo video script.",
+      "actor": "agent",
+      "duration": "1 hour",
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-guidelines", "slack-review"]
+    },
+    {
+      "id": "submit-marketplace",
+      "title": "Reach 10 workspaces, record the demo, submit",
+      "detail": "Pilot with unlisted installs until 10 workspaces are active, record the demo, then submit with test accounts and dummy data.",
+      "actor": "you",
+      "duration": "1 to 2 days of work",
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-review"]
+    },
+    {
+      "id": "marketplace-review",
+      "title": "Slack reviews the app",
+      "detail": "A preliminary review of up to 10 business days, then a functional review of up to 10 weeks. Slack cannot speed it up.",
+      "actor": "provider",
+      "duration": "Up to about 12 weeks",
+      "when": { "audience": ["many"], "needs": ["read-history", "mcp"] },
+      "sourceIds": ["slack-review"]
+    }
+  ],
+  "scopes": [
+    {
+      "name": "chat:write",
+      "meaning": "Post messages as the app.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["slack-mcp"]
+    },
+    {
+      "name": "channels:read",
+      "meaning": "List public channels and their members.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["slack-mcp"]
+    },
+    {
+      "name": "users:read",
+      "meaning": "See people in the workspace.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["slack-mcp"]
+    },
+    {
+      "name": "channels:history",
+      "meaning": "Read messages in public channels. Unlisted apps get 1 request per minute on history calls.",
+      "tier": "sensitive",
+      "triggersReview": false,
+      "when": { "needs": ["read-history"] },
+      "sourceIds": ["slack-mcp", "slack-rate-change", "slack-guidelines"]
+    },
+    {
+      "name": "im:history",
+      "meaning": "Read direct messages. Marketplace reviewers expect a clear use case for broad history scopes.",
+      "tier": "sensitive",
+      "triggersReview": false,
+      "when": { "needs": ["read-history"] },
+      "sourceIds": ["slack-mcp", "slack-guidelines"]
+    },
+    {
+      "name": "search:read.public",
+      "meaning": "User scope for searching public channel messages through Slack's MCP server.",
+      "tier": "sensitive",
+      "triggersReview": false,
+      "when": { "needs": ["mcp"] },
+      "sourceIds": ["slack-mcp", "slack-mcp-asm"]
+    },
+    {
+      "name": "search:read",
+      "meaning": "Broad search over workspace data. Slack's Marketplace guide asks you not to request it.",
+      "tier": "restricted",
+      "triggersReview": true,
+      "sourceIds": ["slack-review"]
+    }
+  ],
+  "limits": [
+    {
+      "id": "history-rate-limit",
+      "title": "Unlisted apps: 1 history call per minute",
+      "detail": "Since 29 May 2025, new non-Marketplace apps get 1 request per minute and 15 objects per call on conversations.history and conversations.replies. Internal apps keep 50+ per minute.",
+      "sourceIds": ["slack-rate-change"]
+    },
+    {
+      "id": "mcp-app-types",
+      "title": "MCP needs an internal or Marketplace app",
+      "detail": "Only internal apps and Marketplace apps may use Slack's MCP server; unlisted apps are prohibited and there is no dynamic client registration.",
+      "sourceIds": ["slack-mcp", "slack-mcp-asm"]
+    },
+    {
+      "id": "post-rate",
+      "title": "One message per second per channel",
+      "detail": "chat.postMessage generally allows one message per second per channel, plus a workspace-wide limit.",
+      "sourceIds": ["slack-rate-limits"]
+    },
+    {
+      "id": "no-expiry",
+      "title": "Tokens do not expire by default",
+      "detail": "Slack OAuth tokens last until revoked unless you turn on token rotation, which gives you refresh tokens.",
+      "sourceIds": ["slack-oauth"]
+    },
+    {
+      "id": "locked-after-publish",
+      "title": "Published apps are locked",
+      "detail": "After Marketplace approval, new scopes and redirect URLs only go live after another review, up to 6 weeks for changes.",
+      "when": { "audience": ["many"] },
+      "sourceIds": ["slack-review"]
+    }
+  ],
+  "blockers": [
+    {
+      "id": "http-redirect",
+      "symptom": "Slack rejects your redirect URL.",
+      "fix": "Use an HTTPS URL that matches the one saved in OAuth & Permissions exactly.",
+      "sourceIds": ["slack-oauth"]
+    },
+    {
+      "id": "under-ten",
+      "symptom": "The Marketplace will not let you submit.",
+      "fix": "You need 10+ active workspaces first: run a pilot with public (unlisted) distribution until you get there.",
+      "sourceIds": ["slack-review", "slack-distribution"]
+    },
+    {
+      "id": "history-throttled",
+      "symptom": "conversations.history returns ratelimited or only 15 messages.",
+      "fix": "For your own workspace, build it as an internal app. For other workspaces, get Marketplace approval.",
+      "sourceIds": ["slack-rate-change"]
+    },
+    {
+      "id": "mcp-refused",
+      "symptom": "Slack's MCP server will not accept your app.",
+      "fix": "Unlisted apps cannot use MCP: use an internal app in your workspace or publish to the Marketplace.",
+      "sourceIds": ["slack-mcp"]
+    },
+    {
+      "id": "admin-approval",
+      "symptom": "A workspace asks an admin to approve the Composio app.",
+      "fix": "Ask the admin to approve it, or register your own Slack app and use those credentials in Composio.",
+      "sourceIds": ["composio-slack"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "slack-distribution",
+      "title": "Slack: Distributing your app",
+      "url": "https://docs.slack.dev/distribution",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Single workspace, unlisted and Marketplace options. Review is described only for Marketplace listings."
+    },
+    {
+      "id": "slack-oauth",
+      "title": "Slack: Installing with OAuth",
+      "url": "https://docs.slack.dev/authentication/installing-with-oauth",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "slack-review",
+      "title": "Slack Marketplace review guide",
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-review-guide",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "10+ active workspaces, demo video, preliminary review up to 10 business days, functional review up to 10 weeks."
+    },
+    {
+      "id": "slack-guidelines",
+      "title": "Slack Marketplace app guidelines and requirements",
+      "url": "https://docs.slack.dev/slack-marketplace/slack-marketplace-app-guidelines-and-requirements",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "slack-rate-change",
+      "title": "Slack changelog: rate limit changes for non-Marketplace apps",
+      "url": "https://docs.slack.dev/changelog/2025/05/29/rate-limit-changes-for-non-marketplace-apps",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "slack-rate-limits",
+      "title": "Slack: Web API rate limits",
+      "url": "https://docs.slack.dev/apis/web-api/rate-limits",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "slack-mcp",
+      "title": "Slack MCP server",
+      "url": "https://docs.slack.dev/ai/slack-mcp-server",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "States no SSE and no dynamic client registration. Only internal or Marketplace apps."
+    },
+    {
+      "id": "slack-mcp-asm",
+      "title": "Slack MCP authorization server metadata",
+      "url": "https://mcp.slack.com/.well-known/oauth-authorization-server",
+      "badge": "tested",
+      "checked": "2026-11-03",
+      "note": "HTTP 200. Issuer https://mcp.slack.com, authorize at slack.com/oauth/v2_user/authorize, token at oauth.v2.user.access, PKCE S256, client_secret_post. No registration_endpoint."
+    },
+    {
+      "id": "slack-oidc",
+      "title": "Slack OpenID Connect discovery",
+      "url": "https://slack.com/.well-known/openid-configuration",
+      "badge": "tested",
+      "checked": "2026-11-03",
+      "note": "HTTP 200. Issuer https://slack.com, scopes openid, profile, email, grant authorization_code only. No registration_endpoint."
+    },
+    {
+      "id": "composio-slack",
+      "title": "Composio: Slack toolkit",
+      "url": "https://docs.composio.dev/toolkits/slack.md",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Lists Composio-managed OAuth as available."
+    }
+  ],
+  "unverified": [
+    "Slack never says outright that unlisted (public) distribution needs no review. Its docs only describe a review for Marketplace listings, so treat no review as implied.",
+    "The exact items in Slack's public distribution checklist are not listed in the docs we read.",
+    "When, or whether, the 1 request per minute history limit reached existing installs of older unlisted apps: the changelog says they are not impacted and gives no later date."
+  ],
+  "checked": "2026-11-03",
+  "generated": false
+}

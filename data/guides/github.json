@@ -1,0 +1,346 @@
+{
+  "slug": "github",
+  "name": "GitHub",
+  "domain": "github.com",
+  "portal": "https://github.com/settings/developers",
+  "summary": "Register an OAuth app or a GitHub App in a few minutes with no provider review. The real wait is org owners: new orgs block OAuth apps from org data until an owner approves.",
+  "needs": [
+    { "id": "repos", "label": "Read and write repos" },
+    { "id": "issues", "label": "Issues and pull requests" },
+    { "id": "org", "label": "Repos owned by an organization" },
+    { "id": "workflows", "label": "Edit Actions workflows" }
+  ],
+  "defaultNeeds": ["repos", "issues"],
+  "verdicts": [
+    {
+      "difficulty": "easy",
+      "handsOn": "10 min",
+      "waiting": "None",
+      "why": "You fill in a short form in Developer settings and get a client ID right away, with no review by GitHub.",
+      "sourceIds": ["gh-create", "gh-auth"]
+    },
+    {
+      "difficulty": "moderate",
+      "handsOn": "15 min",
+      "waiting": "Until each org owner approves",
+      "why": "New organizations turn on OAuth app access restrictions by default, so your app cannot touch org data until an owner approves it.",
+      "when": { "needs": ["org"] },
+      "sourceIds": ["gh-org-restrict", "gh-diff"]
+    }
+  ],
+  "skip": {
+    "composioManaged": "yes",
+    "mcpDcr": "no",
+    "mcpServer": "https://api.githubcopilot.com/mcp/",
+    "note": "Composio offers managed OAuth for GitHub, so you can skip registering an app. GitHub's hosted MCP server sends clients to github.com/login/oauth, and that server's metadata has no registration_endpoint, so each MCP host must bring its own GitHub App or OAuth app.",
+    "whyOwnApp": [
+      "You want a GitHub App with fine-grained permissions: Composio's GitHub App support is bring-your-own.",
+      "You want your own app name on the GitHub consent screen and in users' authorized apps list.",
+      "You want to control token expiry settings yourself."
+    ],
+    "sourceIds": ["composio-github", "gh-mcp-readme", "gh-mcp-prm", "gh-as-meta"]
+  },
+  "requirements": [
+    {
+      "id": "gh-account",
+      "label": "A GitHub account or an org you administer",
+      "detail": "You can create the app under your personal account or under any organization you administer.",
+      "sourceIds": ["gh-create"]
+    },
+    {
+      "id": "homepage-url",
+      "label": "Homepage URL",
+      "detail": "The full URL of your app's website. Only put information in the app that you consider public.",
+      "sourceIds": ["gh-create"]
+    },
+    {
+      "id": "callback-url",
+      "label": "Authorization callback URL",
+      "detail": "Where GitHub sends users after they approve. The redirect_uri must match it exactly unless you turn on wildcard matching.",
+      "agentCanDraft": true,
+      "sourceIds": ["gh-create", "gh-auth"]
+    },
+    {
+      "id": "app-type",
+      "label": "Choice of OAuth app or GitHub App",
+      "detail": "GitHub recommends GitHub Apps for fine-grained permissions and short-lived tokens. OAuth apps often need the broad repo scope.",
+      "agentCanDraft": true,
+      "sourceIds": ["gh-diff"]
+    },
+    {
+      "id": "org-approval",
+      "label": "Org owner approval",
+      "detail": "For org-owned data, an org owner must approve your OAuth app, or install your GitHub App if it needs org permissions.",
+      "when": { "needs": ["org"] },
+      "sourceIds": ["gh-org-restrict", "gh-diff"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "pick-type",
+      "title": "Pick OAuth app or GitHub App",
+      "detail": "Read the comparison and pick one. Pick a GitHub App if you want fine-grained permissions instead of broad scopes.",
+      "actor": "agent",
+      "duration": "5 min",
+      "sourceIds": ["gh-diff"]
+    },
+    {
+      "id": "register",
+      "title": "Register the app",
+      "detail": "Go to Settings, Developer settings, OAuth apps, New OAuth App. Enter the name, homepage URL and callback URL, then click Register application.",
+      "actor": "you",
+      "duration": "5 min",
+      "sourceIds": ["gh-create"]
+    },
+    {
+      "id": "token-expiry",
+      "title": "Decide on expiring tokens",
+      "detail": "Expire user access tokens is on by default for new OAuth apps. Leave it on unless your code cannot refresh tokens yet.",
+      "actor": "you",
+      "duration": "1 min",
+      "sourceIds": ["gh-create"]
+    },
+    {
+      "id": "store-secret",
+      "title": "Store the client ID and secret",
+      "detail": "Copy the client ID and client secret from the app settings page into your secret store. The secret is needed to exchange codes for tokens.",
+      "actor": "you",
+      "duration": "2 min",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "write-flow",
+      "title": "Write the web flow",
+      "detail": "Send users to /login/oauth/authorize with state and a PKCE S256 challenge, then exchange the code within 10 minutes at /login/oauth/access_token.",
+      "actor": "agent",
+      "duration": "30 min",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "write-refresh",
+      "title": "Handle refresh tokens",
+      "detail": "Expiring access tokens last 8 hours and refresh tokens last 6 months without use. Code for both expiring and long-lived tokens.",
+      "actor": "agent",
+      "duration": "15 min",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "test-own",
+      "title": "Test with your own account",
+      "detail": "Click Connect GitHub yourself and call the API with the token you get back.",
+      "actor": "you",
+      "duration": "5 min",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "org-request",
+      "title": "Get org owners to approve",
+      "detail": "Users can request owner approval for your OAuth app, and owners get a notification. Until then the app cannot reach private org resources.",
+      "actor": "you",
+      "duration": "Depends on each owner",
+      "when": { "needs": ["org"] },
+      "sourceIds": ["gh-org-restrict"]
+    }
+  ],
+  "scopes": [
+    {
+      "name": "repo",
+      "meaning": "Full access to public and private repos, plus org-owned resources like projects, team memberships and webhooks.",
+      "tier": "sensitive",
+      "triggersReview": false,
+      "when": { "needs": ["repos", "issues"] },
+      "sourceIds": ["gh-scopes"]
+    },
+    {
+      "name": "public_repo",
+      "meaning": "Access limited to public repositories.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["gh-scopes"]
+    },
+    {
+      "name": "read:user",
+      "meaning": "Read the user's profile data.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["gh-scopes"]
+    },
+    {
+      "name": "user:email",
+      "meaning": "Read the user's email addresses.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["gh-scopes"]
+    },
+    {
+      "name": "read:org",
+      "meaning": "Read-only access to org membership, org projects and team membership.",
+      "tier": "basic",
+      "triggersReview": false,
+      "when": { "needs": ["org"] },
+      "sourceIds": ["gh-scopes"]
+    },
+    {
+      "name": "workflow",
+      "meaning": "Add and update GitHub Actions workflow files.",
+      "tier": "sensitive",
+      "triggersReview": false,
+      "when": { "needs": ["workflows"] },
+      "sourceIds": ["gh-scopes"]
+    },
+    {
+      "name": "offline_access",
+      "meaning": "Ask for an expiring token plus a refresh token on one sign-in, even if the app does not force expiry.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["gh-auth", "gh-as-meta"]
+    }
+  ],
+  "limits": [
+    {
+      "id": "app-cap",
+      "title": "100 OAuth apps per owner",
+      "detail": "A user or organization can own up to 100 OAuth apps.",
+      "sourceIds": ["gh-create"]
+    },
+    {
+      "id": "callback-cap",
+      "title": "10 callback URLs",
+      "detail": "You can enter up to 10 callback URLs per app.",
+      "sourceIds": ["gh-create"]
+    },
+    {
+      "id": "token-cap",
+      "title": "10 tokens per user, app and scope",
+      "detail": "An 11th token for the same user and scopes revokes an older one. Creating more than 10 tokens in an hour triggers a re-authorization prompt instead.",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "rate-limit",
+      "title": "5,000 requests per hour per user",
+      "detail": "OAuth tokens use the user's rate limit of 5,000 requests per hour. It is 15,000 when the app is owned or approved by a GitHub Enterprise Cloud org.",
+      "sourceIds": ["gh-rate", "gh-diff"]
+    },
+    {
+      "id": "code-expiry",
+      "title": "Codes expire in 10 minutes",
+      "detail": "Exchange the authorization code for a token within 10 minutes. Device codes last 15 minutes by default.",
+      "sourceIds": ["gh-auth"]
+    }
+  ],
+  "blockers": [
+    {
+      "id": "org-data-missing",
+      "symptom": "The token works but private org repos are missing or return errors.",
+      "fix": "The org has OAuth app access restrictions on. Ask an org owner to approve your app, or switch to a GitHub App the owner installs.",
+      "sourceIds": ["gh-org-restrict", "gh-diff"]
+    },
+    {
+      "id": "redirect-mismatch",
+      "symptom": "GitHub rejects the redirect_uri.",
+      "fix": "Make it match a registered callback URL exactly. For local testing use 127.0.0.1 or ::1, where the port may differ.",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "tokens-revoked",
+      "symptom": "Older tokens for a user stop working.",
+      "fix": "You issued more than 10 tokens for the same user and scopes. Store and reuse one token per user instead of re-running the flow.",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "no-refresh-token",
+      "symptom": "Some users have no refresh token.",
+      "fix": "Turning on expiry does not change existing tokens, which stay long-lived. Handle both kinds, or ask those users to sign in again.",
+      "sourceIds": ["gh-auth"]
+    },
+    {
+      "id": "device-flow-disabled",
+      "symptom": "The device flow returns device_flow_disabled.",
+      "fix": "Turn on Enable Device Flow in the app settings first.",
+      "sourceIds": ["gh-auth", "gh-create"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "gh-create",
+      "title": "Creating an OAuth app",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "gh-auth",
+      "title": "Authorizing OAuth apps",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "gh-scopes",
+      "title": "Scopes for OAuth apps",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "GitHub has no scope review. Tiers in this guide only mark how much access a scope gives."
+    },
+    {
+      "id": "gh-diff",
+      "title": "Differences between GitHub Apps and OAuth apps",
+      "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/differences-between-github-apps-and-oauth-apps",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "gh-org-restrict",
+      "title": "About OAuth app access restrictions",
+      "url": "https://docs.github.com/en/organizations/managing-oauth-access-to-your-organizations-data/about-oauth-app-access-restrictions",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "gh-rate",
+      "title": "Rate limits for the REST API",
+      "url": "https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "composio-github",
+      "title": "Composio GitHub toolkit",
+      "url": "https://docs.composio.dev/toolkits/github.md",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Says Composio-managed OAuth available: Yes. Auth scheme OAUTH2. GitHub Apps are bring-your-own."
+    },
+    {
+      "id": "gh-mcp-readme",
+      "title": "GitHub MCP Server README",
+      "url": "https://github.com/github/github-mcp-server",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Says each MCP host application needs to configure a GitHub App or OAuth App to support remote access via OAuth."
+    },
+    {
+      "id": "gh-mcp-prm",
+      "title": "GitHub MCP protected resource metadata",
+      "url": "https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp",
+      "badge": "tested",
+      "checked": "2026-11-03",
+      "note": "Returned 200 with authorization_servers [https://github.com/login/oauth]. The origin's /.well-known/oauth-authorization-server returned 404."
+    },
+    {
+      "id": "gh-as-meta",
+      "title": "GitHub OAuth authorization server metadata",
+      "url": "https://github.com/.well-known/oauth-authorization-server/login/oauth",
+      "badge": "tested",
+      "checked": "2026-11-03",
+      "note": "Returned 200 with authorize, token and device endpoints, S256 PKCE and scopes_supported [offline_access]. No registration_endpoint."
+    }
+  ],
+  "unverified": [
+    "GitHub docs do not state rate limits for the /login/oauth/authorize or /login/oauth/access_token endpoints.",
+    "Whether SAML SSO orgs need extra token authorization was not checked for this guide."
+  ],
+  "checked": "2026-11-03",
+  "generated": false
+}

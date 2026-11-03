@@ -1,0 +1,341 @@
+{
+  "slug": "notion",
+  "name": "Notion",
+  "domain": "notion.com",
+  "portal": "https://app.notion.com/developers/connections",
+  "summary": "Create a public connection in the Notion Developer portal and start OAuth right away, with no review. Only the optional Marketplace listing goes through a Notion review.",
+  "needs": [
+    { "id": "read", "label": "Read pages and databases" },
+    { "id": "write", "label": "Create and edit pages" },
+    { "id": "comments", "label": "Read and add comments" },
+    { "id": "email", "label": "See user email addresses" },
+    { "id": "listing", "label": "Get listed on the Notion Marketplace" }
+  ],
+  "defaultNeeds": ["read", "write"],
+  "verdicts": [
+    {
+      "difficulty": "easy",
+      "handsOn": "15 min",
+      "waiting": "None",
+      "why": "You can start the OAuth flow as soon as the connection has client credentials and a redirect URI, with no Marketplace review.",
+      "sourceIds": ["n-auth", "n-public"]
+    },
+    {
+      "difficulty": "moderate",
+      "handsOn": "1 hour",
+      "waiting": "5 to 10 business days",
+      "why": "A Marketplace listing goes through a Notion security review, and Notion says to expect a reply in 5 to 10 business days.",
+      "when": { "needs": ["listing"] },
+      "sourceIds": ["n-public", "n-market"]
+    }
+  ],
+  "skip": {
+    "composioManaged": "yes",
+    "mcpDcr": "yes",
+    "mcpServer": "https://mcp.notion.com/mcp",
+    "note": "Composio offers managed OAuth for Notion. Notion's hosted MCP server also supports dynamic client registration at mcp.notion.com/register, so an MCP client can connect with no app of your own.",
+    "whyOwnApp": [
+      "You want your own connection name and capabilities shown on Notion's consent prompt.",
+      "You want a Marketplace listing, which needs your own public connection.",
+      "You want to set exactly which capabilities your app asks for."
+    ],
+    "sourceIds": ["composio-notion", "n-mcp", "n-mcp-as", "n-market", "n-caps"]
+  },
+  "requirements": [
+    {
+      "id": "notion-account",
+      "label": "A Notion account and development workspace",
+      "detail": "You pick a development workspace when you create the connection in the Developer portal.",
+      "sourceIds": ["n-public"]
+    },
+    {
+      "id": "redirect-uri",
+      "label": "Redirect URI",
+      "detail": "Where Notion sends users after they allow access, with a temporary code.",
+      "agentCanDraft": true,
+      "sourceIds": ["n-public", "n-auth"]
+    },
+    {
+      "id": "install-scope",
+      "label": "Installation scope set to Any workspace",
+      "detail": "Pick Any workspace so anyone can install it. You cannot change this after creation.",
+      "sourceIds": ["n-public"]
+    },
+    {
+      "id": "capabilities",
+      "label": "A list of capabilities",
+      "detail": "Pick the least you need. Fewer capabilities make it more likely a workspace admin can install your connection.",
+      "agentCanDraft": true,
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "id": "listing-assets",
+      "label": "Marketplace listing details",
+      "detail": "Listing name, description, category, tags, images and logo.",
+      "agentCanDraft": true,
+      "when": { "needs": ["listing"] },
+      "sourceIds": ["n-market"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "pick-type",
+      "title": "Pick the right credential",
+      "detail": "Use a public connection when each user authorizes your app. A personal access token or internal connection only fits your own scripts or one workspace.",
+      "actor": "agent",
+      "duration": "5 min",
+      "sourceIds": ["n-public", "n-auth"]
+    },
+    {
+      "id": "create-connection",
+      "title": "Create the connection",
+      "detail": "In the Developer portal open Build, Connections, Create new connection. Enter the name, development workspace, redirect URIs, Any workspace and your capabilities.",
+      "actor": "you",
+      "duration": "10 min",
+      "sourceIds": ["n-public"]
+    },
+    {
+      "id": "copy-creds",
+      "title": "Copy the client ID and secret",
+      "detail": "Open the Configuration tab and store the OAuth client ID and secret. The authorization URL is also shown there.",
+      "actor": "you",
+      "duration": "2 min",
+      "sourceIds": ["n-public"]
+    },
+    {
+      "id": "write-flow",
+      "title": "Write the OAuth flow",
+      "detail": "Send users to the authorization URL with owner=user. Exchange the code at api.notion.com/v1/oauth/token using HTTP Basic auth with your client ID and secret.",
+      "actor": "agent",
+      "duration": "30 min",
+      "sourceIds": ["n-auth"]
+    },
+    {
+      "id": "store-tokens",
+      "title": "Store tokens and refresh them",
+      "detail": "Save the access token, refresh token and bot_id. A refresh returns a new access token and a new refresh token.",
+      "actor": "agent",
+      "duration": "15 min",
+      "sourceIds": ["n-auth"]
+    },
+    {
+      "id": "test-own",
+      "title": "Test with your own workspace",
+      "detail": "Run the flow yourself and pick some pages in the page picker. Your app only sees the pages you pick.",
+      "actor": "you",
+      "duration": "5 min",
+      "sourceIds": ["n-public"]
+    },
+    {
+      "id": "draft-listing",
+      "title": "Draft and submit the listing",
+      "detail": "Start a new connection listing under Listings, Connections, fill in the details and submit it for review.",
+      "actor": "you",
+      "duration": "30 min",
+      "when": { "needs": ["listing"] },
+      "sourceIds": ["n-market"]
+    },
+    {
+      "id": "listing-review",
+      "title": "Wait for Notion's review",
+      "detail": "The Notion team reviews every listing and replies by email. If changes are needed, fix them and resubmit.",
+      "actor": "provider",
+      "duration": "5 to 10 business days",
+      "when": { "needs": ["listing"] },
+      "sourceIds": ["n-market"]
+    }
+  ],
+  "scopes": [
+    {
+      "name": "Read content",
+      "meaning": "Read existing pages, databases and blocks.",
+      "tier": "basic",
+      "triggersReview": false,
+      "when": { "needs": ["read"] },
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "name": "Update content",
+      "meaning": "Change existing pages and blocks, but not create new ones.",
+      "tier": "basic",
+      "triggersReview": false,
+      "when": { "needs": ["write"] },
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "name": "Insert content",
+      "meaning": "Create new pages and blocks. It does not grant reading full objects.",
+      "tier": "basic",
+      "triggersReview": false,
+      "when": { "needs": ["write"] },
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "name": "Read comments",
+      "meaning": "List comments on a page or block.",
+      "tier": "basic",
+      "triggersReview": false,
+      "when": { "needs": ["comments"] },
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "name": "Insert comments",
+      "meaning": "Add comments to a page or an existing discussion.",
+      "tier": "basic",
+      "triggersReview": false,
+      "when": { "needs": ["comments"] },
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "name": "User information with email addresses",
+      "meaning": "User objects include name, profile image and email.",
+      "tier": "sensitive",
+      "triggersReview": false,
+      "when": { "needs": ["email"] },
+      "sourceIds": ["n-caps"]
+    }
+  ],
+  "limits": [
+    {
+      "id": "rate-limit",
+      "title": "3 requests per second per connection",
+      "detail": "180 requests per minute on most plans, 600 per minute on Business and Enterprise. Data source queries have a separate limit of about 3 per second.",
+      "sourceIds": ["n-limits"]
+    },
+    {
+      "id": "payload",
+      "title": "1000 blocks or 500KB per request",
+      "detail": "Payloads max out at 1000 block elements and 500KB. Block and rich text arrays are capped at 100 items.",
+      "sourceIds": ["n-limits"]
+    },
+    {
+      "id": "scope-fixed",
+      "title": "Installation scope is permanent",
+      "detail": "Only Any workspace connections can be listed on the Marketplace. If you picked selected workspaces, you must create a new connection.",
+      "sourceIds": ["n-public", "n-market"]
+    },
+    {
+      "id": "per-user",
+      "title": "Every user authorizes separately",
+      "detail": "Only the user who authorized can use the connection in their workspace. Teammates each run the flow themselves.",
+      "sourceIds": ["n-public"]
+    },
+    {
+      "id": "picked-pages",
+      "title": "Access is limited to picked pages",
+      "detail": "Users choose pages in the page picker, and sharing a parent page shares its children. Users can change access later.",
+      "sourceIds": ["n-auth"]
+    }
+  ],
+  "blockers": [
+    {
+      "id": "page-not-shared",
+      "symptom": "API calls fail on a page the user can see in Notion.",
+      "fix": "The page was not shared with your connection. Ask the user to re-run the flow and pick it, or add your connection from the page's Add connections menu.",
+      "sourceIds": ["n-auth", "n-help-conn"]
+    },
+    {
+      "id": "rate-limited",
+      "symptom": "Requests return HTTP 429 rate_limited.",
+      "fix": "Wait for the Retry-After header, then back off with jitter. Queue requests so one job does not use the whole budget.",
+      "sourceIds": ["n-limits"]
+    },
+    {
+      "id": "enterprise-blocked",
+      "symptom": "A user on an Enterprise workspace cannot install your connection.",
+      "fix": "Enterprise owners can restrict connections to an approved list. Ask the owner to approve it, and request fewer capabilities.",
+      "when": { "profile": ["company"] },
+      "sourceIds": ["n-help-conn", "n-caps"]
+    },
+    {
+      "id": "reauth-prompt",
+      "symptom": "Existing users are asked to connect again.",
+      "fix": "You changed capabilities, so users must re-authenticate. Settle capabilities before launch.",
+      "sourceIds": ["n-caps"]
+    },
+    {
+      "id": "cannot-list",
+      "symptom": "Your connection is not eligible for a Marketplace listing.",
+      "fix": "It was created with selected workspaces. Create a new connection with Any workspace.",
+      "when": { "needs": ["listing"] },
+      "sourceIds": ["n-market"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "n-auth",
+      "title": "Authorization",
+      "url": "https://developers.notion.com/docs/authorization",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "n-public",
+      "title": "Public integrations",
+      "url": "https://developers.notion.com/guides/connections-and-tokens/public-integrations/overview",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "n-market",
+      "title": "List on the Marketplace",
+      "url": "https://developers.notion.com/guides/connections-and-tokens/public-integrations/marketplace-listing",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "n-caps",
+      "title": "Capabilities",
+      "url": "https://developers.notion.com/reference/capabilities",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Notion uses capabilities set in the portal, not OAuth scope strings. None of them trigger a review."
+    },
+    {
+      "id": "n-limits",
+      "title": "Request limits",
+      "url": "https://developers.notion.com/reference/request-limits",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "n-help-conn",
+      "title": "Add and manage connections with the API",
+      "url": "https://www.notion.com/help/add-and-manage-connections-with-the-api",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "n-mcp",
+      "title": "Get started with Notion MCP",
+      "url": "https://developers.notion.com/guides/mcp/get-started-with-mcp",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Remote server URL is https://mcp.notion.com/mcp. Clients connect through an OAuth flow."
+    },
+    {
+      "id": "n-mcp-as",
+      "title": "Notion MCP authorization server metadata",
+      "url": "https://mcp.notion.com/.well-known/oauth-authorization-server",
+      "badge": "tested",
+      "checked": "2026-11-03",
+      "note": "Returned registration_endpoint https://mcp.notion.com/register, S256 PKCE, token auth method none allowed, and client_id_metadata_document_supported true."
+    },
+    {
+      "id": "composio-notion",
+      "title": "Composio Notion toolkit",
+      "url": "https://docs.composio.dev/toolkits/notion.md",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Says Composio-managed OAuth available: Yes. Auth schemes OAuth 2.0 and API key."
+    }
+  ],
+  "unverified": [
+    "Notion docs do not say how long access tokens last before you must refresh.",
+    "Notion's OAuth docs for the REST API do not mention PKCE support.",
+    "The docs say creating an internal connection needs a workspace owner, but do not say the same for public connections.",
+    "The exact name of the Enterprise setting that restricts connections was not found."
+  ],
+  "checked": "2026-11-03",
+  "generated": false
+}

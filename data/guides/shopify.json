@@ -1,0 +1,417 @@
+{
+  "slug": "shopify",
+  "name": "Shopify",
+  "domain": "shopify.com",
+  "summary": "Easy if you only connect stores in your own organization with a custom app: no approval needed. Letting any merchant connect means a public app, a $19 App Store registration, Shopify's review, and a separate review before you can read customer names, emails or addresses.",
+  "needs": [
+    { "id": "one-store", "label": "One store or one Plus org (custom app)" },
+    { "id": "app-store", "label": "Any merchant (public App Store app)" },
+    { "id": "customer-data", "label": "Customer names, emails, phones, addresses" }
+  ],
+  "defaultNeeds": ["one-store"],
+  "verdicts": [
+    {
+      "difficulty": "easy",
+      "handsOn": "30 to 60 min",
+      "waiting": "None",
+      "why": "Custom distribution covers one store, one Plus organization or dev stores, and Shopify does not review it.",
+      "sourceIds": ["shop-distribution"]
+    },
+    {
+      "difficulty": "moderate",
+      "handsOn": "1 to 3 days",
+      "waiting": "Not published by Shopify",
+      "why": "Public apps need Shopify's approval, a $19 App Store registration, a screencast, Shopify billing and privacy webhooks.",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-distribution", "shop-revshare", "shop-requirements", "shop-compliance"]
+    },
+    {
+      "difficulty": "hard",
+      "handsOn": "2 to 5 days",
+      "waiting": "Not published by Shopify",
+      "why": "On top of app review, a public app must pass a separate protected customer data review before live stores return name, email, phone or address.",
+      "when": { "audience": ["many"], "needs": ["customer-data"] },
+      "sourceIds": ["shop-pcd", "shop-scopes"]
+    }
+  ],
+  "skip": {
+    "composioManaged": "no",
+    "mcpDcr": "no",
+    "mcpServer": "https://{shop}/customer/api/mcp (Customer Accounts MCP, shopper-facing)",
+    "note": "Composio lists no managed OAuth for Shopify, so bring your own app. Shopify's hosted Customer Accounts MCP server is for shoppers, not store admin, and its discovery document has no registration endpoint.",
+    "whyOwnApp": [
+      "Composio has no managed Shopify app, and its docs say the default app may show App not found while under review.",
+      "The Customer Accounts MCP server uses your app ID as the client_id, so you still need an app."
+    ],
+    "sourceIds": ["composio-shopify", "shop-cam-mcp", "shop-cam-tested"]
+  },
+  "requirements": [
+    {
+      "id": "partner-org",
+      "label": "An app in a Partner organization",
+      "detail": "The distribution choice only appears for apps in a Partner organization. Apps made in your store's own organization install from the Installs card.",
+      "sourceIds": ["shop-select"]
+    },
+    {
+      "id": "dev-store",
+      "label": "A development store to test on",
+      "detail": "Shopify asks you to test on a development store before review, and dev stores can read customer data without a review.",
+      "sourceIds": ["shop-review", "shop-pcd"]
+    },
+    {
+      "id": "app-store-fee",
+      "label": "$19 App Store registration",
+      "detail": "A one-time $19 USD fee per Partner account. Not needed if you only build custom apps for a single merchant.",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-revshare", "shop-distribution"]
+    },
+    {
+      "id": "privacy-policy",
+      "label": "Privacy policy",
+      "detail": "Required for App Store listings.",
+      "agentCanDraft": true,
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-requirements"]
+    },
+    {
+      "id": "compliance-webhooks",
+      "label": "Privacy compliance webhooks",
+      "detail": "Handle customers/data_request, customers/redact and shop/redact, verify the HMAC and return 401 if it is wrong.",
+      "agentCanDraft": true,
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-compliance"]
+    },
+    {
+      "id": "screencast",
+      "label": "Screencast and test credentials",
+      "detail": "A short screencast of setup and features, plus test credentials with full access for any outside service.",
+      "agentCanDraft": true,
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-requirements", "shop-pass-review"]
+    },
+    {
+      "id": "shopify-billing",
+      "label": "Charge through Shopify billing",
+      "detail": "App Store apps that charge must use Shopify's billing system.",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-pass-review", "shop-requirements"]
+    },
+    {
+      "id": "pcd-reasons",
+      "label": "A reason for each protected customer field",
+      "detail": "Request name, email, phone and address one by one in the Partner Dashboard and meet Shopify's data protection rules.",
+      "agentCanDraft": true,
+      "when": { "needs": ["customer-data"] },
+      "sourceIds": ["shop-pcd"]
+    }
+  ],
+  "steps": [
+    {
+      "id": "create-app",
+      "title": "Create the app in the Dev Dashboard",
+      "detail": "Create it under a Partner organization so you get the Distribution card.",
+      "actor": "you",
+      "duration": "10 min",
+      "sourceIds": ["shop-select"]
+    },
+    {
+      "id": "choose-distribution",
+      "title": "Pick custom or public distribution",
+      "detail": "Click Select distribution method on the app's Home page. This choice is permanent, so decide before you click.",
+      "actor": "you",
+      "duration": "2 min",
+      "sourceIds": ["shop-select", "shop-distribution"]
+    },
+    {
+      "id": "write-oauth",
+      "title": "Write the OAuth flow",
+      "detail": "Validate the shop domain, redirect to {shop}/admin/oauth/authorize, check the HMAC, then POST to /admin/oauth/access_token and store the token per shop.",
+      "actor": "agent",
+      "duration": "45 min",
+      "sourceIds": ["shop-authcode"]
+    },
+    {
+      "id": "own-org-shortcut",
+      "title": "Or use client credentials for your own org",
+      "detail": "If the app only acts on stores in your own organization, the client credentials grant skips the merchant consent screen.",
+      "actor": "agent",
+      "duration": "15 min",
+      "when": { "needs": ["one-store"] },
+      "sourceIds": ["shop-authcode"]
+    },
+    {
+      "id": "test-dev-store",
+      "title": "Install on a dev store and test",
+      "detail": "Run the Connect flow on a development store and check the scopes return what your agent needs.",
+      "actor": "you",
+      "duration": "15 min",
+      "sourceIds": ["shop-review"]
+    },
+    {
+      "id": "build-compliance",
+      "title": "Add privacy webhooks and draft the listing",
+      "detail": "Write the three compliance webhooks, the privacy policy and the screencast script.",
+      "actor": "agent",
+      "duration": "1 to 2 hours",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-compliance", "shop-requirements"]
+    },
+    {
+      "id": "request-pcd",
+      "title": "Request protected customer data",
+      "detail": "Pick each field in the Partner Dashboard and paste a reason for it.",
+      "actor": "you",
+      "duration": "20 min",
+      "when": { "needs": ["customer-data"] },
+      "sourceIds": ["shop-pcd"]
+    },
+    {
+      "id": "register-submit",
+      "title": "Register, record and submit",
+      "detail": "Pay the $19 registration, record the screencast, add test credentials and submit from the App Store review page.",
+      "actor": "you",
+      "duration": "2 hours",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-revshare", "shop-review", "shop-pass-review"]
+    },
+    {
+      "id": "shopify-review",
+      "title": "Shopify reviews the app",
+      "detail": "Status moves from Submitted to Reviewed to Published, and can pause if core requirements are missing. Shopify does not publish a review time.",
+      "actor": "provider",
+      "duration": "Not published",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-review"]
+    }
+  ],
+  "scopes": [
+    {
+      "name": "read_products",
+      "meaning": "Read products, variants and collections.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["shop-scopes"]
+    },
+    {
+      "name": "write_products",
+      "meaning": "Create and edit products, variants and collections.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["shop-scopes"]
+    },
+    {
+      "name": "read_orders",
+      "meaning": "Read orders from the last 60 days only.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["shop-scopes"]
+    },
+    {
+      "name": "write_orders",
+      "meaning": "Read and edit orders from the last 60 days.",
+      "tier": "basic",
+      "triggersReview": false,
+      "sourceIds": ["shop-scopes"]
+    },
+    {
+      "name": "read_all_orders",
+      "meaning": "Older orders too. Partner-org apps must request it; it only works next to read_orders or write_orders.",
+      "tier": "sensitive",
+      "triggersReview": true,
+      "sourceIds": ["shop-scopes"]
+    },
+    {
+      "name": "read_customers",
+      "meaning": "Read customers and segments. Live stores redact protected fields until your public app passes the customer data review.",
+      "tier": "sensitive",
+      "triggersReview": true,
+      "when": { "needs": ["customer-data"] },
+      "sourceIds": ["shop-scopes", "shop-pcd"]
+    },
+    {
+      "name": "write_customers",
+      "meaning": "Create and edit customers. Same protected data rules as read_customers.",
+      "tier": "sensitive",
+      "triggersReview": true,
+      "when": { "needs": ["customer-data"] },
+      "sourceIds": ["shop-scopes", "shop-pcd"]
+    }
+  ],
+  "limits": [
+    {
+      "id": "permanent-choice",
+      "title": "Distribution choice is permanent",
+      "detail": "You cannot switch between custom and public after you pick. A wrong pick means a new app.",
+      "sourceIds": ["shop-distribution", "shop-select"]
+    },
+    {
+      "id": "custom-reach",
+      "title": "Custom apps reach one store or one Plus org",
+      "detail": "Custom apps install on a single store, stores in the same Plus organization, or dev stores, and cannot bill through Shopify.",
+      "sourceIds": ["shop-distribution"]
+    },
+    {
+      "id": "no-admin-custom",
+      "title": "No new admin-created custom apps",
+      "detail": "Custom apps made inside the Shopify admin can no longer be created; existing ones keep working.",
+      "sourceIds": ["shop-distribution"]
+    },
+    {
+      "id": "sixty-days",
+      "title": "Orders stop at 60 days",
+      "detail": "read_orders and write_orders only cover the last 60 days unless you also get read_all_orders.",
+      "sourceIds": ["shop-scopes"]
+    },
+    {
+      "id": "expiring-tokens",
+      "title": "New public apps get expiring tokens",
+      "detail": "New public apps must use expiring offline access tokens for the GraphQL Admin API, so store and use the refresh token.",
+      "when": { "needs": ["app-store"] },
+      "sourceIds": ["shop-authcode"]
+    },
+    {
+      "id": "redacted-fields",
+      "title": "Unapproved fields come back redacted",
+      "detail": "Without approval, protected fields are redacted and GraphQL returns HTTP 200 with an error in the errors field.",
+      "when": { "needs": ["customer-data"] },
+      "sourceIds": ["shop-pcd"]
+    }
+  ],
+  "blockers": [
+    {
+      "id": "wrong-distribution",
+      "symptom": "You picked custom distribution but now need more merchants.",
+      "fix": "The method cannot change: create a new app and choose public distribution.",
+      "sourceIds": ["shop-distribution"]
+    },
+    {
+      "id": "no-distribution-card",
+      "symptom": "There is no Distribution card on the app's Home page.",
+      "fix": "The app lives in your store's organization: install it from the Installs card, or recreate it under a Partner organization.",
+      "sourceIds": ["shop-select"]
+    },
+    {
+      "id": "customer-redacted",
+      "symptom": "Customer names and emails come back empty on a live store.",
+      "fix": "Request those protected fields in the Partner Dashboard; dev stores work without review.",
+      "sourceIds": ["shop-pcd"]
+    },
+    {
+      "id": "no-oauth-redirect",
+      "symptom": "Review is paused or rejected at installation.",
+      "fix": "Send merchants to the OAuth grant screen right after install, before any other step.",
+      "sourceIds": ["shop-pass-review", "shop-requirements"]
+    },
+    {
+      "id": "composio-app-not-found",
+      "symptom": "Composio's default Shopify app shows App not found.",
+      "fix": "Register your own Shopify app and use its credentials in Composio.",
+      "sourceIds": ["composio-shopify"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "shop-distribution",
+      "title": "Shopify: About app distribution",
+      "url": "https://shopify.dev/docs/apps/launch/distribution",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-select",
+      "title": "Shopify: Select a distribution method",
+      "url": "https://shopify.dev/docs/apps/launch/distribution/select-distribution-method",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-revshare",
+      "title": "Shopify: Revenue share for App Store developers",
+      "url": "https://shopify.dev/docs/apps/launch/distribution/revenue-share",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "One-time fee of $19 USD per Partner account."
+    },
+    {
+      "id": "shop-review",
+      "title": "Shopify: App Store review process",
+      "url": "https://shopify.dev/docs/apps/launch/app-store-review/review-process",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "No review duration stated."
+    },
+    {
+      "id": "shop-pass-review",
+      "title": "Shopify: Pass app review",
+      "url": "https://shopify.dev/docs/apps/launch/app-store-review/pass-app-review",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-requirements",
+      "title": "Shopify: App requirements checklist",
+      "url": "https://shopify.dev/docs/apps/launch/app-requirements-checklist",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-compliance",
+      "title": "Shopify: Privacy law compliance",
+      "url": "https://shopify.dev/docs/apps/build/compliance/privacy-law-compliance",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-pcd",
+      "title": "Shopify: Protected customer data",
+      "url": "https://shopify.dev/docs/apps/launch/protected-customer-data",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-scopes",
+      "title": "Shopify: Access scopes",
+      "url": "https://shopify.dev/docs/api/usage/access-scopes",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-authcode",
+      "title": "Shopify: Authorization code grant",
+      "url": "https://shopify.dev/docs/apps/build/authentication-authorization/access-tokens/authorization-code-grant",
+      "badge": "official",
+      "checked": "2026-11-03"
+    },
+    {
+      "id": "shop-cam-mcp",
+      "title": "Shopify: Customer Accounts MCP",
+      "url": "https://shopify.dev/docs/apps/build/customer-accounts-mcp",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Shopper-facing. Your app ID is the client_id. No mention of dynamic client registration."
+    },
+    {
+      "id": "shop-cam-tested",
+      "title": "Live storefront OAuth metadata (allbirds.com)",
+      "url": "https://allbirds.com/.well-known/oauth-authorization-server",
+      "badge": "tested",
+      "checked": "2026-11-03",
+      "note": "HTTP 200. Issuer shopify.com/authentication/11044168, scopes include customer-account-mcp-api:full, PKCE S256. No registration_endpoint. /.well-known/customer-account-api pointed mcp_api at accounts.allbirds.com/customer/api/mcp."
+    },
+    {
+      "id": "composio-shopify",
+      "title": "Composio: Shopify toolkit",
+      "url": "https://docs.composio.dev/toolkits/shopify.md",
+      "badge": "official",
+      "checked": "2026-11-03",
+      "note": "Composio-managed OAuth listed as not available. Auth schemes OAUTH2 and S2S_OAUTH2."
+    }
+  ],
+  "unverified": [
+    "How long Shopify App Store review takes: none of the official pages we read give a duration.",
+    "Whether a Shopify Partner account is free to open: not confirmed on the pages we read.",
+    "Whether Shopify runs a hosted MCP server for the Admin API: we found only the shopper-facing Customer Accounts MCP."
+  ],
+  "checked": "2026-11-03",
+  "generated": false
+}
