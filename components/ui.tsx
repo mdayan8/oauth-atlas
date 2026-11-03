@@ -59,10 +59,6 @@ export function Row({ children, className = "" }: { children: React.ReactNode; c
   return <div className={`rounded-xl bg-row px-4 py-3.5 ${className}`}>{children}</div>;
 }
 
-export function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl bg-row px-4 py-3.5 text-[14px] text-ink-3">{children}</div>;
-}
-
 // Placeholder bars while the live agent is still looking.
 export function Skeleton({ bare = false, tall = false }: { bare?: boolean; tall?: boolean }) {
   const bars = (

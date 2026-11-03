@@ -2,7 +2,6 @@
 import assert from "node:assert/strict";
 import { claimBadge, matches, pickVerdict, type Situation } from "./situation.ts";
 import { fold } from "./fold.ts";
-import { minutes } from "./duration.ts";
 
 const s: Situation = { profile: "individual", audience: "many", needs: ["send"] };
 
@@ -53,12 +52,4 @@ assert.equal(lg.steps.length, 1, "a step with no title yet is not rendered");
 assert.equal(lg.steps[0].actor, "you", "missing actor falls back to you");
 assert.equal(log.at(-1)?.text, "Reading linear.app/developers/oauth");
 
-// duration: ranges take the upper bound, vague words become a rough number, unknowns stay null
-assert.equal(minutes("30 min"), 30);
-assert.equal(minutes("2 to 3 hours"), 180);
-assert.equal(minutes("Up to 10 days"), 14400);
-assert.equal(minutes("Several weeks"), 3 * 7 * 24 * 60);
-assert.equal(minutes("Not published"), null);
-assert.equal(minutes("Depends on each owner"), null);
-
-console.log("situation + fold + duration: all checks pass");
+console.log("situation + fold: all checks pass");

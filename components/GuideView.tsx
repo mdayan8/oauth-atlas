@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import type { Guide, PathOptionT } from "@/lib/schema";
-import { minutes } from "@/lib/duration";
 import AskPanel from "./AskPanel";
 import { claimBadge, defaultSituation, pickVerdict, resolve, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
 import { ACTOR_LABEL, DIFFICULTY_LABEL, toAgentPrompt, toMarkdown } from "@/lib/share";
 import { DraftButton, Recheck } from "./AgentActions";
-import { DIFF_COLOR, Empty, EvidenceBadge, Meter, Pill, Row, Skeleton } from "./ui";
+import { DIFF_COLOR, EvidenceBadge, Meter, Pill, Row, Skeleton } from "./ui";
 
 const PROFILES: [Profile, string][] = [
   ["individual", "Individual"],
@@ -322,8 +321,8 @@ function PathChooser({
   );
 }
 
-// One path from start to approved: get the requirements ready, then each step in order.
-// Only the next step is open; the rest are one line each. Progress is kept per guide in this browser.
+// One path from start to approved, as a vertical timeline: get the requirements ready, then each step.
+// Only the next step is open, with a clear "Mark done". Progress is kept per guide in this browser.
 function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite: CiteFn }) {
   const key = g.slug && !g.generated ? `atlas-progress:${g.slug}` : "";
   const [done, setDone] = useState<string[]>([]);
@@ -345,194 +344,143 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
   };
 
   const prepId = "prep";
-  const items = [...(r.requirements.length ? [prepId] : []), ...r.steps.map((x) => x.id)];
-  const nextId = items.find((id) => !done.includes(id));
+  const drafts = r.requirements.filter((x) => x.agentCanDraft).length;
+  const items = [
+    ...(r.requirements.length
+      ? [{ id: prepId, title: "Get these ready", actor: "you" as const, meta: drafts ? `${plural(r.requirements.length, "item")}, ${drafts} the agent can draft` : plural(r.requirements.length, "item") }]
+      : []),
+    ...r.steps.map((x) => ({ id: x.id, title: x.title, actor: x.actor, meta: x.duration })),
+  ];
+  const nextId = items.find((x) => !done.includes(x.id))?.id;
   const shown = open ?? nextId;
-  const doneCount = items.filter((id) => done.includes(id)).length;
+  const doneCount = items.filter((x) => done.includes(x.id)).length;
+
+  const body = (id: string) => {
+    if (id === prepId)
+      return (
+        <ul className="flex flex-col gap-0.5">
+          {r.requirements.map((x) => (
+            <li key={x.id}>
+              <details className="group rounded-lg px-2 py-2 open:bg-row">
+                <summary className="flex cursor-pointer list-none items-center gap-2.5 text-[15px]">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ink-3)]" />
+                  <span className="flex-1">{x.label}</span>
+                  {x.agentCanDraft && <span className="label !text-[10px] text-accent">Agent can draft</span>}
+                  <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
+                </summary>
+                <p className="mt-1.5 pl-4 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
+                <div className="mt-2 pl-4">
+                  <Cite ids={x.sourceIds} />
+                  {x.agentCanDraft && !live && <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} />}
+                </div>
+              </details>
+            </li>
+          ))}
+        </ul>
+      );
+    const x = r.steps.find((s) => s.id === id)!;
+    return (
+      <>
+        <p className="text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
+        <div className="mt-2">
+          <Cite ids={x.sourceIds} />
+        </div>
+      </>
+    );
+  };
 
   return (
     <section id="path" className="scroll-mt-24 rounded-2xl bg-card p-1.5">
-      <div className="flex flex-wrap items-center gap-3 px-3.5 pb-3 pt-3">
+      <div className="flex items-center gap-3 px-3.5 pb-3 pt-3">
         <h2 className="label text-ink">Your path</h2>
         {items.length > 0 && (
-          <>
-            <span className="label text-ink-3">
-              {doneCount} of {items.length} done
-            </span>
-            <div className="h-1 min-w-24 flex-1 overflow-hidden rounded-full bg-[var(--line)]">
-              <div className="h-full rounded-full bg-accent transition-[width] duration-500" style={{ width: `${(doneCount / items.length) * 100}%` }} />
-            </div>
-          </>
+          <span className="label ml-auto text-ink-3">
+            {doneCount}/{items.length} done
+          </span>
         )}
       </div>
-      {r.steps.length > 1 && <Journey steps={r.steps} done={done} onPick={(id) => setOpen(id)} />}
-      <ol className="rows flex flex-col gap-1">
-        {items.length === 0 && (live ? <Skeleton /> : <Empty>No steps.</Empty>)}
-        {r.requirements.length > 0 && (
-          <PathItem
-            n={1}
-            title="Get these ready"
-            pill={
-              <>
-                <Pill color="var(--ink-3)">{plural(r.requirements.length, "item")}</Pill>
-                {r.requirements.some((x) => x.agentCanDraft) && (
-                  <Pill color="var(--accent)">{r.requirements.filter((x) => x.agentCanDraft).length} the agent can draft</Pill>
-                )}
-              </>
-            }
-            done={done.includes(prepId)}
-            next={nextId === prepId}
-            open={shown === prepId}
-            onOpen={() => setOpen(shown === prepId ? "" : prepId)}
-            onDone={() => toggle(prepId)}
-          >
-            <ul className="mt-2 flex flex-col gap-1">
-              {r.requirements.map((x) => (
-                <li key={x.id}>
-                  <details className="group rounded-lg px-2 py-1.5 open:bg-card">
-                    <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 text-[15px]">
-                      <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
-                      {x.label}
-                      {x.agentCanDraft && <Pill color="var(--accent)">Agent can draft</Pill>}
-                    </summary>
-                    <p className="mt-1 pl-4 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
-                    <div className="mt-1.5 pl-4">
-                      <Cite ids={x.sourceIds} />
-                      {x.agentCanDraft && !live && (
-                        <div>
-                          <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} />
-                        </div>
+      <div className="rounded-xl bg-row px-4 pb-2 pt-5 sm:px-5">
+        {items.length === 0 && (live ? <Skeleton bare tall /> : <p className="pb-3 text-[14px] text-ink-3">No steps.</p>)}
+        <ol className="rows">
+          {items.map((x, i) => {
+            const isDone = done.includes(x.id);
+            const isNext = x.id === nextId;
+            const isOpen = x.id === shown;
+            const c = ACTOR_COLOR[x.actor];
+            const last = i === items.length - 1 && !live;
+            return (
+              <li key={x.id} className="grid grid-cols-[28px_minmax(0,1fr)] gap-x-3.5">
+                {/* node + connector */}
+                <div className="flex flex-col items-center">
+                  <button
+                    type="button"
+                    onClick={() => toggle(x.id)}
+                    aria-pressed={isDone}
+                    aria-label={isDone ? `Mark "${x.title}" not done` : `Mark "${x.title}" done`}
+                    className="label grid h-7 w-7 shrink-0 place-items-center rounded-full !text-[11px] transition-all"
+                    style={
+                      isDone
+                        ? { background: "var(--d-instant)", color: "var(--bg)" }
+                        : isNext
+                          ? { background: c, color: "var(--bg)", boxShadow: `0 0 0 5px color-mix(in srgb, ${c} 16%, transparent)` }
+                          : x.actor === "you"
+                            ? { background: "var(--card)", color: "var(--ink-2)" }
+                            : { background: `color-mix(in srgb, ${c} 12%, var(--row))`, color: c }
+                    }
+                  >
+                    {isDone ? "✓" : i + 1}
+                  </button>
+                  {!last && (
+                    <span className="my-1 w-0.5 flex-1 rounded-full transition-colors" style={{ background: isDone ? "var(--d-instant)" : "var(--line)", minHeight: 16 }} />
+                  )}
+                </div>
+                {/* content */}
+                <div className={`min-w-0 ${last ? "pb-3" : "pb-5"}`}>
+                  <button type="button" onClick={() => setOpen(isOpen ? "" : x.id)} aria-expanded={isOpen} className="block w-full text-left">
+                    <span className={`block text-[16px] leading-7 ${isNext ? "font-medium" : ""} ${isDone ? "text-ink-3 line-through decoration-1" : ""}`}>{x.title}</span>
+                    <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px]">
+                      <span className="label !text-[10px]" style={{ color: x.actor === "you" ? "var(--ink-2)" : c }}>
+                        {x.id === prepId ? "Before you start" : ACTOR_LABEL[x.actor]}
+                      </span>
+                      {x.meta && <span className="text-ink-3">· {x.meta}</span>}
+                    </span>
+                  </button>
+                  {isOpen && (
+                    <div className="rise mt-3">
+                      {body(x.id)}
+                      {!live && (
+                        <button
+                          type="button"
+                          onClick={() => toggle(x.id)}
+                          className={`label mt-3 inline-flex h-9 items-center px-3.5 !text-[11px] transition-colors ${isDone ? "bg-card text-ink-2" : "bg-ink text-bg hover:opacity-90"}`}
+                        >
+                          {isDone ? "Mark not done" : "Mark done"}
+                        </button>
                       )}
                     </div>
-                  </details>
-                </li>
-              ))}
-            </ul>
-          </PathItem>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+          {live && items.length > 0 && (
+            <li className="grid grid-cols-[28px_minmax(0,1fr)] gap-x-3.5 pb-3">
+              <span className="shimmer h-7 w-7 rounded-full" />
+              <Skeleton bare />
+            </li>
+          )}
+        </ol>
+        {!live && items.length > 0 && doneCount === items.length && (
+          <p className="rise pb-3 text-[14px]" style={{ color: "var(--d-instant)" }}>
+            All done. Your users can now click Connect {g.name}.
+          </p>
         )}
-        {r.steps.map((x, i) => (
-          <PathItem
-            key={x.id}
-            n={i + 1 + (r.requirements.length ? 1 : 0)}
-            title={x.title}
-            color={ACTOR_COLOR[x.actor]}
-            pill={<Pill color={ACTOR_COLOR[x.actor]}>{ACTOR_LABEL[x.actor]}</Pill>}
-            duration={x.duration}
-            done={done.includes(x.id)}
-            next={nextId === x.id}
-            open={shown === x.id}
-            onOpen={() => setOpen(shown === x.id ? "" : x.id)}
-            onDone={() => toggle(x.id)}
-          >
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
-            <div className="mt-2">
-              <Cite ids={x.sourceIds} />
-            </div>
-          </PathItem>
-        ))}
-        {live && items.length > 0 && <Skeleton />}
-      </ol>
-      {!live && items.length > 0 && doneCount === items.length && (
-        <p className="px-4 pb-2 pt-3 text-[14px] text-[var(--d-instant)]">All done. Your users can now click Connect {g.name}.</p>
-      )}
+      </div>
     </section>
   );
 }
 
-function PathItem({
-  n,
-  title,
-  pill,
-  duration,
-  color = "var(--ink-3)",
-  done,
-  next,
-  open,
-  onOpen,
-  onDone,
-  children,
-}: {
-  n: number;
-  title: string;
-  pill: React.ReactNode;
-  duration?: string;
-  color?: string;
-  done: boolean;
-  next: boolean;
-  open: boolean;
-  onOpen: () => void;
-  onDone: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <li className={`rounded-xl bg-row transition-shadow ${next ? "shadow-[inset_3px_0_0_var(--accent)]" : ""}`}>
-      <div className="flex items-start gap-3 px-4 py-3">
-        <button
-          type="button"
-          onClick={onDone}
-          aria-pressed={done}
-          aria-label={done ? `Mark "${title}" not done` : `Mark "${title}" done`}
-          className="label mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full !text-[11px] transition-colors"
-          style={done ? { background: "var(--d-instant)", color: "var(--bg)" } : { color, background: `color-mix(in srgb, ${color} 10%, transparent)` }}
-        >
-          {done ? "✓" : n}
-        </button>
-        <div className="min-w-0 flex-1">
-          <button type="button" onClick={onOpen} aria-expanded={open} className="flex min-h-7 w-full flex-wrap items-center gap-2 text-left">
-            {next && <span className="label !text-[11px] text-accent">Next</span>}
-            <span className={`text-[16px] font-medium ${done ? "text-ink-3 line-through" : ""}`}>{title}</span>
-            {pill}
-            {duration && <span className="label ml-auto !text-[11px] text-ink-3">{duration}</span>}
-          </button>
-          {open && <div className="rise">{children}</div>}
-        </div>
-      </div>
-    </li>
-  );
-}
-
-// Every step as one bar segment: colour says who does it, width says how long (log scale, so a
-// 6-week review doesn't flatten the 5-minute steps). Unknown durations are hatched.
-function Journey({ steps, done, onPick }: { steps: Resolved["steps"]; done: string[]; onPick: (id: string) => void }) {
-  const segs = steps.map((x) => {
-    const m = minutes(x.duration);
-    return { x, m, w: Math.log10((m ?? 60 * 24 * 7) + 10) };
-  });
-  const total = segs.reduce((a, b) => a + b.w, 0);
-  return (
-    <div className="px-3.5 pb-3">
-      <div className="flex h-3 gap-0.5 overflow-hidden rounded-full" role="img" aria-label="Time per step">
-        {segs.map(({ x, m, w }) => (
-          <button
-            key={x.id}
-            type="button"
-            title={`${x.title}: ${x.duration}`}
-            onClick={() => onPick(x.id)}
-            className="grow-x h-full transition-opacity hover:opacity-70"
-            style={{
-              width: `${((w / total) * 100).toFixed(2)}%`,
-              ...(m == null
-                ? { backgroundImage: `repeating-linear-gradient(45deg, ${ACTOR_COLOR[x.actor]} 0 4px, transparent 4px 8px)` }
-                : { backgroundColor: ACTOR_COLOR[x.actor] }),
-              opacity: done.includes(x.id) ? 0.35 : 1,
-            }}
-          />
-        ))}
-      </div>
-      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-ink-3">
-        {(["agent", "you", "provider"] as const).map((k) => (
-          <span key={k} className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full" style={{ background: ACTOR_COLOR[k] }} />
-            {k === "provider" ? "Waiting on provider" : ACTOR_LABEL[k]}
-          </span>
-        ))}
-        <span className="ml-auto">Width shows how long each step takes</span>
-      </div>
-    </div>
-  );
-}
-
-const LINK_ICON: Record<string, string> = { register: "＋", console: "⌘", review: "✓", docs: "≡", support: "?", status: "●" };
+const LINK_ICON: Record<string, string> = { register: "+", console: "⌘", review: "✓", docs: "≡", support: "?", status: "•" };
 
 function WhereToGo({ g, live }: { g: Guide; live: boolean }) {
   const [all, setAll] = useState(false);
@@ -542,29 +490,30 @@ function WhereToGo({ g, live }: { g: Guide; live: boolean }) {
   return (
     <section className="rounded-2xl bg-card p-1.5" aria-label="Where to go">
       <h2 className="label px-3.5 pb-3 pt-3 text-ink">Where to go</h2>
-      <div className="rows flex flex-col gap-1">
-        {links.length === 0 && <Skeleton />}
-        {links.map((l) => (
-          <a
-            key={l.url + l.label}
-            href={l.url}
-            target="_blank"
-            rel="noreferrer"
-            className={`group flex items-center gap-3 rounded-xl px-4 py-3 transition-colors ${l.kind === "register" ? "bg-accent text-on-accent" : "bg-row hover:bg-row-hover"}`}
-          >
-            <span
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-full text-[13px]"
-              style={l.kind === "register" ? { background: "color-mix(in srgb, var(--on-accent) 18%, transparent)" } : { background: "var(--card)" }}
-            >
-              {LINK_ICON[l.kind]}
-            </span>
-            <span className="min-w-0 flex-1">
-              <span className="block text-[14px] font-medium">{l.label}</span>
-              {"note" in l && l.note && <span className={`block text-[12px] ${l.kind === "register" ? "opacity-75" : "text-ink-3"}`}>{l.note}</span>}
-            </span>
-            <span className="transition-transform group-hover:translate-x-0.5">↗</span>
-          </a>
-        ))}
+      <div className="rounded-xl bg-row p-1.5">
+        {links.length === 0 && <Skeleton bare tall />}
+        <ul className="rows flex flex-col">
+          {links.map((l) => {
+            const main = l.kind === "register";
+            return (
+              <li key={l.url + l.label}>
+                <a href={l.url} target="_blank" rel="noreferrer" className="group flex items-center gap-3 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-card">
+                  <span
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-lg text-[13px]"
+                    style={main ? { background: "var(--accent)", color: "var(--on-accent)" } : { background: "var(--card)", color: "var(--ink-2)" }}
+                  >
+                    {LINK_ICON[l.kind]}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={`block text-[14px] ${main ? "font-medium text-accent" : ""}`}>{l.label}</span>
+                    {"note" in l && l.note && <span className="block truncate text-[12px] text-ink-3">{l.note}</span>}
+                  </span>
+                  <span className="text-ink-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent">↗</span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
       </div>
       {every.length > 5 && (
         <button type="button" onClick={() => setAll(!all)} className="label px-3.5 py-3 !text-[11px] text-ink-3 hover:text-ink">
@@ -580,26 +529,23 @@ function Stuck({ r, live, Cite }: { r: Resolved; live: boolean; Cite: CiteFn }) 
   return (
     <section className="rounded-2xl bg-card p-1.5" aria-label="If you get stuck">
       <h2 className="label px-3.5 pb-3 pt-3 text-ink">If you get stuck</h2>
-      <div className="rows flex flex-col gap-1">
-        {r.blockers.length === 0 && <Skeleton />}
-        {r.blockers.map((x) => (
-          <details key={x.id} className="group rounded-xl bg-row px-4 py-3">
-            <summary className="flex cursor-pointer list-none items-start gap-2 text-[14px]">
-              <span className="mt-0.5 shrink-0" style={{ color: "var(--d-gated)" }}>
-                !
-              </span>
-              <span className="flex-1">{x.symptom}</span>
-              <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
-            </summary>
-            <p className="mt-2 pl-4 text-[14px] leading-relaxed text-ink-2">
-              <span style={{ color: "var(--d-instant)" }}>Fix: </span>
-              {x.fix}
-            </p>
-            <div className="mt-2 pl-4">
-              <Cite ids={x.sourceIds} />
-            </div>
-          </details>
-        ))}
+      <div className="rounded-xl bg-row p-1.5">
+        {r.blockers.length === 0 && <Skeleton bare tall />}
+        <div className="rows flex flex-col">
+          {r.blockers.map((x) => (
+            <details key={x.id} className="group rounded-lg px-2.5 py-2.5 open:bg-card">
+              <summary className="flex cursor-pointer list-none items-start gap-2.5 text-[14px]">
+                <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--d-hard)" }} />
+                <span className="flex-1">{x.symptom}</span>
+                <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
+              </summary>
+              <p className="mt-2 pl-4 text-[14px] leading-relaxed text-ink-2">{x.fix}</p>
+              <div className="mt-2 pl-4">
+                <Cite ids={x.sourceIds} />
+              </div>
+            </details>
+          ))}
+        </div>
       </div>
     </section>
   );
