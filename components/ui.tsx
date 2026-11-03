@@ -60,30 +60,44 @@ export function Section({
   title,
   count,
   aside,
+  style,
   children,
 }: {
   id: string;
   title: string;
   count?: number;
   aside?: React.ReactNode;
+  style?: React.CSSProperties;
   children: React.ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-24 rounded-2xl bg-card p-1.5">
+    <section id={id} className="scroll-mt-24 rounded-2xl bg-card p-1.5" style={style}>
       <div className="flex flex-wrap items-center gap-3 px-3.5 pb-3 pt-3">
         <h2 className="label text-ink">{title}</h2>
         {count !== undefined && <span className="label text-ink-3">{count}</span>}
         {aside && <div className="ml-auto">{aside}</div>}
       </div>
-      <div className="flex flex-col gap-1">{children}</div>
+      <div className="rows flex flex-col gap-1">{children}</div>
     </section>
   );
 }
 
 export function Row({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`rise rounded-xl bg-row px-4 py-3.5 ${className}`}>{children}</div>;
+  return <div className={`rounded-xl bg-row px-4 py-3.5 ${className}`}>{children}</div>;
 }
 
 export function Empty({ children }: { children: React.ReactNode }) {
   return <div className="rounded-xl bg-row px-4 py-3.5 text-[14px] text-ink-3">{children}</div>;
+}
+
+// Placeholder bars while the live agent is still looking.
+export function Skeleton({ bare = false, tall = false }: { bare?: boolean; tall?: boolean }) {
+  const bars = (
+    <div className="flex flex-col gap-2 py-1" aria-hidden>
+      <div className="shimmer h-3 w-3/5 rounded-full" />
+      <div className="shimmer h-3 w-11/12 rounded-full" />
+      {tall && <div className="shimmer h-3 w-2/5 rounded-full" />}
+    </div>
+  );
+  return bare ? <div className="mt-3">{bars}</div> : <div className="rounded-xl bg-row px-4 py-4">{bars}</div>;
 }
