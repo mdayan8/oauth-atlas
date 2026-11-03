@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import { claimBadge, defaultSituation, resolve, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
 import { ACTOR_LABEL, DIFFICULTY_LABEL, toAgentPrompt, toMarkdown } from "@/lib/share";
+import { DraftButton, Recheck } from "./AgentActions";
 import { DIFF_COLOR, Empty, EvidenceBadge, Meter, Pill, Row, Skeleton } from "./ui";
 
 const PROFILES: [Profile, string][] = [
@@ -210,6 +211,7 @@ function QuickAnswer({ g, r, live, Cite, style }: { g: Guide; r: Resolved; live:
           </span>
           {g.skip.sourceIds.length > 0 && <Cite ids={g.skip.sourceIds} />}
         </div>
+        {!g.generated && !live && <Recheck slug={g.slug} />}
       </div>
     </section>
   );
@@ -301,7 +303,14 @@ function Path({ g, r, live, Cite, style }: { g: Guide; r: Resolved; live: boolea
           <PathItem
             n={1}
             title="Get these ready"
-            pill={<Pill color="var(--ink-3)">{plural(r.requirements.length, "item")}</Pill>}
+            pill={
+              <>
+                <Pill color="var(--ink-3)">{plural(r.requirements.length, "item")}</Pill>
+                {r.requirements.some((x) => x.agentCanDraft) && (
+                  <Pill color="var(--accent)">{r.requirements.filter((x) => x.agentCanDraft).length} the agent can draft</Pill>
+                )}
+              </>
+            }
             done={done.includes(prepId)}
             next={nextId === prepId}
             open={shown === prepId}
@@ -320,6 +329,11 @@ function Path({ g, r, live, Cite, style }: { g: Guide; r: Resolved; live: boolea
                     <p className="mt-1 pl-4 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
                     <div className="mt-1.5 pl-4">
                       <Cite ids={x.sourceIds} />
+                      {x.agentCanDraft && !live && (
+                        <div>
+                          <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} />
+                        </div>
+                      )}
                     </div>
                   </details>
                 </li>

@@ -165,6 +165,17 @@ body {
   animation-delay: 0ms;
 }
 
+@keyframes grow {
+  from {
+    transform: translateY(-50%) scaleX(0);
+  }
+}
+.grow-bar {
+  transform-origin: left center;
+  animation: grow 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  transition: height 150ms;
+}
+
 @keyframes shimmer {
   from {
     background-position: 200% 0;
@@ -184,7 +195,8 @@ body {
   .pulse-dot,
   .build > *,
   .rows > *,
-  .shimmer {
+  .shimmer,
+  .grow-bar {
     animation: none;
   }
 }

@@ -1,10 +1,12 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { convertToModelMessages, isStepCount, streamText, type UIMessage } from "ai";
 import { makeTools, MODEL, STEP_LIMIT, SYSTEM } from "@/lib/agent";
+import { fromThisSite } from "@/lib/guard";
 
 export const maxDuration = 300;
 
 export async function POST(req: Request) {
+  if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: "missing_key" }, { status: 503 });
   }

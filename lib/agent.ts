@@ -1,6 +1,7 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { tool } from "ai";
 import { z } from "zod";
+import { readComposio, readMetadata, safeOrigin } from "./probes";
 import { Blocker, Limit, Need, Requirement, Scope, SkipPath, Source, Step, Verdict } from "./schema";
 
 export const MODEL = "claude-sonnet-5-5";
@@ -27,24 +28,6 @@ Rules:
 const ok = (extra: Record<string, unknown> = {}) => ({ ok: true, ...extra });
 const unsourced = (ids?: string[]) =>
   ids?.length ? ok() : ok({ warning: "No sourceIds: this shows as Unverified. Cite a source to upgrade it." });
-
-// Only public https hosts. Blocks localhost and raw IPs so the probe cannot be pointed inward.
-function safeOrigin(input: string): string | null {
-  try {
-    const u = new URL(input.startsWith("http") ? input : `https://${input}`);
-    if (u.protocol !== "https:") return null;
-    const h = u.hostname;
-    if (h === "localhost" || h.endsWith(".local") || h.endsWith(".internal") || /^[\d.]+$/.test(h) || h.includes(":")) return null;
-    return u.origin;
-  } catch {
-    return null;
-  }
-}
-
-async function getText(url: string) {
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000), redirect: "follow", headers: { "user-agent": "OAuthAtlas/1.0" } });
-  return { status: res.status, text: res.ok ? await res.text() : "" };
-}
 
 export function makeTools() {
   // URLs our own probes actually fetched in this run. "tested" badges must point at one of these.
@@ -95,19 +78,9 @@ export function makeTools() {
       description: "Check Composio's toolkit docs for whether Composio-managed OAuth exists for this app.",
       inputSchema: z.object({ slug: z.string().describe("e.g. 'github', 'googlecalendar'") }),
       execute: async ({ slug }) => {
-        const clean = slug.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-        const url = `https://docs.composio.dev/toolkits/${clean}.md`;
-        try {
-          const { status, text } = await getText(url);
-          probed.add(url);
-          if (status !== 200) return { url, found: false, status };
-          const managed = text.match(/Composio-managed OAuth available\?\*\*\s*(\w+)/i)?.[1] ?? "unknown";
-          const auth = text.match(/\*\*Auth:\*\*\s*([^\n]+)/)?.[1]?.trim();
-          const faq = text.split("## Frequently Asked Questions")[1]?.split("## Tools")[0]?.trim().slice(0, 1200);
-          return { url, found: true, managed, auth, faq };
-        } catch (e) {
-          return { url, found: false, error: String(e) };
-        }
+        const r = await readComposio(slug);
+        probed.add(r.url);
+        return r;
       },
     }),
     probe_oauth_metadata: tool({
@@ -118,30 +91,8 @@ export function makeTools() {
         const o = safeOrigin(origin);
         if (!o) return { error: "Only public https origins can be probed." };
         const paths = ["/.well-known/openid-configuration", "/.well-known/oauth-authorization-server", "/.well-known/oauth-protected-resource"];
-        const results = await Promise.all(
-          paths.map(async (p) => {
-            const url = o + p;
-            try {
-              const { status, text } = await getText(url);
-              probed.add(url);
-              if (status !== 200) return { url, status };
-              const j = JSON.parse(text);
-              return {
-                url,
-                status,
-                issuer: j.issuer,
-                authorization_endpoint: j.authorization_endpoint,
-                token_endpoint: j.token_endpoint,
-                registration_endpoint: j.registration_endpoint ?? null,
-                authorization_servers: j.authorization_servers,
-                code_challenge_methods_supported: j.code_challenge_methods_supported,
-                scopes_supported: Array.isArray(j.scopes_supported) ? j.scopes_supported.slice(0, 40) : undefined,
-              };
-            } catch (e) {
-              return { url, error: String(e).slice(0, 120) };
-            }
-          }),
-        );
+        const results = await Promise.all(paths.map((p) => readMetadata(o + p)));
+        results.forEach((x) => probed.add(x.url));
         return { origin: o, results };
       },
     }),

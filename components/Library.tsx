@@ -6,7 +6,7 @@ import { useState } from "react";
 import type { Difficulty } from "@/lib/schema";
 import { difficultyIndex } from "@/lib/situation";
 import AppSearch from "./AppSearch";
-import { DifficultyPill, Pill } from "./ui";
+import { DIFF_COLOR, DifficultyPill, Pill } from "./ui";
 
 export type Card = {
   slug: string;
@@ -23,7 +23,7 @@ export type Card = {
 
 const TRY = ["Linear", "Salesforce", "Zoom", "HubSpot"];
 
-export default function Library({ cards }: { cards: Card[] }) {
+export default function Library({ cards, hero }: { cards: Card[]; hero: React.ReactNode }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const needle = q.trim().toLowerCase();
@@ -36,8 +36,11 @@ export default function Library({ cards }: { cards: Card[] }) {
 
   return (
     <>
-      <div className="mt-10 max-w-2xl">
-        <AppSearch onSubmit={go} onChange={setQ} />
+      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+        <div>
+          {hero}
+          <div className="mt-10 max-w-2xl">
+            <AppSearch onSubmit={go} onChange={setQ} />
         <p className="mt-4 flex flex-wrap items-center gap-2 text-[14px] text-ink-3">
           Not in the library? The agent investigates it live. Try
           {TRY.map((t) => (
@@ -45,7 +48,10 @@ export default function Library({ cards }: { cards: Card[] }) {
               {t}
             </button>
           ))}
-        </p>
+            </p>
+          </div>
+        </div>
+        <Spectrum cards={cards} />
       </div>
 
       <section id="library" className="mt-20 scroll-mt-24">
@@ -98,5 +104,48 @@ export default function Library({ cards }: { cards: Card[] }) {
         </div>
       </section>
     </>
+  );
+}
+
+// The core insight in one picture: the same app can be easy or gated depending on who you are and what you ask for.
+function Spectrum({ cards }: { cards: Card[] }) {
+  const cols = ["Instant", "Easy", "Moderate", "Hard", "Gated"];
+  return (
+    <div className="rounded-2xl bg-card p-1.5">
+      <div className="rounded-xl bg-row p-5">
+        <p className="label text-ink">Same app, different answer</p>
+        <p className="mt-1 text-[13px] text-ink-3">Each bar runs from the easiest situation to the hardest.</p>
+        <div className="mt-5 grid grid-cols-[72px_minmax(0,1fr)] gap-x-3 gap-y-2.5">
+          <span />
+          <div className="grid grid-cols-5">
+            {cols.map((c) => (
+              <span key={c} className="label truncate text-center !text-[9px] text-ink-3">
+                {c}
+              </span>
+            ))}
+          </div>
+          {cards.map((c, i) => {
+            const a = difficultyIndex(c.min);
+            const b = difficultyIndex(c.max);
+            return (
+              <Link key={c.slug} href={`/guide/${c.slug}`} className="group contents">
+                <span className="truncate text-[13px] leading-6 group-hover:text-accent">{c.name}</span>
+                <span className="relative h-6 rounded-full bg-[repeating-linear-gradient(90deg,var(--card)_0_20%,transparent_20%_40%)]">
+                  <span
+                    className="grow-bar absolute top-1/2 h-2.5 -translate-y-1/2 rounded-full group-hover:h-3.5"
+                    style={{
+                      left: `${a * 20 + 4}%`,
+                      width: `${(b - a) * 20 + 12}%`,
+                      background: `linear-gradient(90deg, ${DIFF_COLOR[c.min]}, ${DIFF_COLOR[c.max]})`,
+                      animationDelay: `${200 + i * 90}ms`,
+                    }}
+                  />
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 }

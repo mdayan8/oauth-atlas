@@ -13,6 +13,14 @@ The brief asks that a developer knows where to start, what to do next, the time 
 3. **Your path**: "Get these ready" first, then every step in order, tagged **Agent can do / You do / Waiting on provider** with a duration. Only the next step is open; tick a step and the next one opens. Progress is saved in your browser.
 4. **Details**, in tabs so the page stays short: If you get stuck (what you see, what to do), Limits and gotchas, Permissions (with review tiers), and Sources.
 
+**The agent does its part, not just the research.** The brief asks to "use agents to investigate and attempt as much of the setup process as practical". So:
+
+- **Draft it for me**: every requirement tagged "Agent can draft" (privacy policy, scope justification, demo video script) has a button. Claude writes the draft from the provider's stated requirements and the scopes you picked, with [placeholders] for anything about your company it can't know (`app/api/draft/route.ts`).
+- **Re-check live**: one click re-fetches every agent-tested claim in a guide (Composio's managed status, the provider's OAuth discovery documents, the MCP registration endpoint) and shows "4 of 4 still true as of just now", or what changed. No API key needed (`app/api/recheck/route.ts`).
+- **Copy prompt for your agent** hands the rest (the OAuth code, token refresh) to your coding agent.
+
+The home page shows the core insight as a chart: each app's bar runs from its easiest situation to its hardest (Spotify goes from Easy to Gated).
+
 Every claim shows a badge (Tested by agent, Official docs, Third-party, Unverified) and links to its numbered sources, each with a last-checked date, plus a list of what we could not verify. Share with a permalink (`/guide/<slug>`), Copy Markdown, or Copy prompt for your coding agent (it splits the agent's work from yours and tells it to re-check the sources).
 
 The library holds six guides chosen to cover different shapes: GitHub (easy, but org owners may need to approve), Notion (easy, plus an MCP server with auto-registration), Slack (easy in your own workspace, hard on the Marketplace), Gmail (scope-dependent: send is a sensitive scope, read is restricted and needs a yearly security assessment), Spotify (fine for 5 users, gated past that unless you are an organisation with 250k+ monthly users), and Shopify (custom app vs App Store, with an irreversible distribution choice).
@@ -54,5 +62,6 @@ The library works with no keys. For the live agent, set `ANTHROPIC_API_KEY` in t
 - CASA assessment cost and duration come only from third-party labs.
 - Composio-managed status is read from Composio's public toolkit docs, not the API, so it needs no key but depends on those pages staying in the same format.
 - Live guides are not stored; the share link carries the whole guide.
+- The routes that spend the API key (`/api/generate`, `/api/draft`) only answer requests from this site's own pages, but there is no per-user rate limit yet.
 
 No credentials are in this repo. The only secret is `ANTHROPIC_API_KEY`, read from the environment.
