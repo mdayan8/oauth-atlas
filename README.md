@@ -6,12 +6,18 @@ Built for the Composio APM Integrations take-home.
 
 ## What a guide answers
 
-The brief asks that a developer knows where to start, what to do next, the time and effort, and how to proceed when blocked. A guide page has four parts, top to bottom:
+The brief asks that a developer knows where to start, what to do next, the time and effort, and how to proceed when blocked. A guide page, top to bottom:
 
-1. **Quick answer**: the brief's four questions in plain words. How hard (Instant, Easy, Moderate, Hard or Gated), how long (your hands-on time and the wait on the provider, shown apart), what you need, and who does what (steps an agent can do, steps you do, steps spent waiting). Under it, the quickest path: is the app already Composio-managed, or does its MCP server sign agents up automatically (dynamic client registration)?
-2. **Your situation**: who you are (individual, startup, company), who will connect (just you and testers, or real users) and what your agent needs (for Gmail: send, read, modify, labels). Changing these re-shapes the verdict, requirements, steps and limits instantly.
-3. **Your path**: "Get these ready" first, then every step in order, tagged **Agent can do / You do / Waiting on provider** with a duration. Only the next step is open; tick a step and the next one opens. Progress is saved in your browser.
-4. **Details**, in tabs so the page stays short: If you get stuck (what you see, what to do), Limits and gotchas, Permissions (with review tiers), and Sources.
+1. **Quick answer**: the brief's four questions in plain words. How hard (Instant, Easy, Moderate, Hard or Gated), how long (your hands-on time and the wait on the provider, shown apart), what you need, and who does what. Under it, the quickest path: is the app already Composio-managed, or does its MCP server sign agents up automatically (dynamic client registration)?
+2. **Choose your path**: the real routes through setup side by side, each with its own verdict and time (for Gmail: testing with up to 100 people, send email for real users, read inboxes for real users), plus a "skip it" card when Composio already manages the app. Picking one re-shapes the whole guide. Fine-tune who you are and what your agent needs underneath.
+3. **Your path**: a journey bar (each step coloured by who does it, sized by how long it takes), then "Get these ready" and every step in order. Only the next step is open; tick it and the next one opens. Progress is saved in your browser.
+4. **Where to go**: the official pages you will need, checked by hand: create the app, manage it, submit for review, get support, status. Beside it, **If you get stuck**: what you see and how to fix it.
+5. **Ask about this app**: generative UI. Ask anything ("What if I only send email?") and Claude answers by choosing components: a verdict for your case, a side-by-side comparison, steps tagged by who does them, a warning, links, and follow-up questions you can tap, which become the next turn. Facts come from the guide and are cited; anything else is said to be uncovered (`app/api/ask/route.ts`, `components/AskPanel.tsx`).
+6. **Before you launch**: caps, token expiry and the permissions table with review tiers. **Sources** are collapsed at the bottom with a count per evidence badge.
+
+Every claim shows a badge (Tested by agent, Official docs, Third-party, Unverified) and links to its numbered source, each with a last-checked date, plus a list of what we could not verify. Share with a permalink (`/guide/<slug>`), Copy Markdown, or Copy prompt for your coding agent.
+
+Why this counts as generative UI: following the pattern used by the AI SDK, assistant-ui and CopilotKit, the model never writes free HTML. It picks components from a fixed catalog through typed tool calls, the page renders each one as it streams, and actions inside a component (a tapped follow-up) go back to the model. The live agent builds whole guides the same way, and the Ask panel builds answers that way.
 
 **The agent does its part, not just the research.** The brief asks to "use agents to investigate and attempt as much of the setup process as practical". So:
 

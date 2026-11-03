@@ -13,6 +13,8 @@ const empty = (q: string): Guide => ({
   summary: "",
   needs: [],
   defaultNeeds: [],
+  paths: [],
+  links: [],
   verdicts: [],
   skip: { composioManaged: "unknown", mcpDcr: "unknown", note: "", whyOwnApp: [], sourceIds: [] },
   requirements: [],
@@ -115,6 +117,12 @@ export function fold(parts: Part[], query: string) {
           g.sources.push({ id: s(i.id), title: s(i.title, i.url), url: s(i.url), badge, checked: p.output?.checked ?? g.checked, note: s(i.note) || undefined });
           log.push({ id, kind: "write", done, text: `Cited ${host(i.url)}` });
         }
+        break;
+      case "add_link":
+        if (i.url && i.label) g.links.push({ kind: ["register", "console", "review", "docs", "support", "status"].includes(i.kind) ? i.kind : "docs", label: s(i.label), url: s(i.url), note: s(i.note) || undefined });
+        break;
+      case "add_path_option":
+        if (i.label && i.set && typeof i.set === "object") g.paths.push({ id, label: s(i.label), detail: s(i.detail), set: i.set });
         break;
       case "flag_unverified":
         if (i.claim) g.unverified.push(s(i.claim));

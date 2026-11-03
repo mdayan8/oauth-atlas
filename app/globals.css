@@ -176,6 +176,16 @@ body {
   transition: height 150ms;
 }
 
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
 @keyframes shimmer {
   from {
     background-position: 200% 0;
@@ -196,7 +206,8 @@ body {
   .build > *,
   .rows > *,
   .shimmer,
-  .grow-bar {
+  .grow-bar,
+  .grow-x {
     animation: none;
   }
 }

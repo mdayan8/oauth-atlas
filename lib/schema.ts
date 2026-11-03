@@ -87,6 +87,28 @@ export const Source = z.object({
 
 export const Need = z.object({ id: z.string(), label: z.string() });
 
+export const LINK_KINDS = ["register", "console", "review", "docs", "support", "status"] as const;
+export const Link = z.object({
+  kind: z.enum(LINK_KINDS),
+  label: z.string().describe("Short, verb-first, e.g. 'Create an OAuth app'"),
+  url: z.string(),
+  note: z.string().optional(),
+});
+
+// A real-world route through the setup, e.g. "Send email for real users". Picking it sets the reader's situation.
+export const PathOption = z.object({
+  id: z.string(),
+  label: z.string(),
+  detail: z.string().describe("One short line on who this is for"),
+  set: z
+    .object({
+      profile: z.enum(PROFILES).optional(),
+      audience: z.enum(AUDIENCES).optional(),
+      needs: z.array(z.string()).optional(),
+    })
+    .strict(),
+});
+
 export const Guide = z.object({
   slug: z.string(),
   name: z.string(),
@@ -95,6 +117,8 @@ export const Guide = z.object({
   summary: z.string(),
   needs: z.array(Need).default([]),
   defaultNeeds: z.array(z.string()).default([]),
+  paths: z.array(PathOption).default([]),
+  links: z.array(Link).default([]),
   verdicts: z.array(Verdict).min(1),
   skip: SkipPath,
   requirements: z.array(Requirement).default([]),
@@ -114,3 +138,5 @@ export type WhenT = z.infer<typeof When>;
 export type Source = z.infer<typeof Source>;
 export type Difficulty = z.infer<typeof Difficulty>;
 export type BadgeT = z.infer<typeof Badge>;
+export type PathOptionT = z.infer<typeof PathOption>;
+export type LinkT = z.infer<typeof Link>;

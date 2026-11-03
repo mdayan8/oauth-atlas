@@ -2,7 +2,7 @@ import { anthropic } from "@ai-sdk/anthropic";
 import { tool } from "ai";
 import { z } from "zod";
 import { readComposio, readMetadata, safeOrigin } from "./probes";
-import { Blocker, Limit, Need, Requirement, Scope, SkipPath, Source, Step, Verdict } from "./schema";
+import { Blocker, Limit, Link, Need, PathOption, Requirement, Scope, SkipPath, Source, Step, Verdict } from "./schema";
 
 export const MODEL = "claude-sonnet-5-5";
 import { STEP_LIMIT } from "./limits";
@@ -15,7 +15,8 @@ Work in this order, using parallel tool calls whenever calls do not depend on ea
 2. check_composio with the Composio toolkit slug (lowercase app name, no spaces) and probe_oauth_metadata on the provider's auth origin and, if one exists, its hosted MCP server origin. Then set_skip_path.
 3. web_search, then web_fetch the provider's OWN docs: app registration, scopes, app review or verification, quotas and user caps in development mode, distribution or marketplace rules.
 4. As you learn, call cite_source BEFORE any claim that uses it, then add_requirement, add_step, add_scope, add_limit, add_blocker with sourceIds. Call set_verdict as soon as you have a first read and call it again (same "when") to correct it; add harder verdicts with a "when" for situations that are harder (e.g. a restricted scope, a public launch, an individual developer).
-5. flag_unverified for anything important you could not confirm.
+5. add_path_option for the 2 or 3 real routes a developer might take (easiest first), and add_link for the official pages they will need: register the app, the console, the review form or guide, support.
+6. flag_unverified for anything important you could not confirm.
 
 Rules:
 - Never invent numbers, fees or review times. If no source states it, say "Not published" or flag it as unverified.
@@ -68,6 +69,16 @@ export function makeTools() {
         const badge = src.badge === "tested" && !wasProbed ? "unverified" : src.badge;
         return ok({ badge, checked: today, downgraded: badge !== src.badge, valid: !!origin });
       },
+    }),
+    add_link: tool({
+      description: "An official page the developer will need: where to register the app, manage it, submit for review, read the OAuth docs, get support, or check status. Only URLs you saw.",
+      inputSchema: Link,
+      execute: async () => ok(),
+    }),
+    add_path_option: tool({
+      description: "A real-world route through setup (e.g. 'Send email for real users'). `set` picks the situation it stands for. Add 2 or 3, easiest first.",
+      inputSchema: PathOption,
+      execute: async () => ok(),
     }),
     flag_unverified: tool({
       description: "Something important you could not confirm.",

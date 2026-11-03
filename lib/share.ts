@@ -26,6 +26,11 @@ export function toMarkdown(g: Guide, r: Resolved, s: Situation, url?: string) {
     out.push("", `${v.why}${cite(v.sourceIds, g)}`, "");
   }
   out.push("## Can you skip it?", "", `- Composio-managed auth: ${g.skip.composioManaged}`, `- MCP with dynamic client registration: ${g.skip.mcpDcr}${g.skip.mcpServer ? ` (${g.skip.mcpServer})` : ""}`, `- ${g.skip.note}`, "");
+  if (g.links.length) {
+    out.push("## Where to go", "");
+    for (const l of g.links) out.push(`- [${l.label}](${l.url})${l.note ? ` (${l.note})` : ""}`);
+    out.push("");
+  }
   if (r.requirements.length) {
     out.push("## Requirements", "");
     for (const x of r.requirements) out.push(`- [ ] **${x.label}**: ${x.detail}${x.agentCanDraft ? " _(an agent can draft this)_" : ""}${cite(x.sourceIds, g)}`);
@@ -79,6 +84,7 @@ export function toAgentPrompt(g: Guide, r: Resolved, s: Situation) {
     "Gotchas to design around:",
     ...r.limits.map((x) => `- ${x.title}: ${x.detail}`),
     "",
+    ...(g.links.length ? ["Official pages for this provider:", ...g.links.map((l) => `- ${l.label}: ${l.url}`), ""] : []),
     "Check anything you rely on against these sources first, they may have changed:",
     ...g.sources.map((x) => `- ${x.url}`),
     "",
