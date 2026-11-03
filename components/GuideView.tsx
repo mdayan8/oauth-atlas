@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Guide, PathOptionT } from "@/lib/schema";
+import type { Guide, LinkT, PathOptionT } from "@/lib/schema";
 import AskPanel from "./AskPanel";
 import { claimBadge, defaultSituation, pickVerdict, resolve, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
 import { ACTOR_LABEL, DIFFICULTY_LABEL, toAgentPrompt, toMarkdown } from "@/lib/share";
-import { DraftButton, Recheck } from "./AgentActions";
+import { CopyButton, DraftButton, Recheck } from "./AgentActions";
 import { DIFF_COLOR, EvidenceBadge, Meter, Pill, Row, Skeleton } from "./ui";
 
 const PROFILES: [Profile, string][] = [
@@ -371,7 +371,11 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
                 <p className="mt-1.5 pl-4 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
                 <div className="mt-2 pl-4">
                   <Cite ids={x.sourceIds} />
-                  {x.agentCanDraft && !live && <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} />}
+                  {x.agentCanDraft && !live && (
+                    <div className="mt-2.5">
+                      <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} />
+                    </div>
+                  )}
                 </div>
               </details>
             </li>
@@ -379,12 +383,33 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
         </ul>
       );
     const x = r.steps.find((s) => s.id === id)!;
+    const link = linkFor(g, `${x.title} ${x.detail}`, x.actor);
+    const support = g.links.find((l) => l.kind === "support");
     return (
       <>
         <p className="text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
         <div className="mt-2">
           <Cite ids={x.sourceIds} />
         </div>
+        {x.actor === "provider" && (
+          <p className="mt-3 rounded-lg bg-card px-3 py-2.5 text-[13px] text-ink-2">
+            Expected wait: <span className="text-ink">{x.duration || "not published"}</span>. Nothing to do but answer the reviewer quickly
+            if they email you.
+          </p>
+        )}
+        {!live && (
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {x.actor === "agent" && (
+              <>
+                <DraftButton g={g} stepId={x.id} scopes={r.scopes.map((sc) => sc.name)} label="Let the agent do it" />
+                <CopyButton label="Copy prompt" text={stepPrompt(g, x.title, x.detail)} />
+              </>
+            )}
+            {x.actor !== "agent" && link && <LinkButton l={link} main={x.actor === "you"} />}
+            {x.actor === "provider" && support && support.url !== link?.url && <LinkButton l={support} />}
+            <MarkDone done={done.includes(x.id)} onClick={() => toggle(x.id)} />
+          </div>
+        )}
       </>
     );
   };
@@ -436,26 +461,36 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
                 </div>
                 {/* content */}
                 <div className={`min-w-0 ${last ? "pb-3" : "pb-5"}`}>
-                  <button type="button" onClick={() => setOpen(isOpen ? "" : x.id)} aria-expanded={isOpen} className="block w-full text-left">
-                    <span className={`block text-[16px] leading-7 ${isNext ? "font-medium" : ""} ${isDone ? "text-ink-3 line-through decoration-1" : ""}`}>{x.title}</span>
-                    <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px]">
-                      <span className="label !text-[10px]" style={{ color: x.actor === "you" ? "var(--ink-2)" : c }}>
-                        {x.id === prepId ? "Before you start" : ACTOR_LABEL[x.actor]}
+                  <button
+                    type="button"
+                    onClick={() => setOpen(isOpen ? "" : x.id)}
+                    aria-expanded={isOpen}
+                    className="group -mx-2 flex w-[calc(100%+16px)] items-start gap-3 rounded-lg px-2 py-0.5 text-left transition-colors hover:bg-card"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className={`block text-[16px] leading-7 ${isNext ? "font-medium" : ""} ${isDone ? "text-ink-3 line-through decoration-1" : ""}`}>{x.title}</span>
+                      <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px]">
+                        <span className="label !text-[10px]" style={{ color: x.actor === "you" ? "var(--ink-2)" : c }}>
+                          {x.id === prepId ? "Before you start" : ACTOR_LABEL[x.actor]}
+                        </span>
+                        {x.meta && <span className="text-ink-3">· {x.meta}</span>}
                       </span>
-                      {x.meta && <span className="text-ink-3">· {x.meta}</span>}
+                    </span>
+                    <span
+                      aria-hidden
+                      className="mt-1 grid h-6 w-6 shrink-0 place-items-center rounded-full text-[14px] text-ink-3 transition-transform duration-200 group-hover:bg-row group-hover:text-ink"
+                      style={{ transform: isOpen ? "rotate(90deg)" : "none" }}
+                    >
+                      ›
                     </span>
                   </button>
                   {isOpen && (
                     <div className="rise mt-3">
                       {body(x.id)}
-                      {!live && (
-                        <button
-                          type="button"
-                          onClick={() => toggle(x.id)}
-                          className={`label mt-3 inline-flex h-9 items-center px-3.5 !text-[11px] transition-colors ${isDone ? "bg-card text-ink-2" : "bg-ink text-bg hover:opacity-90"}`}
-                        >
-                          {isDone ? "Mark not done" : "Mark done"}
-                        </button>
+                      {!live && x.id === prepId && (
+                        <div className="mt-3">
+                          <MarkDone done={isDone} onClick={() => toggle(x.id)} label="I have these" />
+                        </div>
                       )}
                     </div>
                   )}
@@ -479,6 +514,57 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
     </section>
   );
 }
+
+function MarkDone({ done, onClick, label = "Mark done" }: { done: boolean; onClick: () => void; label?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="label inline-flex h-9 items-center gap-1.5 bg-card px-3.5 !text-[11px] text-ink transition-colors hover:text-[var(--d-instant)]"
+    >
+      {done ? (
+        "Mark not done"
+      ) : (
+        <>
+          <span style={{ color: "var(--d-instant)" }}>✓</span> {label}
+        </>
+      )}
+    </button>
+  );
+}
+
+function LinkButton({ l, main = false }: { l: LinkT; main?: boolean }) {
+  return (
+    <a
+      href={l.url}
+      target="_blank"
+      rel="noreferrer"
+      className={`label inline-flex h-9 items-center gap-2 px-3.5 !text-[11px] transition-colors ${main ? "bg-accent text-on-accent hover:opacity-90" : "bg-card text-ink hover:text-accent"}`}
+    >
+      {l.label} ↗
+    </a>
+  );
+}
+
+// The official page that fits a step, picked from the guide's verified links by what the step is about.
+function linkFor(g: Guide, text: string, actor: "agent" | "you" | "provider"): LinkT | undefined {
+  const t = text.toLowerCase();
+  const by = (...kinds: LinkT["kind"][]) => kinds.map((k) => g.links.find((l) => l.kind === k)).find(Boolean);
+  if (actor === "provider" || /submit|review|verif|publish|listing|marketplace|quota/.test(t)) return by("review", "console");
+  if (/create|register|new app|set up|client id|credential|consent screen|dashboard|enable/.test(t)) return by("register", "console");
+  if (/install|test|manage|settings|store|distribution|redirect/.test(t)) return by("console", "register");
+  return by("docs");
+}
+
+const stepPrompt = (g: Guide, title: string, detail: string) =>
+  [
+    `Do this step for my ${g.name} OAuth integration: ${title}.`,
+    detail,
+    "Read the client id and secret from environment variables, never hard-code them.",
+    "Check what you rely on against these sources first:",
+    ...g.sources.filter((s) => s.badge !== "unverified").slice(0, 6).map((s) => `- ${s.url}`),
+    "If a source does not say it, tell me it is unverified instead of guessing.",
+  ].join("\n");
 
 const LINK_ICON: Record<string, string> = { register: "+", console: "⌘", review: "✓", docs: "≡", support: "?", status: "•" };
 

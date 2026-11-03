@@ -10,7 +10,10 @@ The brief asks that a developer knows where to start, what to do next, the time 
 
 1. **Quick answer**: the brief's four questions in plain words. How hard (Instant, Easy, Moderate, Hard or Gated), how long (your hands-on time and the wait on the provider, shown apart), what you need, and who does what. Under it, the quickest path: is the app already Composio-managed, or does its MCP server sign agents up automatically (dynamic client registration)?
 2. **Choose your path**: the real routes through setup side by side, each with its own verdict and time (for Gmail: testing with up to 100 people, send email for real users, read inboxes for real users), plus a "skip it" card when Composio already manages the app. Picking one re-shapes the whole guide. Fine-tune who you are and what your agent needs underneath.
-3. **Your path**: a vertical timeline. "Get these ready" first, then every step in order, each node coloured by who does it (agent, you, waiting on the provider) with its duration. Only the next step is open; press Mark done and the next one opens. Progress is saved in your browser.
+3. **Your path**: a vertical timeline. "Get these ready" first, then every step in order, each node coloured by who does it (agent, you, waiting on the provider) with its duration. Only the next step is open (a chevron shows open or closed); press Mark done and the next one opens. Progress is saved in your browser. Every step carries a built-in action for who does it:
+   - **Agent can do**: "Let the agent do it" writes the code or text right there (TypeScript, secrets from environment variables), and "Copy prompt" hands the step to your coding agent with its sources.
+   - **You do**: a button to the exact official page for that step, picked from the guide's verified links (for example "Create an OAuth app").
+   - **Waiting on provider**: the expected wait, where to check status, and where to ask for help.
 4. **Where to go**: the official pages you will need, checked by hand: create the app, manage it, submit for review, get support, status. Beside it, **If you get stuck**: what you see and how to fix it.
 5. **Ask about this app**: generative UI. Ask anything ("What if I only send email?") and Claude answers by choosing components: a verdict for your case, a side-by-side comparison, steps tagged by who does them, a warning, links, and follow-up questions you can tap, which become the next turn. Facts come from the guide and are cited; anything else is said to be uncovered (`app/api/ask/route.ts`, `components/AskPanel.tsx`).
 6. **Before you launch**: caps, token expiry and the permissions table with review tiers. **Sources** are collapsed at the bottom with a count per evidence badge.
@@ -21,7 +24,7 @@ Why this counts as generative UI: following the pattern used by the AI SDK, assi
 
 **The agent does its part, not just the research.** The brief asks to "use agents to investigate and attempt as much of the setup process as practical". So:
 
-- **Draft it for me**: every requirement tagged "Agent can draft" (privacy policy, scope justification, demo video script) has a button. Claude writes the draft from the provider's stated requirements and the scopes you picked, with [placeholders] for anything about your company it can't know (`app/api/draft/route.ts`).
+- **Draft it for me / Let the agent do it**: every requirement tagged "Agent can draft" and every step tagged "Agent can do" (privacy policy, scope justification, demo video script) has a button. Claude writes the draft from the provider's stated requirements and the scopes you picked, with [placeholders] for anything about your company it can't know (`app/api/draft/route.ts`).
 - **Re-check live**: one click re-fetches every agent-tested claim in a guide (Composio's managed status, the provider's OAuth discovery documents, the MCP registration endpoint) and shows "4 of 4 still true as of just now", or what changed. No API key needed (`app/api/recheck/route.ts`).
 - **Copy prompt for your agent** hands the rest (the OAuth code, token refresh) to your coding agent.
 

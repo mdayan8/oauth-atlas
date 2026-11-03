@@ -4,8 +4,20 @@ import { useState } from "react";
 import type { Guide } from "@/lib/schema";
 import { Pill } from "./ui";
 
-// The agent does an "Agent can draft" item for you, streamed in as it writes.
-export function DraftButton({ g, requirementId, scopes }: { g: Guide; requirementId: string; scopes: string[] }) {
+// The agent does an "Agent can draft" requirement or an "Agent can do" step for you, streamed in as it writes.
+export function DraftButton({
+  g,
+  requirementId,
+  stepId,
+  scopes,
+  label = "Draft it for me",
+}: {
+  g: Guide;
+  requirementId?: string;
+  stepId?: string;
+  scopes: string[];
+  label?: string;
+}) {
   const [text, setText] = useState("");
   const [state, setState] = useState<"idle" | "writing" | "done" | "error">("idle");
   const [copied, setCopied] = useState(false);
@@ -17,7 +29,7 @@ export function DraftButton({ g, requirementId, scopes }: { g: Guide; requiremen
       const res = await fetch("/api/draft", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...(g.generated ? { guide: g } : { slug: g.slug }), requirementId, scopes }),
+        body: JSON.stringify({ ...(g.generated ? { guide: g } : { slug: g.slug }), requirementId, stepId, scopes }),
       });
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
@@ -40,13 +52,13 @@ export function DraftButton({ g, requirementId, scopes }: { g: Guide; requiremen
 
   if (state === "idle")
     return (
-      <button onClick={run} className="label mt-2 inline-flex h-9 items-center gap-2 bg-accent px-3 !text-[11px] text-on-accent hover:opacity-90">
-        <Sparkle /> Draft it for me
+      <button onClick={run} className="label inline-flex h-9 items-center gap-2 bg-accent px-3.5 !text-[11px] text-on-accent hover:opacity-90">
+        <Sparkle /> {label}
       </button>
     );
 
   return (
-    <div className="mt-2 rounded-lg bg-row p-3 ring-1 ring-[var(--accent-soft)]">
+    <div className="w-full rounded-lg bg-card p-3 ring-1 ring-[var(--accent-soft)]">
       <div className="flex items-center gap-2">
         <Pill color={state === "error" ? "var(--d-gated)" : "var(--accent)"}>
           {state === "writing" ? "Agent is writing" : state === "done" ? "Draft ready" : "Not drafted"}
@@ -137,5 +149,25 @@ function Sparkle() {
     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
       <path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z" />
     </svg>
+  );
+}
+
+export function CopyButton({ text, label }: { text: string; label: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() =>
+        navigator.clipboard.writeText(text).then(
+          () => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          },
+          () => {},
+        )
+      }
+      className="label inline-flex h-9 items-center bg-card px-3.5 !text-[11px] text-ink hover:text-accent"
+    >
+      {copied ? "Copied" : label}
+    </button>
   );
 }
