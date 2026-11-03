@@ -55,33 +55,6 @@ export function Meter({ d }: { d: Difficulty }) {
   );
 }
 
-export function Section({
-  id,
-  title,
-  count,
-  aside,
-  style,
-  children,
-}: {
-  id: string;
-  title: string;
-  count?: number;
-  aside?: React.ReactNode;
-  style?: React.CSSProperties;
-  children: React.ReactNode;
-}) {
-  return (
-    <section id={id} className="scroll-mt-24 rounded-2xl bg-card p-1.5" style={style}>
-      <div className="flex flex-wrap items-center gap-3 px-3.5 pb-3 pt-3">
-        <h2 className="label text-ink">{title}</h2>
-        {count !== undefined && <span className="label text-ink-3">{count}</span>}
-        {aside && <div className="ml-auto">{aside}</div>}
-      </div>
-      <div className="rows flex flex-col gap-1">{children}</div>
-    </section>
-  );
-}
-
 export function Row({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return <div className={`rounded-xl bg-row px-4 py-3.5 ${className}`}>{children}</div>;
 }

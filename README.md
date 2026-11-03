@@ -6,12 +6,14 @@ Built for the Composio APM Integrations take-home.
 
 ## What a guide answers
 
-1. **Verdict**: Instant, Easy, Moderate, Hard or Gated, with hands-on time and waiting time shown apart, because "30 minutes of work, then 6 weeks of review" is the real answer.
-2. **Can you skip it?** Is the app Composio-managed? Does the provider's MCP server support dynamic client registration? Only after that, the bring-your-own-app path, plus reasons to own an app anyway.
-3. **Your situation**: who you are (individual, startup, company), who will connect (just you and testers, or real users) and what your agent needs (for Gmail: send, read, modify, labels). Changing these re-shapes the verdict, requirements, steps, scopes and limits instantly.
-4. Requirements checklist (marked when an agent can draft it), a step timeline tagged **Agent can do / You do / Waiting on provider**, a scopes table with tiers, limits and gotchas, and blockers with fixes.
-5. **Evidence**: every claim shows a badge (Tested by agent, Official docs, Third-party, Unverified) and links to its numbered sources, each with a last-checked date. Each guide also lists what we could not verify.
-6. **Share**: permalink `/guide/<slug>`, Copy Markdown, and Copy prompt for your coding agent (splits the agent's work from yours and tells it to re-check the sources).
+The brief asks that a developer knows where to start, what to do next, the time and effort, and how to proceed when blocked. A guide page has four parts, top to bottom:
+
+1. **Quick answer**: the brief's four questions in plain words. How hard (Instant, Easy, Moderate, Hard or Gated), how long (your hands-on time and the wait on the provider, shown apart), what you need, and who does what (steps an agent can do, steps you do, steps spent waiting). Under it, the quickest path: is the app already Composio-managed, or does its MCP server sign agents up automatically (dynamic client registration)?
+2. **Your situation**: who you are (individual, startup, company), who will connect (just you and testers, or real users) and what your agent needs (for Gmail: send, read, modify, labels). Changing these re-shapes the verdict, requirements, steps and limits instantly.
+3. **Your path**: "Get these ready" first, then every step in order, tagged **Agent can do / You do / Waiting on provider** with a duration. Only the next step is open; tick a step and the next one opens. Progress is saved in your browser.
+4. **Details**, in tabs so the page stays short: If you get stuck (what you see, what to do), Limits and gotchas, Permissions (with review tiers), and Sources.
+
+Every claim shows a badge (Tested by agent, Official docs, Third-party, Unverified) and links to its numbered sources, each with a last-checked date, plus a list of what we could not verify. Share with a permalink (`/guide/<slug>`), Copy Markdown, or Copy prompt for your coding agent (it splits the agent's work from yours and tells it to re-check the sources).
 
 The library holds six guides chosen to cover different shapes: GitHub (easy, but org owners may need to approve), Notion (easy, plus an MCP server with auto-registration), Slack (easy in your own workspace, hard on the Marketplace), Gmail (scope-dependent: send is a sensitive scope, read is restricted and needs a yearly security assessment), Spotify (fine for 5 users, gated past that unless you are an organisation with 250k+ monthly users), and Shopify (custom app vs App Store, with an irreversible distribution choice).
 
