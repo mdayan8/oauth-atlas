@@ -23,5 +23,6 @@ export async function POST(req: Request) {
     providerOptions: { anthropic: { effort: "medium", fallbacks: "default" } },
   });
 
-  return result.toUIMessageStreamResponse();
+  // Provider errors (bad key, rate limit, overload) carry no secrets, so pass the message through.
+  return result.toUIMessageStreamResponse({ onError: (e) => (e instanceof Error ? e.message : "Unknown error") + "." });
 }

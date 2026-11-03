@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo } from "react";
 import GuideView from "@/components/GuideView";
 import AppSearch from "@/components/AppSearch";
 import { fold } from "@/lib/fold";
@@ -24,14 +24,13 @@ function Live() {
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({
     transport: new DefaultChatTransport({ api: "/api/generate" }),
   });
-  const started = useRef("");
-
+  // One run per query. No ref guard: dev strict mode stops the first run on remount, so the second must start.
   useEffect(() => {
-    if (!q || started.current === q) return;
-    started.current = q;
+    if (!q) return;
     setMessages([]);
     sendMessage({ text: q });
-  }, [q, sendMessage, setMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [q]);
 
   const parts = messages.filter((m) => m.role === "assistant").flatMap((m) => m.parts as any[]);
   const { guide, log } = useMemo(() => fold(parts, q), [parts, q]);
@@ -48,7 +47,7 @@ function Live() {
             <div className="lg:w-[420px]">
               <p className="label flex items-center gap-2 text-accent">
                 <span className={`h-2 w-2 rounded-full bg-accent ${running ? "pulse-dot" : ""}`} />
-                {running ? "Agent is investigating" : error ? "Agent stopped" : steps ? "Investigation complete" : "Live agent"}
+                {running ? "Agent is investigating" : missingKey ? "Live agent needs a key" : error ? "Agent stopped" : steps ? "Investigation complete" : "Live agent"}
               </p>
               <p className="mt-3 text-[24px] leading-tight tracking-[-0.5px]">
                 {q ? <>Building a guide for <span className="text-accent">{q}</span></> : "Generate a guide for any app"}

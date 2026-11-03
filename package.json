@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "check": "node --experimental-strip-types lib/situation.check.ts"
+    "check": "node lib/check.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.96",

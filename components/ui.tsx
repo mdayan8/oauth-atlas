@@ -48,7 +48,7 @@ export function Meter({ d }: { d: Difficulty }) {
             className="h-1.5 rounded-full transition-colors duration-500"
             style={{ background: j <= i ? DIFF_COLOR[d] : "var(--line)" }}
           />
-          <div className={`label mt-2 !text-[10px] ${j === i ? "text-ink" : "text-ink-3"}`}>{DIFFICULTY_LABEL[k]}</div>
+          <div className={`label mt-2 !text-[10px] ${j === i ? "text-ink" : "hidden text-ink-3 sm:block"}`}>{DIFFICULTY_LABEL[k]}</div>
         </div>
       ))}
     </div>

@@ -35,7 +35,7 @@ export default function AppSearch({
         }}
         placeholder="Salesforce, linear.app, Zoom..."
         autoComplete="off"
-        className={`min-w-0 flex-1 bg-row px-4 text-[16px] text-ink placeholder:text-ink-3 outline-none ring-1 ring-line focus:ring-2 focus:ring-accent ${
+        className={`w-full min-w-0 bg-row px-4 sm:flex-1 text-[16px] text-ink placeholder:text-ink-3 outline-none ring-1 ring-line focus:ring-2 focus:ring-accent ${
           compact ? "h-11" : "h-14 sm:text-[18px]"
         }`}
       />

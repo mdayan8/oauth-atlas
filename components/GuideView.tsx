@@ -81,7 +81,7 @@ export default function GuideView({
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)] lg:items-start">
         {/* Left: verdict + situation, the controls */}
-        <aside className="flex flex-col gap-4 lg:sticky lg:top-20">
+        <aside className="flex flex-col gap-4 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto lg:rounded-2xl">
           <section className="rounded-2xl bg-card p-1.5" aria-live="polite">
             <div className="rounded-xl bg-row p-5">
               <div className="flex items-center justify-between gap-3">
@@ -373,11 +373,16 @@ function ShareBar({
 }) {
   const [done, setDone] = useState("");
   async function copy(kind: string, text: string | Promise<string>) {
-    await navigator.clipboard.writeText(await text);
-    setDone(kind);
+    try {
+      await navigator.clipboard.writeText(await text);
+      setDone(kind);
+    } catch {
+      setDone("fail");
+    }
     setTimeout(() => setDone(""), 1600);
   }
   const link = () => (shareLink ? shareLink() : Promise.resolve(location.href.split("#")[0]));
+  if (done === "fail") return <p className="label text-ink-3 lg:ml-auto">Copy was blocked by the browser. Select the text instead.</p>;
   const btn = "label inline-flex h-11 items-center justify-center px-4 transition-colors";
   return (
     <div className="flex flex-wrap gap-2 lg:ml-auto">
