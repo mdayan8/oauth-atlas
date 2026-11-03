@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Difficulty } from "@/lib/schema";
+import { DIFFICULTY_LABEL } from "@/lib/share";
 import { difficultyIndex } from "@/lib/situation";
 import AppSearch from "./AppSearch";
 import { DIFF_COLOR, DifficultyPill, Pill } from "./ui";
@@ -19,6 +20,7 @@ export type Card = {
   waiting: string;
   managed: string;
   sources: number;
+  routes: { label: string; difficulty: Difficulty; handsOn: string; waiting: string }[];
 };
 
 const TRY = ["Linear", "Salesforce", "Zoom", "HubSpot"];
@@ -36,7 +38,7 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
 
   return (
     <>
-      <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
+      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
         <div>
           {hero}
           <div className="mt-10 max-w-2xl">
@@ -107,44 +109,112 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
   );
 }
 
-// The core insight in one picture: the same app can be easy or gated depending on who you are and what you ask for.
+// The core insight, playing by itself: one app, one route at a time, the verdict re-shaping as it goes.
+// It steps through each app's real routes, then moves to the next app. Hover to pause.
 function Spectrum({ cards }: { cards: Card[] }) {
-  const cols = ["Instant", "Easy", "Moderate", "Hard", "Gated"];
+  const apps = cards.filter((c) => c.routes.length > 1);
+  const start = Math.max(0, apps.findIndex((c) => c.slug === "gmail"));
+  const [pos, setPos] = useState({ app: start, route: 0 });
+  const [paused, setPaused] = useState(false);
+  const STEP = 3200;
+  useEffect(() => {
+    if (paused || !apps.length) return;
+    const t = setTimeout(() => {
+      setPos(({ app, route }) => (route + 1 < apps[app].routes.length ? { app, route: route + 1 } : { app: (app + 1) % apps.length, route: 0 }));
+    }, STEP);
+    return () => clearTimeout(t);
+  }, [paused, pos, apps]);
+  const c = apps[pos.app];
+  if (!c) return null;
+  const r = c.routes[pos.route];
+  const d = difficultyIndex(r.difficulty);
+  const go = (delta: number) => setPos(({ app, route }) => ({ app, route: (route + delta + c.routes.length) % c.routes.length }));
+
   return (
-    <div className="rounded-2xl bg-card p-1.5">
-      <div className="rounded-xl bg-row p-5">
-        <p className="label text-ink">Same app, different answer</p>
-        <p className="mt-1 text-[13px] text-ink-3">Each bar runs from the easiest situation to the hardest.</p>
-        <div className="mt-5 grid grid-cols-[72px_minmax(0,1fr)] gap-x-3 gap-y-2.5">
-          <span />
-          <div className="grid grid-cols-5">
-            {cols.map((c) => (
-              <span key={c} className="label truncate text-center !text-[9px] text-ink-3">
-                {c}
-              </span>
-            ))}
-          </div>
-          {cards.map((c, i) => {
-            const a = difficultyIndex(c.min);
-            const b = difficultyIndex(c.max);
-            return (
-              <Link key={c.slug} href={`/guide/${c.slug}`} className="group contents">
-                <span className="truncate text-[13px] leading-6 group-hover:text-accent">{c.name}</span>
-                <span className="relative h-6 rounded-full bg-[repeating-linear-gradient(90deg,var(--card)_0_20%,transparent_20%_40%)]">
-                  <span
-                    className="grow-bar absolute top-1/2 h-2.5 -translate-y-1/2 rounded-full group-hover:h-3.5"
-                    style={{
-                      left: `${a * 20 + 4}%`,
-                      width: `${(b - a) * 20 + 12}%`,
-                      background: `linear-gradient(90deg, ${DIFF_COLOR[c.min]}, ${DIFF_COLOR[c.max]})`,
-                      animationDelay: `${200 + i * 90}ms`,
-                    }}
-                  />
-                </span>
-              </Link>
-            );
-          })}
+    <div className="ice min-w-0 rounded-3xl p-4 sm:p-6" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
+      <div className="relative overflow-hidden rounded-2xl bg-row p-5 shadow-[0_24px_60px_-28px_rgba(0,7,205,0.35)] sm:p-6">
+        {!paused && <span key={`${pos.app}-${pos.route}`} className="tick absolute left-0 top-0 h-0.5 bg-accent" style={{ animationDuration: `${STEP}ms` }} />}
+
+        <div className="flex items-center gap-3">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-ink text-[15px] font-medium text-bg">{c.name[0]}</span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[16px] font-medium leading-tight">{c.name}</span>
+            <span className="block font-mono text-[12px] text-ink-3">{c.domain}</span>
+          </span>
+          <span className="label flex items-center gap-1.5 !text-[10px] text-accent">
+            <span className={`h-1.5 w-1.5 rounded-full bg-accent ${paused ? "" : "pulse-dot"}`} />
+            Live preview
+          </span>
         </div>
+
+        <div className="mt-6 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <p className="label !text-[10px] text-ink-3">If your path is</p>
+            <p key={r.label} className="rise mt-1 min-h-[2.75em] text-[17px] leading-snug">{r.label}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <button type="button" onClick={() => go(-1)} aria-label="Previous path" className="grid h-8 w-8 place-items-center rounded-full bg-card text-ink-2 hover:text-ink">
+              ‹
+            </button>
+            <button type="button" onClick={() => go(1)} aria-label="Next path" className="grid h-8 w-8 place-items-center rounded-full bg-card text-ink-2 hover:text-ink">
+              ›
+            </button>
+          </div>
+        </div>
+
+        <p key={r.label + "d"} className="rise mt-5 text-[44px] leading-none tracking-[-1.1px]" style={{ color: DIFF_COLOR[r.difficulty] }}>
+          {DIFFICULTY_LABEL[r.difficulty]}
+        </p>
+        <div className="mt-4 flex gap-1" aria-hidden>
+          {[0, 1, 2, 3, 4].map((k) => (
+            <span
+              key={k}
+              className="h-1.5 flex-1 rounded-full transition-colors duration-500"
+              style={{ background: k <= d ? DIFF_COLOR[r.difficulty] : "color-mix(in srgb, var(--ink) 10%, transparent)", transitionDelay: `${k * 60}ms` }}
+            />
+          ))}
+        </div>
+
+        <div key={r.label + "t"} className="rise mt-5 grid grid-cols-2 gap-2">
+          <div className="min-h-[104px] rounded-xl bg-card px-3.5 py-3">
+            <p className="label !text-[10px] text-ink-3">Your time</p>
+            <p className="mt-1 text-[15px] leading-snug">{r.handsOn}</p>
+          </div>
+          <div className="min-h-[104px] rounded-xl bg-card px-3.5 py-3">
+            <p className="label !text-[10px] text-ink-3">Waiting on {c.name}</p>
+            <p className="mt-1 text-[15px] leading-snug">{r.waiting}</p>
+          </div>
+        </div>
+
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <span className="flex gap-1.5" aria-label={`Path ${pos.route + 1} of ${c.routes.length}`}>
+            {c.routes.map((x, k) => (
+              <button
+                key={x.label}
+                type="button"
+                onClick={() => setPos({ app: pos.app, route: k })}
+                aria-label={x.label}
+                className={`h-1.5 rounded-full transition-all ${k === pos.route ? "w-5 bg-accent" : "w-1.5 bg-[color-mix(in_srgb,var(--ink)_18%,transparent)]"}`}
+              />
+            ))}
+          </span>
+          <Link href={`/guide/${c.slug}`} className="label !text-[11px] text-accent hover:opacity-80">
+            Open guide →
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-4 hidden flex-wrap items-center justify-center gap-y-2 sm:flex">
+        {apps.map((x, k) => (
+          <button
+            key={x.slug}
+            type="button"
+            onClick={() => setPos({ app: k, route: 0 })}
+            className={`label rounded-full px-2 py-1 !text-[10px] !tracking-[0.03em] transition-colors ${k === pos.app ? "bg-row text-ink" : "text-ink-3 hover:text-ink"}`}
+          >
+            {x.name}
+          </button>
+        ))}
       </div>
     </div>
   );

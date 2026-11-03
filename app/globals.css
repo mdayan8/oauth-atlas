@@ -165,15 +165,17 @@ body {
   animation-delay: 0ms;
 }
 
-@keyframes grow {
+/* Progress under the active app tab in the home preview; matches its 4.2s rotation. */
+@keyframes tick {
   from {
-    transform: translateY(-50%) scaleX(0);
+    width: 0;
+  }
+  to {
+    width: 100%;
   }
 }
-.grow-bar {
-  transform-origin: left center;
-  animation: grow 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
-  transition: height 150ms;
+.tick {
+  animation: tick 4200ms linear both;
 }
 
 @keyframes shimmer {
@@ -196,7 +198,7 @@ body {
   .build > *,
   .rows > *,
   .shimmer,
-  .grow-bar {
+  .tick {
     animation: none;
   }
 }

@@ -28,7 +28,7 @@ Why this counts as generative UI: following the pattern used by the AI SDK, assi
 - **Re-check live**: one click re-fetches every agent-tested claim in a guide (Composio's managed status, the provider's OAuth discovery documents, the MCP registration endpoint) and shows "4 of 4 still true as of just now", or what changed. No API key needed (`app/api/recheck/route.ts`).
 - **Copy prompt for your agent** hands the rest (the OAuth code, token refresh) to your coding agent.
 
-The home page shows the core insight as a chart: each app's bar runs from its easiest situation to its hardest (Spotify goes from Easy to Gated).
+The home page shows the core insight as a self-playing preview: one app at a time, it steps through that app's real routes and the verdict re-shapes for each (Gmail: testing is Easy, sending for real users is Moderate, reading inboxes is Hard). Hover to pause, use the arrows to step.
 
 Every claim shows a badge (Tested by agent, Official docs, Third-party, Unverified) and links to its numbered sources, each with a last-checked date, plus a list of what we could not verify. Share with a permalink (`/guide/<slug>`), Copy Markdown, or Copy prompt for your coding agent (it splits the agent's work from yours and tells it to re-check the sources).
 

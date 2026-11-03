@@ -1,6 +1,6 @@
 import Library, { type Card } from "@/components/Library";
 import { GUIDES } from "@/lib/guides";
-import { difficultyIndex } from "@/lib/situation";
+import { defaultSituation, difficultyIndex, pickVerdict } from "@/lib/situation";
 
 const POINTS = [
   ["Answer first, then one step at a time", "How hard, how long, what you need and who does what, shaped to your situation. Then a path where only your next step is open."],
@@ -23,6 +23,12 @@ export default function Home() {
       waiting: base.waiting,
       managed: g.skip.composioManaged,
       sources: g.sources.length,
+      // Each real route through setup with the verdict it gets: the "same app, different answer" preview.
+      routes: g.paths.flatMap((p) => {
+        const base = defaultSituation(g);
+        const v = pickVerdict(g.verdicts, { ...base, ...p.set, needs: p.set.needs ?? base.needs });
+        return v ? [{ label: p.label, difficulty: v.difficulty, handsOn: v.handsOn, waiting: v.waiting }] : [];
+      }),
     };
   });
 

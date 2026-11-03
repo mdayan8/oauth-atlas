@@ -19,6 +19,7 @@ export default function AppSearch({
       onSubmit={(e) => {
         e.preventDefault();
         if (v.trim()) onSubmit(v.trim());
+        else document.getElementById("app")?.focus();
       }}
       className={`flex w-full flex-col gap-2 sm:flex-row ${compact ? "" : "sm:gap-0"}`}
     >
@@ -41,8 +42,7 @@ export default function AppSearch({
       />
       <button
         type="submit"
-        className={`label shrink-0 bg-accent px-6 text-on-accent transition-opacity hover:opacity-90 disabled:opacity-40 ${compact ? "h-11" : "h-14"}`}
-        disabled={!v.trim()}
+        className={`label shrink-0 bg-accent px-6 text-on-accent transition-opacity hover:opacity-90 ${compact ? "h-11" : "h-14"}`}
       >
         Generate guide
       </button>
