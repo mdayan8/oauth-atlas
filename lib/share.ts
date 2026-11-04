@@ -3,7 +3,7 @@ import type { Resolved, Situation } from "./situation";
 
 export const DIFFICULTY_LABEL = { instant: "Instant", easy: "Easy", moderate: "Moderate", hard: "Hard", gated: "Gated" };
 export const BADGE_LABEL = { tested: "Tested by agent", official: "Official docs", third_party: "Third-party", unverified: "Unverified" };
-export const ACTOR_LABEL = { agent: "Agent can do", you: "You do", provider: "Waiting on provider" };
+export const ACTOR_LABEL = { agent: "Agent", you: "You", provider: "Provider wait" };
 const PROFILE_LABEL = { individual: "Individual", startup: "Startup", company: "Company" };
 const AUDIENCE_LABEL = { few: "Just me and testers", many: "Real users" };
 

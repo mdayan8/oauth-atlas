@@ -19,6 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" data-theme="light" className={`${geist.variable} ${mono.variable}`} suppressHydrationWarning>
       <head>
+        {/* Runs before paint so a saved dark theme never flashes light. React logs a dev-only note about inline scripts; it executes on the server-rendered document, which is all it needs. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-dvh">

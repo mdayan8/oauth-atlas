@@ -84,7 +84,7 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
       <section id="library" className="mt-28 scroll-mt-24">
         <div className="text-center">
           <p className="label text-accent">Library</p>
-          <h2 className="mt-3 text-[36px] leading-tight tracking-[-0.9px]">Six apps, six different shapes</h2>
+          <h2 className="mt-3 text-[36px] leading-tight tracking-[-0.9px]">Six apps, six kinds of hard</h2>
           <p className="mx-auto mt-3 max-w-xl text-[16px] text-ink-2">Picked to cover the range: instant, scope-dependent, cost-gated, review-gated. Each one checked against official docs.</p>
         </div>
         <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

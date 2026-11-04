@@ -166,7 +166,9 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
               {DIFFICULTY_LABEL[i.difficulty as keyof typeof DIFFICULTY_LABEL]}
             </p>
             <p className="text-[14px]">
-              {i.handsOn} <span className="text-ink-3">your time</span> · {i.waiting} <span className="text-ink-3">waiting</span>
+              <span className="label !text-[10px] text-ink-3">Your time</span> {i.handsOn}
+              <span className="mx-2 text-ink-3">·</span>
+              <span className="label !text-[10px] text-ink-3">Waiting</span> {i.waiting}
             </p>
           </div>
           <div className="mt-3 max-w-md">

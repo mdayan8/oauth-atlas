@@ -40,12 +40,20 @@ function Live() {
   return (
     <>
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-        <div className="ice rounded-3xl p-5 sm:p-8">
+        <div className={`${running || !guide.steps.length ? "ice rounded-3xl p-5 sm:p-8" : "rounded-3xl bg-card p-4 sm:p-5"} transition-[padding] duration-500`}>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
             <div className="lg:w-[420px]">
               <p className="label flex items-center gap-2 text-accent">
                 <span className={`h-2 w-2 rounded-full bg-accent ${running ? "pulse-dot" : ""}`} />
-                {running ? "Agent is investigating" : missingKey ? "Live agent needs a key" : error ? "Agent stopped" : steps ? "Investigation complete" : "Live agent"}
+                {running
+                  ? "Agent is investigating"
+                  : missingKey
+                    ? "Live agent needs a key"
+                    : error
+                      ? "Agent stopped"
+                      : guide.steps.length
+                        ? `Guide ready · ${guide.sources.length} sources · ${guide.steps.length} steps`
+                        : "Live agent"}
               </p>
               <p className="mt-3 text-[24px] leading-tight tracking-[-0.5px]">
                 {q ? <>Building a guide for <span className="text-accent">{q}</span></> : "Generate a guide for any app"}
@@ -53,7 +61,7 @@ function Live() {
               <p className="mt-2 text-[14px] text-ink-2">
                 {running
                   ? "Real searches and live checks against the provider first. Then the guide is written from what was found."
-                  : "It searches the web, reads official docs, checks Composio, tests the provider, and cites everything."}
+                  : "Searches the web, reads official docs, checks Composio, hits the provider's live endpoints, and cites every claim."}
               </p>
               <div className="mt-5">
                 <AppSearch compact initial={q} onSubmit={(v) => router.push(`/live?q=${encodeURIComponent(v)}`)} />
@@ -87,9 +95,9 @@ function Live() {
 function Stages({ log, running, name, sources, steps, started }: { log: Activity[]; running: boolean; name: string; sources: number; steps: number; started: boolean }) {
   const of = (test: (a: Activity) => boolean) => log.filter(test);
   const groups = [
-    { label: "Search the web", items: of((a) => a.text.startsWith("Searching")) },
-    { label: "Read the official docs", items: of((a) => a.text.startsWith("Reading")) },
-    { label: `Test ${name} for real`, items: of((a) => a.kind === "probe") },
+    { label: "Search the web", items: of((a) => a.text.startsWith("Searching")), unit: "search" },
+    { label: "Read the official docs", items: of((a) => a.text.startsWith("Reading")), unit: "page" },
+    { label: `Check ${name}'s live endpoints`, items: of((a) => a.kind === "probe"), unit: "check" },
     { label: "Write the guide", items: of((a) => a.kind === "write"), summary: steps ? `${steps} steps, ${sources} sources` : "" },
   ];
   // A stage is done once a later stage has started (or the run is over); the furthest started one is live.
@@ -110,9 +118,11 @@ function Stages({ log, running, name, sources, steps, started }: { log: Activity
                 {state === "done" ? "✓" : state === "live" ? <span className="pulse-dot h-2 w-2 rounded-full bg-accent" /> : i + 1}
               </span>
               <span className={`text-[15px] ${state === "wait" ? "text-ink-3" : "text-ink"}`}>{g.label}</span>
-              <span className="label ml-auto text-ink-3">{g.summary || (g.items.length ? `${g.items.length}` : "")}</span>
+              <span className="label ml-auto text-ink-3">
+                {g.summary || (g.items.length && "unit" in g ? `${g.items.length} ${g.unit}${g.items.length === 1 ? "" : g.unit === "search" ? "es" : "s"}` : "")}
+              </span>
             </div>
-            {state !== "wait" && last.length > 0 && (
+            {state === "live" && last.length > 0 && (
               <ul className="mt-2 flex flex-col gap-1 pl-9">
                 {last.map((a) => (
                   <li key={a.id + a.text} className="rise truncate font-mono text-[12px] text-ink-2">

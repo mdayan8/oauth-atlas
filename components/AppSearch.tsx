@@ -42,7 +42,7 @@ export default function AppSearch({
       />
       <button
         type="submit"
-        className={`label shrink-0 bg-accent px-6 text-on-accent transition-opacity hover:opacity-90 ${compact ? "h-11" : "h-14"}`}
+        className={`label shrink-0 rounded-[4px] bg-accent px-6 text-on-accent transition-opacity hover:opacity-90 ${compact ? "h-11" : "h-14"}`}
       >
         Generate guide
       </button>

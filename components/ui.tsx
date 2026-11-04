@@ -10,7 +10,7 @@ export const DIFF_COLOR: Record<Difficulty, string> = {
   gated: "var(--d-gated)",
 };
 
-const BADGE_COLOR: Record<BadgeT, string> = {
+export const BADGE_COLOR: Record<BadgeT, string> = {
   tested: "var(--b-tested)",
   official: "var(--b-official)",
   third_party: "var(--b-third)",
@@ -41,16 +41,15 @@ export function DifficultyPill({ d }: { d: Difficulty }) {
 export function Meter({ d }: { d: Difficulty }) {
   const i = difficultyIndex(d);
   return (
-    <div className="flex gap-1" role="img" aria-label={`Difficulty ${DIFFICULTY_LABEL[d]}, ${i + 1} of 5`}>
+    <div role="img" aria-label={`Difficulty ${DIFFICULTY_LABEL[d]}, ${i + 1} of 5`}>
+      <p className="label mb-2 !text-[10px] text-ink-3">
+        <span className="text-ink">{DIFFICULTY_LABEL[d]}</span> · {i + 1} of 5
+      </p>
+      <div className="flex gap-1">
       {(["instant", "easy", "moderate", "hard", "gated"] as const).map((k, j) => (
-        <div key={k} className="flex-1">
-          <div
-            className="h-1.5 rounded-full transition-colors duration-500"
-            style={{ background: j <= i ? DIFF_COLOR[d] : "var(--line)" }}
-          />
-          <div className={`label mt-2 !text-[10px] ${j === i ? "text-ink" : "hidden text-ink-3 sm:block"}`}>{DIFFICULTY_LABEL[k]}</div>
-        </div>
+        <div key={k} className="h-1.5 flex-1 rounded-full transition-colors duration-500" style={{ background: j <= i ? DIFF_COLOR[d] : "var(--line)" }} />
       ))}
+      </div>
     </div>
   );
 }

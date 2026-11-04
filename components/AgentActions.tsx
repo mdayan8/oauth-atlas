@@ -52,7 +52,7 @@ export function DraftButton({
 
   if (state === "idle")
     return (
-      <button onClick={run} className="label inline-flex h-9 items-center gap-2 bg-accent px-3.5 !text-[11px] text-on-accent hover:opacity-90">
+      <button onClick={run} className="label inline-flex h-9 items-center gap-2 rounded-[4px] bg-accent px-3.5 !text-[11px] text-on-accent hover:opacity-90">
         <Sparkle /> {label}
       </button>
     );
