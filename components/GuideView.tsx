@@ -44,12 +44,14 @@ export default function GuideView({
     setS({ ...sit, ...p });
   };
   // Stable so the Ask panel's effect does not re-run on every render.
+  // The closest path (a hand-authored preset) is applied first, then whatever the model read directly.
   const onSituation = useCallback(
-    (p: Parameters<typeof applyPreset>[1]) => {
+    (p: Parameters<typeof applyPreset>[1] & { path?: string | null }) => {
       setTouched(true);
-      setS((cur) => applyPreset(cur, p));
+      const preset = g.paths.find((x) => x.id === p.path)?.set ?? {};
+      setS((cur) => applyPreset(applyPreset(cur, preset), p));
     },
-    [],
+    [g.paths],
   );
   const [settled, setSettled] = useState(false);
   useEffect(() => {

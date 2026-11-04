@@ -25,6 +25,7 @@ const display = {
       profile: z.enum(PROFILES).nullish(),
       audience: z.enum(AUDIENCES).nullish().describe("few = just them and testers, many = real users"),
       needs: z.array(z.string()).nullish().describe("Need ids from the guide"),
+      path: z.string().nullish().describe("id of the guide path closest to their case, from the guide's paths"),
       summary: z.string().nullish().describe("Short, e.g. 'Startup, real users, read email'"),
     }),
     execute: ok,

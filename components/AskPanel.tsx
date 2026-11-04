@@ -26,7 +26,7 @@ const expand = (parts: Part[]): Part[] =>
     return ORDER.filter((k) => input[k]).map((k) => ({ type: `tool-${k}`, toolCallId: `${p.toolCallId}-${k}`, state: p.state, input: input[k] }));
   });
 
-type Preset = { profile?: "individual" | "startup" | "company" | null; audience?: "few" | "many" | null; needs?: string[] | null };
+type Preset = { profile?: "individual" | "startup" | "company" | null; audience?: "few" | "many" | null; needs?: string[] | null; path?: string | null };
 
 export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: CiteFn; onSituation: (p: Preset) => void }) {
   const transport = useMemo(
@@ -42,7 +42,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
         if (p.type === "tool-set_situation" && p.state === "output-available" && p.toolCallId && !applied.current.has(p.toolCallId)) {
           applied.current.add(p.toolCallId);
           const known = new Set(g.needs.map((n) => n.id));
-          onSituation({ profile: p.input?.profile, audience: p.input?.audience, needs: p.input?.needs?.filter((n: string) => known.has(n)) || null });
+          onSituation({ profile: p.input?.profile, audience: p.input?.audience, needs: p.input?.needs?.filter((n: string) => known.has(n)) || null, path: p.input?.path });
         }
   }, [messages, g.needs, onSituation]);
   const [q, setQ] = useState("");
