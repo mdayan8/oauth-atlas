@@ -146,5 +146,3 @@ export function makeTools(web: Record<string, any>) {
     ...web,
   };
 }
-
-export type AgentTools = ReturnType<typeof makeTools>;

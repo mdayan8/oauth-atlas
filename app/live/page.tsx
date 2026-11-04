@@ -33,7 +33,6 @@ function Live() {
 
   const parts = messages.filter((m) => m.role === "assistant").flatMap((m) => m.parts as any[]);
   const { guide, log } = useMemo(() => fold(parts, q), [parts, q]);
-  const steps = parts.filter((p) => p.type === "step-start").length;
   const running = status === "submitted" || status === "streaming";
   const missingKey = error?.message.includes("missing_key");
   const notFound = !!error?.message.startsWith("We could not find");
