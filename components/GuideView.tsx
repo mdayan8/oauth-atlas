@@ -113,11 +113,16 @@ export default function GuideView({
             <ShareBar g={g} r={r} s={sit} shareLink={shareLink} />
           </div>
         )}
+        {!live && g.name && (
+          <div style={beat(1)}>
+            <AskPanel g={g} Cite={Cite} onSituation={onSituation} />
+          </div>
+        )}
         <PathChooser g={g} sit={sit} r={r} set={set} style={beat(1)} />
         <div style={beat(2)}>
           <Path g={g} r={r} sit={sit} live={live} Cite={Cite} />
         </div>
-        {!live && g.name && <AskDrawer g={g} Cite={Cite} onSituation={onSituation} />}
+
         <div className="grid gap-4 md:grid-cols-2 md:items-start" style={beat(3)}>
           <WhereToGo g={g} live={live} />
           <Stuck r={r} live={live} Cite={Cite} />
@@ -894,38 +899,3 @@ function ShareBar({ g, r, s, shareLink }: { g: Guide; r: Resolved; s: Situation;
   );
 }
 
-// Ask lives in a drawer: one button that is always in reach, nothing pushed down the page.
-function AskDrawer({ g, Cite, onSituation }: { g: Guide; Cite: CiteFn; onSituation: Parameters<typeof AskPanel>[0]["onSituation"] }) {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
-  return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="label fixed bottom-5 right-5 z-30 inline-flex h-12 items-center gap-2 rounded-full bg-accent px-5 text-on-accent shadow-[0_12px_30px_-10px_rgba(0,7,205,0.6)] transition-transform hover:-translate-y-0.5"
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-on-accent" />
-        Ask about {g.name}
-      </button>
-      {open && (
-        <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label={`Ask about ${g.name}`}>
-          <button type="button" aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" />
-          <div className="absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-3xl bg-bg p-2 shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[480px] sm:max-h-none sm:rounded-none">
-            <div className="flex justify-end px-2 pt-1">
-              <button type="button" onClick={() => setOpen(false)} className="label h-9 px-3 text-ink-3 hover:text-ink">
-                Close ✕
-              </button>
-            </div>
-            <AskPanel g={g} Cite={Cite} onSituation={onSituation} />
-          </div>
-        </div>
-      )}
-    </>
-  );
-}

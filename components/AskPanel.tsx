@@ -53,89 +53,55 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
     setQ("");
   };
 
-  const suggestions = [
-    g.needs.length > 1
-      ? `We're a startup and our agent needs to ${g.needs[1].label.toLowerCase()} for our users`
-      : `We're a startup launching to real users`,
-    ...g.paths.slice(1, 2).map((p) => `How hard is it for "${p.label}"?`),
-    "What will the reviewer check?",
-    "What can an agent do for me here?",
-  ].slice(0, 4);
+  // Only the latest answer is shown, in place: this is a line that re-shapes the guide, not a chat transcript.
+  const latest = [...messages].reverse().find((m) => m.role === "assistant");
+  const asked = [...messages].reverse().find((m) => m.role === "user")?.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
 
   return (
-    <section id="ask" className="ice scroll-mt-24 rounded-3xl p-1.5" aria-label={`Ask about ${g.name}`}>
-      <div className="px-4 pb-3 pt-4 sm:px-5">
-        <p className="label flex items-center gap-2 text-accent">
-          <span className={`h-2 w-2 rounded-full bg-accent ${busy ? "pulse-dot" : ""}`} />
-          Describe what you are building, or ask about {g.name}
-        </p>
-        <p className="mt-1 text-[14px] text-ink-2">The guide adapts to what you tell it, and the agent answers with the parts you need.</p>
-      </div>
-
-      <div className="flex flex-col gap-3 px-1.5" aria-live="polite">
-        {messages.map((m) =>
-          m.role === "user" ? (
-            <div key={m.id} className="rise ml-auto max-w-[85%] rounded-2xl bg-ink px-4 py-2.5 text-[15px] text-bg">
-              {m.parts.map((p) => (p.type === "text" ? p.text : "")).join("")}
-            </div>
-          ) : (
-            <div key={m.id} className="flex flex-col gap-2">
-              {expand(m.parts as Part[]).map((p, i) => (
-                <Block key={p.toolCallId ?? i} p={p} Cite={Cite} onChoose={ask} busy={busy} />
-              ))}
-            </div>
-          ),
-        )}
-        {status === "submitted" && (
-          <div className="rise rounded-xl bg-row px-4 py-3.5">
-            <p className="label flex items-center gap-2 text-ink-2">
-              <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent" />
-              Reading the {g.name} guide ({g.sources.length} sources), picking the parts that answer you
-            </p>
-            <Skeleton bare />
-          </div>
-        )}
-        {error && (
-          <div className="rounded-xl bg-row px-4 py-3 text-[14px] text-ink-2">
-            {error.message.includes("missing_key")
-              ? "Asking needs ANTHROPIC_API_KEY on the server. Everything else on this page works without it."
-              : `The agent hit an error: ${error.message.slice(0, 160)}`}
-          </div>
-        )}
-      </div>
-
-      {messages.length === 0 && (
-        <div className="flex flex-wrap gap-1.5 px-4 pb-1 sm:px-5">
-          {suggestions.map((s) => (
-            <button key={s} onClick={() => ask(s)} className="label rounded-full bg-row/80 px-3 py-2 text-left !text-[11px] text-ink-2 hover:text-accent">
-              {s}
-            </button>
-          ))}
-        </div>
-      )}
-
+    <section id="ask" className="scroll-mt-24 rounded-2xl bg-card p-1.5" aria-label={`Tell the guide about you`}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           ask(q);
         }}
-        className="flex gap-2 p-3 sm:p-4"
+        className="flex flex-col gap-2 rounded-xl bg-row px-3 py-3 sm:flex-row sm:items-center sm:px-4"
       >
-        <label htmlFor="ask-input" className="sr-only">
-          Your question
+        <label htmlFor="ask-input" className="label flex shrink-0 items-center gap-2 text-accent">
+          <span className={`h-2 w-2 rounded-full bg-accent ${busy ? "pulse-dot" : ""}`} />
+          In your words
         </label>
-        <input autoFocus
+        <input
           id="ask-input"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           maxLength={300}
-          placeholder={`e.g. We're a two-person startup and our agent reads customers' ${g.name} data`}
-          className="h-11 min-w-0 flex-1 bg-row px-4 text-[15px] text-ink outline-none ring-1 ring-line placeholder:text-ink-3 focus:ring-2 focus:ring-accent"
+          placeholder={`I'm building ... for ... and my agent needs to ... in ${g.name}`}
+          className="h-11 min-w-0 flex-1 rounded-[4px] bg-card px-4 text-[15px] text-ink outline-none ring-1 ring-line placeholder:text-ink-3 focus:ring-2 focus:ring-accent"
         />
         <button disabled={busy || !q.trim()} className="label h-11 shrink-0 bg-accent px-5 text-on-accent hover:opacity-90 disabled:opacity-40">
           Ask
         </button>
       </form>
+      {(latest || status === "submitted" || error) && (
+        <div className="flex flex-col gap-2 px-1.5 pb-1.5 pt-2" aria-live="polite">
+          {asked && <p className="label px-2 !text-[10px] text-ink-3">For: {asked}</p>}
+          {latest && expand(latest.parts as Part[]).map((p, i) => <Block key={p.toolCallId ?? i} p={p} Cite={Cite} onChoose={ask} busy={busy} />)}
+          {status === "submitted" && (
+            <div className="rise rounded-xl bg-row px-4 py-3.5">
+              <p className="label flex items-center gap-2 text-ink-2">
+                <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent" />
+                Reading the {g.name} guide ({g.sources.length} sources), re-shaping it for you
+              </p>
+              <Skeleton bare />
+            </div>
+          )}
+          {error && (
+            <div className="rounded-xl bg-row px-4 py-3 text-[14px] text-ink-2">
+              {error.message.includes("missing_key") ? "This needs an AI key on the server. Everything else on this page works without it." : `The agent hit an error: ${error.message.slice(0, 160)}`}
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -259,10 +225,11 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
     case "tool-offer_choices": {
       const opts: string[] = Array.isArray(i.options) ? i.options.filter((o: unknown) => typeof o === "string") : [];
       return opts.length ? (
-        <div className="rise flex flex-wrap gap-1.5 px-1">
+        <div className="rise flex flex-wrap items-baseline gap-x-4 gap-y-1 px-2 pt-1">
+          <span className="label !text-[10px] text-ink-3">Worth asking next</span>
           {opts.map((o) => (
-            <button key={o} disabled={busy} onClick={() => onChoose(o)} className="label rounded-full bg-row px-3 py-2 text-left !text-[11px] text-accent hover:opacity-80 disabled:opacity-50">
-              {o} →
+            <button key={o} disabled={busy} onClick={() => onChoose(o)} className="text-left text-[13px] text-accent underline decoration-[var(--accent-soft)] underline-offset-4 hover:decoration-[var(--accent)] disabled:opacity-50">
+              {o}
             </button>
           ))}
         </div>
