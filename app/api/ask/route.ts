@@ -1,16 +1,16 @@
-import { anthropic } from "@ai-sdk/anthropic";
 import { convertToModelMessages, isStepCount, streamText, tool, type UIMessage } from "ai";
 import { z } from "zod";
-import { MODEL } from "@/lib/agent";
+import { pickModel } from "@/lib/model";
 import { fromThisSite } from "@/lib/guard";
 import { getGuide } from "@/lib/guides";
-import { Difficulty, Guide } from "@/lib/schema";
+import { AUDIENCES, Difficulty, Guide, PROFILES } from "@/lib/schema";
 
 export const maxDuration = 120;
 
 const SYSTEM = `You answer a developer's question about getting an OAuth app set up and approved, using the guide JSON below as your facts.
 Answer ONLY by calling display tools; each call renders a component on screen. Do not write prose outside tools.
-1. Start with say: the direct answer in one or two plain sentences.
+0. If the developer says anything about their situation (individual, startup or company; just them and testers or real users; what their agent must do), call set_situation first. Use need ids from the guide's "needs" list only. The guide on screen re-shapes to match.
+1. Then say: the direct answer in one or two plain sentences.
 2. Then add only the components that make the answer clearer: show_verdict when their situation changes how hard it is, show_compare for alternatives side by side, show_steps for what to do in order, show_warning for a real risk, show_links for where to go.
 3. End with offer_choices: two or three short follow-up questions they are likely to ask next.
 Rules: use only facts in the guide or on an official page you fetched; pass sourceIds from the guide's sources where they support a claim. If the guide does not cover it, say so plainly. Never invent numbers, fees or review times. No em dashes. Keep every text short.`;
@@ -18,6 +18,16 @@ Rules: use only facts in the guide or on an official page you fetched; pass sour
 const ids = z.array(z.string()).default([]).describe("Guide source ids backing this");
 const ok = async () => ({ ok: true });
 const display = {
+  set_situation: tool({
+    description: "Re-shape the guide on screen to the developer's situation. Only include what they actually said.",
+    inputSchema: z.object({
+      profile: z.enum(PROFILES).nullish(),
+      audience: z.enum(AUDIENCES).nullish().describe("few = just them and testers, many = real users"),
+      needs: z.array(z.string()).nullish().describe("Need ids from the guide"),
+      summary: z.string().describe("Short, e.g. 'Startup, real users, read email'"),
+    }),
+    execute: ok,
+  }),
   say: tool({ description: "The direct answer, one or two sentences.", inputSchema: z.object({ text: z.string(), sourceIds: ids }), execute: ok }),
   show_verdict: tool({
     description: "How hard it is for the situation they described.",
@@ -59,7 +69,8 @@ export type AskTools = typeof display;
 
 export async function POST(req: Request) {
   if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
-  if (!process.env.ANTHROPIC_API_KEY) return Response.json({ error: "missing_key" }, { status: 503 });
+  const m = pickModel({ effort: "low" });
+  if (!m) return Response.json({ error: "missing_key" }, { status: 503 });
 
   const body = await req.json().catch(() => ({}));
   const raw = JSON.stringify(body.guide ?? "");
@@ -69,12 +80,12 @@ export async function POST(req: Request) {
   const messages: UIMessage[] = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
 
   const result = streamText({
-    model: anthropic(MODEL),
+    model: m.model,
     system: `${SYSTEM}\n\nGuide JSON:\n${JSON.stringify(g)}`,
     messages: await convertToModelMessages(messages),
-    tools: { ...display, web_fetch: anthropic.tools.webFetch_20260209({ maxUses: 2 }) },
+    tools: { ...display, web_fetch: m.webTools({ search: 1, fetch: 2 }).web_fetch },
     stopWhen: isStepCount(6),
-    providerOptions: { anthropic: { effort: "low", fallbacks: "default" } },
+    providerOptions: m.providerOptions,
   });
   return result.toUIMessageStreamResponse({ onError: (e) => (e instanceof Error ? e.message : "Unknown error") + "." });
 }

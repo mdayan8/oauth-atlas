@@ -11,7 +11,7 @@ export function defaultSituation(g: Pick<Guide, "defaultNeeds" | "needs">): Situ
   return { profile: "startup", audience: "many", needs: g.defaultNeeds.length ? g.defaultNeeds : g.needs.slice(0, 1).map((n) => n.id) };
 }
 
-export function matches(when: WhenT | undefined, s: Situation): boolean {
+export function matches(when: WhenT | null | undefined, s: Situation): boolean {
   if (!when) return true;
   if (when.profile?.length && !when.profile.includes(s.profile)) return false;
   if (when.audience?.length && !when.audience.includes(s.audience)) return false;
@@ -30,7 +30,7 @@ export function pickVerdict(verdicts: Verdict[], s: Situation): Verdict | undefi
 }
 
 export function resolve(g: Guide, s: Situation) {
-  const keep = <T extends { when?: WhenT }>(xs: T[]) => xs.filter((x) => matches(x.when, s));
+  const keep = <T extends { when?: WhenT | null }>(xs: T[]) => xs.filter((x) => matches(x.when, s));
   const requirements = keep(g.requirements);
   const steps = keep(g.steps);
   const scopes = keep(g.scopes);
@@ -51,6 +51,11 @@ export function claimBadge(sourceIds: string[] | undefined, sources: Source[]): 
     if (src) best = Math.min(best, BADGE_ORDER.indexOf(src.badge));
   }
   return BADGE_ORDER[best];
+}
+
+// Apply a path preset (which may carry nulls from a model) on top of a situation.
+export function applyPreset(s: Situation, set: { profile?: Profile | null; audience?: Audience | null; needs?: string[] | null }): Situation {
+  return { profile: set.profile ?? s.profile, audience: set.audience ?? s.audience, needs: set.needs ?? s.needs };
 }
 
 export const difficultyIndex = (d: Difficulty) => ORDER.indexOf(d);

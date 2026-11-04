@@ -54,6 +54,7 @@ export function fold(parts: Part[], query: string) {
 
     switch (name) {
       case "web_search":
+      case "browser_search":
         log.push({ id, kind: "read", done, text: `Searching "${s(i.query, "...")}"` });
         break;
       case "web_fetch":

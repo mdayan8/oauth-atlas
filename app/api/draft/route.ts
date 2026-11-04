@@ -1,6 +1,5 @@
-import { anthropic } from "@ai-sdk/anthropic";
 import { streamText } from "ai";
-import { MODEL } from "@/lib/agent";
+import { pickModel } from "@/lib/model";
 import { fromThisSite } from "@/lib/guard";
 import { getGuide } from "@/lib/guides";
 import { Guide } from "@/lib/schema";
@@ -16,7 +15,8 @@ Keep it short and plain. No em dashes.`;
 
 export async function POST(req: Request) {
   if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
-  if (!process.env.ANTHROPIC_API_KEY) return Response.json({ error: "missing_key" }, { status: 503 });
+  const m = pickModel({ effort: "low" });
+  if (!m) return Response.json({ error: "missing_key" }, { status: 503 });
 
   const body = await req.json().catch(() => ({}));
   // Library guides are looked up by slug; live guides send themselves (validated, size-capped).
@@ -41,10 +41,10 @@ export async function POST(req: Request) {
     .join("\n\n");
 
   const result = streamText({
-    model: anthropic(MODEL),
+    model: m.model,
     system: SYSTEM,
     prompt: context,
-    providerOptions: { anthropic: { effort: "low", fallbacks: "default" } },
+    providerOptions: m.providerOptions,
   });
   return result.toTextStreamResponse();
 }

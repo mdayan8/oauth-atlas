@@ -2,7 +2,7 @@
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import { ACTOR_LABEL, DIFFICULTY_LABEL } from "@/lib/share";
 import { DIFF_COLOR, Meter, Pill, Skeleton } from "./ui";
@@ -14,12 +14,25 @@ const ACTOR_COLOR = { agent: "var(--accent)", you: "var(--ink)", provider: "var(
 type Part = { type: string; toolCallId?: string; state?: string; input?: any; text?: string };
 type CiteFn = (p: { ids?: string[] }) => React.ReactNode;
 
-export default function AskPanel({ g, Cite }: { g: Guide; Cite: CiteFn }) {
+type Preset = { profile?: "individual" | "startup" | "company" | null; audience?: "few" | "many" | null; needs?: string[] | null };
+
+export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: CiteFn; onSituation: (p: Preset) => void }) {
   const transport = useMemo(
     () => new DefaultChatTransport({ api: "/api/ask", body: g.generated ? { guide: g } : { slug: g.slug } }),
     [g],
   );
   const { messages, sendMessage, status, error } = useChat({ transport });
+  // When the agent reads the developer's situation, re-shape the guide once per call.
+  const applied = useRef(new Set<string>());
+  useEffect(() => {
+    for (const m of messages)
+      for (const p of m.parts as Part[])
+        if (p.type === "tool-set_situation" && p.state === "output-available" && p.toolCallId && !applied.current.has(p.toolCallId)) {
+          applied.current.add(p.toolCallId);
+          const known = new Set(g.needs.map((n) => n.id));
+          onSituation({ profile: p.input?.profile, audience: p.input?.audience, needs: p.input?.needs?.filter((n: string) => known.has(n)) || null });
+        }
+  }, [messages, g.needs, onSituation]);
   const [q, setQ] = useState("");
   const busy = status === "submitted" || status === "streaming";
   const ask = (text: string) => {
@@ -29,7 +42,10 @@ export default function AskPanel({ g, Cite }: { g: Guide; Cite: CiteFn }) {
   };
 
   const suggestions = [
-    ...g.paths.slice(1, 3).map((p) => `How hard is it for "${p.label}"?`),
+    g.needs.length > 1
+      ? `We're a startup and our agent needs to ${g.needs[1].label.toLowerCase()} for our users`
+      : `We're a startup launching to real users`,
+    ...g.paths.slice(1, 2).map((p) => `How hard is it for "${p.label}"?`),
     "What will the reviewer check?",
     "What can an agent do for me here?",
   ].slice(0, 4);
@@ -39,9 +55,9 @@ export default function AskPanel({ g, Cite }: { g: Guide; Cite: CiteFn }) {
       <div className="px-4 pb-3 pt-4 sm:px-5">
         <p className="label flex items-center gap-2 text-accent">
           <span className={`h-2 w-2 rounded-full bg-accent ${busy ? "pulse-dot" : ""}`} />
-          Ask about {g.name}
+          Describe what you are building, or ask about {g.name}
         </p>
-        <p className="mt-1 text-[14px] text-ink-2">The agent answers with the parts of the guide you need, built for your question.</p>
+        <p className="mt-1 text-[14px] text-ink-2">The guide adapts to what you tell it, and the agent answers with the parts you need.</p>
       </div>
 
       <div className="flex flex-col gap-3 px-1.5" aria-live="polite">
@@ -93,7 +109,7 @@ export default function AskPanel({ g, Cite }: { g: Guide; Cite: CiteFn }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           maxLength={300}
-          placeholder={`e.g. Do I need a company to launch on ${g.name}?`}
+          placeholder={`e.g. We're a two-person startup and our agent reads customers' ${g.name} data`}
           className="h-11 min-w-0 flex-1 bg-row px-4 text-[15px] text-ink outline-none ring-1 ring-line placeholder:text-ink-3 focus:ring-2 focus:ring-accent"
         />
         <button disabled={busy || !q.trim()} className="label h-11 shrink-0 bg-accent px-5 text-on-accent hover:opacity-90 disabled:opacity-40">
@@ -109,6 +125,13 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
   const card = "rise rounded-2xl bg-row px-4 py-3.5";
   const head = "label !text-[11px] text-ink-3";
   switch (p.type) {
+    case "tool-set_situation":
+      return i.summary ? (
+        <p className="rise mx-1 inline-flex w-fit items-center gap-2 rounded-full bg-row px-3 py-1.5 text-[13px]">
+          <span style={{ color: "var(--d-instant)" }}>✓</span>
+          Guide updated for: <span className="font-medium">{i.summary}</span>
+        </p>
+      ) : null;
     case "tool-say":
       return i.text ? (
         <p className="rise px-3 text-[16px] leading-relaxed">

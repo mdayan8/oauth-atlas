@@ -41,7 +41,7 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
       {/* Hero: centred headline over a soft glow, then a product window with the real search and a live preview. */}
       <div className="relative">
         <div aria-hidden className="glow pointer-events-none absolute left-1/2 top-[-180px] h-[720px] w-[1200px] max-w-[100vw] -translate-x-1/2" />
-        <div className="relative mx-auto max-w-3xl text-center">{hero}</div>
+        <div className="relative mx-auto max-w-4xl text-center">{hero}</div>
 
         <div className="relative mx-auto mt-12 max-w-5xl rounded-[28px] bg-card/80 p-1.5 shadow-[0_40px_120px_-40px_rgba(0,7,205,0.35)] ring-1 ring-[var(--line)] backdrop-blur">
           <div className="flex items-center gap-2 px-4 py-2.5">

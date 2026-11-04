@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Guide, LinkT, PathOptionT } from "@/lib/schema";
 import AskPanel from "./AskPanel";
-import { claimBadge, defaultSituation, pickVerdict, resolve, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
+import { applyPreset, claimBadge, defaultSituation, pickVerdict, resolve, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
 import { ACTOR_LABEL, DIFFICULTY_LABEL, toAgentPrompt, toMarkdown } from "@/lib/share";
 import { CopyButton, DraftButton, Recheck } from "./AgentActions";
 import { DIFF_COLOR, EvidenceBadge, Meter, Pill, Row, Skeleton } from "./ui";
@@ -45,6 +45,14 @@ export default function GuideView({
     setTouched(true);
     setS({ ...sit, ...p });
   };
+  // Stable so the Ask panel's effect does not re-run on every render.
+  const onSituation = useCallback(
+    (p: Parameters<typeof applyPreset>[1]) => {
+      setTouched(true);
+      setS((cur) => applyPreset(cur, p));
+    },
+    [],
+  );
   const [settled, setSettled] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setSettled(true), 1600);
@@ -58,7 +66,15 @@ export default function GuideView({
       <span className="inline-flex flex-wrap items-center gap-1.5 align-middle">
         <EvidenceBadge badge={claimBadge(ids, g.sources)} />
         {nums.map((n) => (
-          <a key={n} href={`#src-${n}`} className="label !text-[11px] text-ink-3 hover:text-accent">
+          <a
+            key={n}
+            href={`#src-${n}`}
+            onClick={(e) => {
+              e.preventDefault();
+              window.dispatchEvent(new CustomEvent("atlas:source", { detail: n }));
+            }}
+            className="label !text-[11px] text-ink-3 underline-offset-2 hover:text-accent hover:underline"
+          >
             [{n}]
           </a>
         ))}
@@ -99,21 +115,21 @@ export default function GuideView({
             <ShareBar g={g} r={r} s={sit} shareLink={shareLink} />
           </div>
         )}
-        <PathChooser g={g} sit={sit} r={r} set={set} style={beat(1)} />
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start" style={beat(2)}>
-          <Path g={g} r={r} live={live} Cite={Cite} />
-          <aside className="flex flex-col gap-4 lg:sticky lg:top-20">
-            <WhereToGo g={g} live={live} />
-            <Stuck r={r} live={live} Cite={Cite} />
-          </aside>
-        </div>
         {!live && g.name && (
-          <div style={beat(3)}>
-            <AskPanel g={g} Cite={Cite} />
+          <div style={beat(1)}>
+            <AskPanel g={g} Cite={Cite} onSituation={onSituation} />
           </div>
         )}
-        <BeforeLaunch r={r} live={live} Cite={Cite} style={beat(4)} />
-        <Sources g={g} style={beat(5)} />
+        <PathChooser g={g} sit={sit} r={r} set={set} style={beat(1)} />
+        <div style={beat(2)}>
+          <Path g={g} r={r} live={live} Cite={Cite} />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 md:items-start" style={beat(3)}>
+          <WhereToGo g={g} live={live} />
+          <Stuck r={r} live={live} Cite={Cite} />
+        </div>
+        <BeforeLaunch r={r} live={live} Cite={Cite} style={beat(5)} />
+        <Sources g={g} style={beat(6)} />
       </div>
     </div>
   );
@@ -246,7 +262,7 @@ function PathChooser({
   style: React.CSSProperties;
 }) {
   const [tune, setTune] = useState(false);
-  const apply = (p: PathOptionT) => ({ ...sit, ...p.set, needs: p.set.needs ?? sit.needs });
+  const apply = (p: PathOptionT) => applyPreset(sit, p.set);
   const same = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
   const isOn = (p: PathOptionT) =>
     (!p.set.audience || p.set.audience === sit.audience) && (!p.set.profile || p.set.profile === sit.profile) && (!p.set.needs || same(p.set.needs, sit.needs));
@@ -279,7 +295,7 @@ function PathChooser({
               <button
                 key={p.id}
                 type="button"
-                onClick={() => set(p.set)}
+                onClick={() => set(applyPreset(sit, p.set))}
                 aria-pressed={on}
                 className={`group rounded-xl p-4 text-left transition-all ${on ? "bg-row shadow-[0_0_0_2px_var(--accent)]" : "bg-row/60 hover:bg-row"}`}
               >
@@ -345,12 +361,15 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
   };
 
   const prepId = "prep";
+  const composioId = "composio";
   const drafts = r.requirements.filter((x) => x.agentCanDraft).length;
   const items = [
     ...(r.requirements.length
       ? [{ id: prepId, title: "Get these ready", actor: "you" as const, meta: drafts ? `${plural(r.requirements.length, "item")}, ${drafts} the agent can draft` : plural(r.requirements.length, "item") }]
       : []),
     ...r.steps.map((x) => ({ id: x.id, title: x.title, actor: x.actor, meta: x.duration })),
+    // Last mile for Composio users: plug the new app into a custom auth config.
+    ...(g.skip.composioManaged !== "unknown" ? [{ id: composioId, title: "Connect your app to Composio", actor: "you" as const, meta: "5 min" }] : []),
   ];
   const nextId = items.find((x) => !done.includes(x.id))?.id;
   const shown = open ?? nextId;
@@ -382,6 +401,33 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
             </li>
           ))}
         </ul>
+      );
+    if (id === composioId)
+      return (
+        <>
+          <ol className="flex list-decimal flex-col gap-2 pl-5 text-[14px] leading-relaxed text-ink-2">
+            <li>
+              Register this as the authorized redirect URI in your {g.name} app:
+              <span className="mt-1.5 flex flex-wrap items-center gap-2">
+                <code className="break-all rounded-md bg-card px-2 py-1 font-mono text-[12px] text-ink">{COMPOSIO_CALLBACK}</code>
+                <CopyButton text={COMPOSIO_CALLBACK} label="Copy" />
+              </span>
+            </li>
+            <li>In Composio, create an auth config for {g.name}, choose OAuth2, turn on Use your own developer credentials, and paste the client ID and secret. Set the same redirect URI there.</li>
+            <li>Keep the client secret on your server. Use separate apps for staging and production.</li>
+          </ol>
+          <div className="mt-2">
+            <EvidenceBadge badge="official" />
+          </div>
+          {!live && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <LinkButton l={{ kind: "console", label: "Open Composio auth configs", url: "https://dashboard.composio.dev/" }} main />
+              {COMPOSIO_GUIDES.has(g.slug) && <LinkButton l={{ kind: "docs", label: `Composio's ${g.name} guide`, url: `https://composio.dev/auth/${g.slug}` }} />}
+              <LinkButton l={{ kind: "docs", label: "Composio docs", url: "https://docs.composio.dev/docs/authentication/white-labeling-authentication" }} />
+              <MarkDone done={done.includes(id)} onClick={() => toggle(id)} />
+            </div>
+          )}
+        </>
       );
     const x = r.steps.find((s) => s.id === id)!;
     const link = linkFor(g, `${x.title} ${x.detail}`, x.actor);
@@ -515,6 +561,10 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
     </section>
   );
 }
+
+// From Composio's "Using your own OAuth apps" docs (checked 2026-11-04). Guides exist for these slugs at composio.dev/auth/<slug>.
+const COMPOSIO_CALLBACK = "https://backend.composio.dev/api/v3/toolkits/auth/callback";
+const COMPOSIO_GUIDES = new Set(["github", "notion", "slack", "shopify", "linear"]);
 
 function MarkDone({ done, onClick, label = "Mark done" }: { done: boolean; onClick: () => void; label?: string }) {
   return (
@@ -683,12 +733,20 @@ function BeforeLaunch({ r, live, Cite, style }: { r: Resolved; live: boolean; Ci
 
 function Sources({ g, style }: { g: Guide; style: React.CSSProperties }) {
   const [open, setOpen] = useState(false);
-  // Citation links like [3] open this list.
+  const [lit, setLit] = useState(0);
+  // Citation links like [3] open this list, scroll to that source and highlight it.
   useEffect(() => {
-    const onHash = () => location.hash.startsWith("#src-") && setOpen(true);
-    onHash();
-    window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    const show = (n: number) => {
+      setOpen(true);
+      setLit(n);
+      setTimeout(() => document.getElementById(`src-${n}`)?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
+      setTimeout(() => setLit(0), 2200);
+    };
+    const onCite = (e: Event) => show((e as CustomEvent<number>).detail);
+    const fromHash = Number(location.hash.match(/^#src-(\d+)$/)?.[1]);
+    if (fromHash) show(fromHash);
+    window.addEventListener("atlas:source", onCite);
+    return () => window.removeEventListener("atlas:source", onCite);
   }, []);
   if (!g.sources.length) return null;
   const counts = g.sources.reduce<Record<string, number>>((a, x) => ((a[x.badge] = (a[x.badge] ?? 0) + 1), a), {});
@@ -713,7 +771,7 @@ function Sources({ g, style }: { g: Guide; style: React.CSSProperties }) {
             no source yet, so check it yourself.
           </p>
           {g.sources.map((x, i) => (
-            <Row key={x.id}>
+            <Row key={x.id} className={`transition-shadow duration-500 ${lit === i + 1 ? "shadow-[0_0_0_2px_var(--accent)]" : ""}`}>
               <div id={`src-${i + 1}`} className="flex scroll-mt-24 flex-wrap items-start gap-3">
                 <span className="label w-6 pt-0.5 text-ink-3">{i + 1}</span>
                 <div className="min-w-0 flex-1">

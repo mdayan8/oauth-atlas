@@ -14,20 +14,20 @@ export const Badge = z.enum(BADGES);
 // Omitted dimension = applies to everyone.
 export const When = z
   .object({
-    profile: z.array(z.enum(PROFILES)).optional().describe("Applies only to these developer profiles"),
+    profile: z.array(z.enum(PROFILES)).nullish().describe("Applies only to these developer profiles"),
     audience: z
       .array(z.enum(AUDIENCES))
-      .optional()
+      .nullish()
       .describe("few = just you and a handful of testers; many = real users / public launch"),
     needs: z
       .array(z.string())
-      .optional()
+      .nullish()
       .describe("Applies if the reader picked ANY of these need ids"),
   })
   .strict();
 
 const sourced = {
-  when: When.optional(),
+  when: When.nullish(),
   sourceIds: z.array(z.string()).default([]).describe("ids of cited sources backing this claim"),
 };
 
@@ -42,7 +42,7 @@ export const Verdict = z.object({
 export const SkipPath = z.object({
   composioManaged: z.enum(["yes", "no", "unknown"]),
   mcpDcr: z.enum(["yes", "no", "unknown"]).describe("Provider MCP server supports dynamic client registration"),
-  mcpServer: z.string().optional(),
+  mcpServer: z.string().nullish(),
   note: z.string(),
   whyOwnApp: z.array(z.string()).default([]).describe("Reasons to register your own app anyway"),
   sourceIds: z.array(z.string()).default([]),
@@ -82,7 +82,7 @@ export const Source = z.object({
   url: z.string(),
   badge: Badge,
   checked: z.string().describe("YYYY-MM-DD"),
-  note: z.string().optional(),
+  note: z.string().nullish(),
 });
 
 export const Need = z.object({ id: z.string(), label: z.string() });
@@ -92,7 +92,7 @@ export const Link = z.object({
   kind: z.enum(LINK_KINDS),
   label: z.string().describe("Short, verb-first, e.g. 'Create an OAuth app'"),
   url: z.string(),
-  note: z.string().optional(),
+  note: z.string().nullish(),
 });
 
 // A real-world route through the setup, e.g. "Send email for real users". Picking it sets the reader's situation.
@@ -102,9 +102,9 @@ export const PathOption = z.object({
   detail: z.string().describe("One short line on who this is for"),
   set: z
     .object({
-      profile: z.enum(PROFILES).optional(),
-      audience: z.enum(AUDIENCES).optional(),
-      needs: z.array(z.string()).optional(),
+      profile: z.enum(PROFILES).nullish(),
+      audience: z.enum(AUDIENCES).nullish(),
+      needs: z.array(z.string()).nullish(),
     })
     .strict(),
 });
@@ -113,7 +113,7 @@ export const Guide = z.object({
   slug: z.string(),
   name: z.string(),
   domain: z.string(),
-  portal: z.string().optional(),
+  portal: z.string().nullish(),
   summary: z.string(),
   needs: z.array(Need).default([]),
   defaultNeeds: z.array(z.string()).default([]),

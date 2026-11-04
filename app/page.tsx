@@ -1,6 +1,6 @@
 import Library, { type Card } from "@/components/Library";
 import { GUIDES } from "@/lib/guides";
-import { defaultSituation, difficultyIndex, pickVerdict } from "@/lib/situation";
+import { applyPreset, defaultSituation, difficultyIndex, pickVerdict } from "@/lib/situation";
 
 const POINTS = [
   ["Answer first, then one step at a time", "How hard, how long, what you need and who does what, shaped to your situation. Then a path where only your next step is open."],
@@ -26,7 +26,7 @@ export default function Home() {
       // Each real route through setup with the verdict it gets: the "same app, different answer" preview.
       routes: g.paths.flatMap((p) => {
         const base = defaultSituation(g);
-        const v = pickVerdict(g.verdicts, { ...base, ...p.set, needs: p.set.needs ?? base.needs });
+        const v = pickVerdict(g.verdicts, applyPreset(base, p.set));
         return v ? [{ label: p.label, difficulty: v.difficulty, handsOn: v.handsOn, waiting: v.waiting }] : [];
       }),
     };
@@ -43,9 +43,8 @@ export default function Home() {
                 <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                 OAuth app guides for agent builders
               </p>
-              <h1 className="mt-6 text-[40px] leading-[1.05] tracking-[-1.2px] sm:text-[60px] sm:tracking-[-2px]">
-                Know how hard an OAuth app is <br className="hidden sm:block" />
-                <span className="text-ink-3">before you start.</span>
+              <h1 className="mx-auto mt-6 max-w-[820px] text-[40px] leading-[1.05] tracking-[-1.2px] [text-wrap:balance] sm:text-[56px] sm:tracking-[-1.8px]">
+                Know how hard an OAuth app is, <span className="text-ink-3">before&nbsp;you&nbsp;start.</span>
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-ink-2 sm:text-[18px]">
                 Your users want to click &ldquo;Connect Gmail&rdquo;. Before that works you may need your own OAuth app and a review that takes
