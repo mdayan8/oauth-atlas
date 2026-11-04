@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { Guide, LinkT, PathOptionT } from "@/lib/schema";
 import AskPanel from "./AskPanel";
 import { applyPreset, claimBadge, defaultSituation, pickVerdict, resolve, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
-import { ACTOR_LABEL, BADGE_LABEL, DIFFICULTY_LABEL, toAgentPrompt, toMarkdown } from "@/lib/share";
+import { ACTOR_LABEL, BADGE_LABEL, DIFFICULTY_LABEL, situationLine, toAgentPrompt, toMarkdown } from "@/lib/share";
 import { CopyButton, DraftButton, Recheck } from "./AgentActions";
 import { BADGE_COLOR, DIFF_COLOR, EvidenceBadge, Meter, Pill, Row, Skeleton } from "./ui";
 
@@ -96,7 +96,7 @@ export default function GuideView({
             ) : (
               g.domain
             )}
-            {g.checked && <> · Last checked {g.checked}</>}
+            {g.checked && <> · <span className="whitespace-nowrap">Last checked {g.checked}</span></>}
           </p>
         </div>
         {!live && (
@@ -107,7 +107,7 @@ export default function GuideView({
       </div>
 
       <div className="build flex flex-col gap-4">
-        <QuickAnswer g={g} r={r} live={live} Cite={Cite} style={beat(0)} />
+        <QuickAnswer g={g} r={r} s={sit} live={live} Cite={Cite} style={beat(0)} />
         {!live && (
           <div className="lg:hidden" style={beat(1)}>
             <ShareBar g={g} r={r} s={sit} shareLink={shareLink} />
@@ -115,13 +115,9 @@ export default function GuideView({
         )}
         <PathChooser g={g} sit={sit} r={r} set={set} style={beat(1)} />
         <div style={beat(2)}>
-          <Path g={g} r={r} live={live} Cite={Cite} />
+          <Path g={g} r={r} sit={sit} live={live} Cite={Cite} />
         </div>
-        {!live && g.name && (
-          <div style={beat(2)}>
-            <AskPanel g={g} Cite={Cite} onSituation={onSituation} />
-          </div>
-        )}
+        {!live && g.name && <AskDrawer g={g} Cite={Cite} onSituation={onSituation} />}
         <div className="grid gap-4 md:grid-cols-2 md:items-start" style={beat(3)}>
           <WhereToGo g={g} live={live} />
           <Stuck r={r} live={live} Cite={Cite} />
@@ -134,7 +130,7 @@ export default function GuideView({
 }
 
 // The brief's four questions, answered in plain words before any detail.
-function QuickAnswer({ g, r, live, Cite, style }: { g: Guide; r: Resolved; live: boolean; Cite: CiteFn; style: React.CSSProperties }) {
+function QuickAnswer({ g, r, s, live, Cite, style }: { g: Guide; r: Resolved; s: Situation; live: boolean; Cite: CiteFn; style: React.CSSProperties }) {
   const v = r.verdict;
   const time = (x: string) => (/^not published$/i.test(x.trim()) ? "No estimate published" : x);
   const counts = { agent: 0, you: 0, provider: 0 };
@@ -164,6 +160,9 @@ function QuickAnswer({ g, r, live, Cite, style }: { g: Guide; r: Resolved; live:
               <div className="mt-4">
                 <Meter d={v.difficulty} />
               </div>
+              <a href="#paths" className="label mt-3 block !text-[10px] text-ink-3 hover:text-ink">
+                For: {situationLine(g, s)} · change
+              </a>
             </>
           ) : (
             <Skeleton bare tall={live} />
@@ -272,7 +271,7 @@ function PathChooser({
   const skip = g.skip.composioManaged === "yes" ? "Use Composio's managed app" : g.skip.mcpDcr === "yes" ? `Use ${g.name}'s MCP server` : "";
 
   return (
-    <section className="rounded-2xl bg-card p-1.5" style={style} aria-label="Choose your path">
+    <section id="paths" className="scroll-mt-24 rounded-2xl bg-card p-1.5" style={style} aria-label="Choose your path">
       <div className="flex flex-wrap items-baseline justify-between gap-2 px-3.5 pb-3 pt-3">
         <h2 className="label text-ink">Choose your path</h2>
         <p className="text-[12px] text-ink-3">{r.hidden > 0 ? `Hiding ${plural(r.hidden, "item")} that don't apply to this path.` : "Pick the one closest to you."}</p>
@@ -343,8 +342,9 @@ function PathChooser({
 
 // One path from start to approved, as a vertical timeline: get the requirements ready, then each step.
 // Only the next step is open, with a clear "Mark done". Progress is kept per guide in this browser.
-function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite: CiteFn }) {
+function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved; sit: Situation; live: boolean; Cite: CiteFn }) {
   const key = g.slug && !g.generated ? `atlas-progress:${g.slug}` : "";
+  const signup = g.links.find((l) => l.kind === "register") ?? g.links.find((l) => l.kind === "console");
   const [done, setDone] = useState<string[]>([]);
   const [open, setOpen] = useState<string | null>(null);
   useEffect(() => {
@@ -387,8 +387,8 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
               <details className="group rounded-lg px-2 py-2 open:bg-row">
                 <summary className="flex cursor-pointer list-none items-center gap-2.5 text-[15px]">
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ink-3)]" />
-                  <span className="flex-1">{x.label}</span>
-                  {x.agentCanDraft && <span className="label !text-[10px] text-accent">Agent can draft</span>}
+                  <span className="min-w-0 flex-1">{x.label}</span>
+                  {x.agentCanDraft && <span className="label shrink-0 whitespace-nowrap !text-[10px] text-accent">Agent can draft</span>}
                   <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
                 </summary>
                 <p className="mt-1.5 pl-4 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
@@ -396,7 +396,13 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
                   <Cite ids={x.sourceIds} />
                   {x.agentCanDraft && !live && (
                     <div className="mt-2.5">
-                      <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} />
+                      <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} situation={situationLine(g, sit)} />
+                    </div>
+                  )}
+                  {/* An account, org or workspace to create: take them straight to the sign-up page. */}
+                  {!x.agentCanDraft && /account|organization|organisation|workspace|partner|tenant|developer program/i.test(x.label) && signup && (
+                    <div className="mt-2.5">
+                      <LinkButton l={{ ...signup, label: `Create it: ${signup.label}` }} main />
                     </div>
                   )}
                 </div>
@@ -451,7 +457,7 @@ function Path({ g, r, live, Cite }: { g: Guide; r: Resolved; live: boolean; Cite
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {x.actor === "agent" && (
               <>
-                <DraftButton g={g} stepId={x.id} scopes={r.scopes.map((sc) => sc.name)} label="Let the agent do it" />
+                <DraftButton g={g} stepId={x.id} scopes={r.scopes.map((sc) => sc.name)} label="Let the agent do it" situation={situationLine(g, sit)} />
                 <CopyButton label="Copy prompt" text={stepPrompt(g, x.title, x.detail)} />
               </>
             )}
@@ -651,7 +657,7 @@ function WhereToGo({ g, live }: { g: Guide; live: boolean }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className={`block text-[14px] ${main ? "font-medium text-accent" : ""}`}>{l.label}</span>
-                    {"note" in l && l.note && <span className="block truncate text-[12px] text-ink-3">{l.note}</span>}
+                    {"note" in l && l.note && <span className="block break-words text-[12px] text-ink-3">{l.note}</span>}
                   </span>
                   <span className="text-ink-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent">↗</span>
                 </a>
@@ -681,7 +687,7 @@ function Stuck({ r, live, Cite }: { r: Resolved; live: boolean; Cite: CiteFn }) 
             <details key={x.id} className="group rounded-lg px-2.5 py-2.5 open:bg-card">
               <summary className="flex cursor-pointer list-none items-start gap-2.5 text-[14px]">
                 <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--d-hard)" }} />
-                <span className="flex-1">{x.symptom}</span>
+                <span className="min-w-0 flex-1 break-words">{x.symptom}</span>
                 <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
               </summary>
               <p className="mt-2 pl-4 text-[14px] leading-relaxed text-ink-2">{x.fix}</p>
@@ -724,7 +730,7 @@ function BeforeLaunch({ r, live, Cite, style }: { r: Resolved; live: boolean; Ci
           <ul className="mt-3 flex flex-col gap-2.5">
             {r.scopes.map((x) => (
               <li key={x.name} className="grid gap-1 sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
-                <code className="break-all font-mono text-[12px]">{x.name}</code>
+                <code className="whitespace-nowrap font-mono text-[12px]">{x.name}</code>
                 <span className="text-[13px] text-ink-2">{x.meaning}</span>
                 <span className="flex gap-1.5">
                   <Pill color={tierColor(x.tier)}>{x.tier}</Pill>
@@ -851,17 +857,27 @@ function Chips<T extends string>({
 
 function ShareBar({ g, r, s, shareLink }: { g: Guide; r: Resolved; s: Situation; shareLink?: () => Promise<string> }) {
   const [done, setDone] = useState("");
+  const [fallback, setFallback] = useState("");
   async function copy(kind: string, text: string | Promise<string>) {
+    const value = await text;
     try {
-      await navigator.clipboard.writeText(await text);
+      await navigator.clipboard.writeText(value);
       setDone(kind);
+      setTimeout(() => setDone(""), 1600);
     } catch {
-      setDone("fail");
+      // Clipboard blocked (some embeds, automation): show the text preselected so one keystroke copies it.
+      setFallback(value);
     }
-    setTimeout(() => setDone(""), 1600);
   }
   const link = () => (shareLink ? shareLink() : Promise.resolve(location.href.split("#")[0]));
-  if (done === "fail") return <p className="label text-ink-3">Copy was blocked by the browser. Select the text instead.</p>;
+  if (fallback)
+    return (
+      <div className="w-full max-w-md">
+        <p className="label mb-1 text-ink-3">Copy was blocked by the browser. The text is selected: press ⌘C or Ctrl+C.</p>
+        <textarea readOnly autoFocus onFocus={(e) => e.currentTarget.select()} value={fallback} className="h-28 w-full rounded-lg bg-row p-2 font-mono text-[12px]" />
+        <button onClick={() => setFallback("")} className="label mt-1 h-9 px-2 text-ink-3 hover:text-ink">Done</button>
+      </div>
+    );
   const btn = "label inline-flex h-11 items-center justify-center rounded-[4px] px-4 transition-colors";
   return (
     <div className="flex flex-wrap gap-2 lg:flex-nowrap">
@@ -875,5 +891,41 @@ function ShareBar({ g, r, s, shareLink }: { g: Guide; r: Resolved; s: Situation;
         {done === "link" ? "Copied" : "Copy link"}
       </button>
     </div>
+  );
+}
+
+// Ask lives in a drawer: one button that is always in reach, nothing pushed down the page.
+function AskDrawer({ g, Cite, onSituation }: { g: Guide; Cite: CiteFn; onSituation: Parameters<typeof AskPanel>[0]["onSituation"] }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="label fixed bottom-5 right-5 z-30 inline-flex h-12 items-center gap-2 rounded-full bg-accent px-5 text-on-accent shadow-[0_12px_30px_-10px_rgba(0,7,205,0.6)] transition-transform hover:-translate-y-0.5"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-on-accent" />
+        Ask about {g.name}
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-40" role="dialog" aria-modal="true" aria-label={`Ask about ${g.name}`}>
+          <button type="button" aria-label="Close" onClick={() => setOpen(false)} className="absolute inset-0 bg-ink/40 backdrop-blur-[2px]" />
+          <div className="absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-3xl bg-bg p-2 shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:w-[480px] sm:max-h-none sm:rounded-none">
+            <div className="flex justify-end px-2 pt-1">
+              <button type="button" onClick={() => setOpen(false)} className="label h-9 px-3 text-ink-3 hover:text-ink">
+                Close ✕
+              </button>
+            </div>
+            <AskPanel g={g} Cite={Cite} onSituation={onSituation} />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -34,7 +34,7 @@ export default function Home() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
-      <div className="pt-14 sm:pt-20">
+      <div className="pt-8 sm:pt-12">
         <Library
           cards={cards}
           hero={
@@ -43,12 +43,11 @@ export default function Home() {
                 <span className="h-1.5 w-1.5 rounded-full bg-accent" />
                 OAuth app guides for agent builders
               </p>
-              <h1 className="mx-auto mt-6 max-w-[820px] text-[40px] leading-[1.05] tracking-[-1.2px] [text-wrap:balance] sm:text-[56px] sm:tracking-[-1.8px]">
+              <h1 className="mx-auto mt-5 max-w-[820px] text-[36px] leading-[1.05] tracking-[-1.2px] [text-wrap:balance] sm:text-[50px] sm:tracking-[-1.6px]">
                 Know how hard an OAuth app is, <span className="text-ink-3">before&nbsp;you&nbsp;start.</span>
               </h1>
-              <p className="mx-auto mt-6 max-w-2xl text-[17px] leading-relaxed text-ink-2 sm:text-[18px]">
-                Your users want to click &ldquo;Connect Gmail&rdquo;. Before that works you may need your own OAuth app and a review that takes
-                an hour or months. Get the difficulty, your time versus waiting time, what you need, and what an agent can do for you.
+              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-ink-2 sm:text-[17px]">
+                How hard, how long, what you need, and what an agent can do for you. Every line has a source.
               </p>
             </>
           }

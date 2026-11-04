@@ -17,11 +17,14 @@ type CiteFn = (p: { ids?: string[] }) => React.ReactNode;
 // A free model answers with one "answer" call holding every component; split it back into components.
 const ORDER = ["set_situation", "say", "show_verdict", "show_compare", "show_steps", "show_warning", "show_links", "offer_choices"];
 const expand = (parts: Part[]): Part[] =>
-  parts.flatMap((p) =>
-    p.type === "tool-answer"
-      ? ORDER.filter((k) => p.input?.[k]).map((k) => ({ type: `tool-${k}`, toolCallId: `${p.toolCallId}-${k}`, state: p.state, input: p.input[k] }))
-      : [p],
-  );
+  parts.flatMap((p) => {
+    if (p.type !== "tool-answer") return [p];
+    const input = { ...(p.input ?? {}) };
+    // A reply that only re-shaped the guide still says so, so the developer never gets a silent answer.
+    if (!input.say && input.set_situation && p.state === "output-available")
+      input.say = { text: `Updated the guide for: ${input.set_situation.summary || "your situation"}. The verdict, path and steps now match.`, sourceIds: [] };
+    return ORDER.filter((k) => input[k]).map((k) => ({ type: `tool-${k}`, toolCallId: `${p.toolCallId}-${k}`, state: p.state, input: input[k] }));
+  });
 
 type Preset = { profile?: "individual" | "startup" | "company" | null; audience?: "few" | "many" | null; needs?: string[] | null };
 
@@ -121,7 +124,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
         <label htmlFor="ask-input" className="sr-only">
           Your question
         </label>
-        <input
+        <input autoFocus
           id="ask-input"
           value={q}
           onChange={(e) => setQ(e.target.value)}

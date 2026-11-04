@@ -72,6 +72,12 @@ export async function POST(req: Request) {
         return output;
       });
       console.log(`generate: "${text}", ${sources.length} sources, ${evidence.length} chars of evidence`);
+      // Nothing at all came back (no Composio toolkit, no docs, no live endpoint): this is not an app we can find.
+      if (!composio && !sources.some((s) => s.badge === "official" || /\.well-known|\/authorize/.test(s.url))) {
+        out({ type: "finish-step" });
+        out({ type: "error", errorText: `We could not find an app called "${text}". Check the spelling, or paste its website address.` });
+        return;
+      }
       const officialUrl = sources.find((s) => s.badge === "official")?.url;
       const checked = new Date().toISOString().slice(0, 10);
       for (const s of sources) show("cite_source", s, { badge: s.badge, checked });

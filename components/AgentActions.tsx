@@ -11,12 +11,14 @@ export function DraftButton({
   stepId,
   scopes,
   label = "Draft it for me",
+  situation,
 }: {
   g: Guide;
   requirementId?: string;
   stepId?: string;
   scopes: string[];
   label?: string;
+  situation?: string;
 }) {
   const [text, setText] = useState("");
   const [state, setState] = useState<"idle" | "writing" | "done" | "error">("idle");
@@ -29,11 +31,11 @@ export function DraftButton({
       const res = await fetch("/api/draft", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ ...(g.generated ? { guide: g } : { slug: g.slug }), requirementId, stepId, scopes }),
+        body: JSON.stringify({ ...(g.generated ? { guide: g } : { slug: g.slug }), requirementId, stepId, scopes, situation }),
       });
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
-        setText(err.error === "missing_key" ? "Drafting needs ANTHROPIC_API_KEY on the server." : "The draft could not be written. Try again.");
+        setText(err.error === "missing_key" ? "Drafting needs an AI key on the server." : "The draft could not be written. Try again.");
         return setState("error");
       }
       const reader = res.body.getReader();

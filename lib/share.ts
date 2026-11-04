@@ -7,7 +7,7 @@ export const ACTOR_LABEL = { agent: "Agent", you: "You", provider: "Provider wai
 const PROFILE_LABEL = { individual: "Individual", startup: "Startup", company: "Company" };
 const AUDIENCE_LABEL = { few: "Just me and testers", many: "Real users" };
 
-function situationLine(g: Guide, s: Situation) {
+export function situationLine(g: Guide, s: Situation) {
   const needs = g.needs.filter((n) => s.needs.includes(n.id)).map((n) => n.label);
   return [PROFILE_LABEL[s.profile], AUDIENCE_LABEL[s.audience], ...needs].join(", ");
 }

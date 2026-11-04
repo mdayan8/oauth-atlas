@@ -3,7 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import GuideView from "@/components/GuideView";
 import AppSearch from "@/components/AppSearch";
 import { fold, type Activity } from "@/lib/fold";
@@ -36,6 +36,15 @@ function Live() {
   const steps = parts.filter((p) => p.type === "step-start").length;
   const running = status === "submitted" || status === "streaming";
   const missingKey = error?.message.includes("missing_key");
+  const notFound = !!error?.message.startsWith("We could not find");
+  // Elapsed time while running: a visible clock is calmer than a silent wait.
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    setElapsed(0);
+    const t = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(t);
+  }, [running]);
 
   return (
     <>
@@ -60,7 +69,7 @@ function Live() {
               </p>
               <p className="mt-2 text-[14px] text-ink-2">
                 {running
-                  ? "Real searches and live checks against the provider first. Then the guide is written from what was found."
+                  ? `${elapsed}s so far. Usually 10 seconds to 2 minutes: live checks first, then the guide is written from what was found.`
                   : "Searches the web, reads official docs, checks Composio, hits the provider's live endpoints, and cites every claim."}
               </p>
               <div className="mt-5">
@@ -77,6 +86,8 @@ function Live() {
                 <Notice title="The live agent needs an API key">
                   Set GROQ_API_KEY (free) or ANTHROPIC_API_KEY in the server environment to run it. The guide library works without one.
                 </Notice>
+              ) : notFound ? (
+                <Notice title="No app found">{error!.message}</Notice>
               ) : error ? (
                 <Notice title="The agent hit an error">{error.message.slice(0, 240)} Try again, or pick a library guide.</Notice>
               ) : (
@@ -86,7 +97,7 @@ function Live() {
           </div>
         </div>
       </div>
-      {q && !missingKey && <GuideView key={q} guide={guide} live={running} shareLink={async () => `${location.origin}/shared#${await pack(guide)}`} />}
+      {q && !missingKey && !notFound && <GuideView key={q} guide={guide} live={running} shareLink={async () => `${location.origin}/shared#${await pack(guide)}`} />}
     </>
   );
 }
@@ -106,7 +117,7 @@ function Stages({ log, running, name, sources, steps, started }: { log: Activity
     <ol className="flex flex-col gap-2" aria-live="polite">
       {groups.map((g, i) => {
         const state = !started ? "wait" : i < furthest || (!running && g.items.length) ? "done" : i === Math.max(furthest, 0) && running ? "live" : "wait";
-        const last = g.items.slice(-2);
+        const last = g.items.filter((a, i, all) => i === 0 || a.text !== all[i - 1].text).slice(-2);
         return (
           <li key={g.label} className={`rounded-2xl px-4 py-3 transition-colors ${state === "live" ? "bg-card shadow-[0_8px_30px_-12px_rgba(0,7,205,0.35)]" : "bg-row/70"}`}>
             <div className="flex items-center gap-3">

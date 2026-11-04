@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Runs before paint so a saved dark theme never flashes light. React logs a dev-only note about inline scripts; it executes on the server-rendered document, which is all it needs. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-dvh">
+      <body className="min-h-dvh overflow-x-clip">
         <header className="sticky top-0 z-20 bg-bg/85 backdrop-blur-md">
           <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-4 sm:px-6">
             <Link href="/" className="flex items-center gap-2 text-[16px] font-medium tracking-tight">

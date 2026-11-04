@@ -27,6 +27,8 @@ export async function POST(req: Request) {
   const step = g?.steps.find((x) => x.id === body.stepId && x.actor === "agent");
   const item = rq ? { id: rq.id, label: rq.label, detail: rq.detail } : step ? { id: step.id, label: step.title, detail: step.detail } : undefined;
   if (!g || !item) return Response.json({ error: "not_draftable" }, { status: 400 });
+  // The developer's chosen path, so the draft matches it (send-only vs read scopes, testers vs real users).
+  const situation = typeof body.situation === "string" ? body.situation.slice(0, 200) : "";
 
   const scopes: string[] = Array.isArray(body.scopes) ? body.scopes.slice(0, 20).map(String) : [];
   const scopeLines = g.scopes.filter((x) => scopes.includes(x.name)).map((x) => `- ${x.name}: ${x.meaning} (${x.tier})`);
@@ -42,7 +44,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: m.model,
-    system: SYSTEM,
+    system: situation ? `${SYSTEM}\n\nThe developer's situation: ${situation}. Draft for exactly that, nothing broader.` : SYSTEM,
     prompt: context,
     providerOptions: m.providerOptions,
   });
