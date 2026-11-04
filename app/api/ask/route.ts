@@ -1,4 +1,4 @@
-import { convertToModelMessages, isStepCount, streamText, tool, type UIMessage } from "ai";
+import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, isStepCount, streamText, tool, type UIMessage } from "ai";
 import { z } from "zod";
 import { friendlyError, pickModel } from "@/lib/model";
 import { fromThisSite } from "@/lib/guard";
@@ -103,16 +103,40 @@ export async function POST(req: Request) {
   // Keep the conversation small: last 8 messages.
   const messages: UIMessage[] = Array.isArray(body.messages) ? body.messages.slice(-8) : [];
 
-  const result = streamText({
-    model: m.model,
-    system: `${SYSTEM}${m.onePass ? "\nYou have one tool, answer: put each component above in its field of the same name, null for the ones you skip." : ""}\n\nGuide JSON:\n${compact(g)}`,
-    messages: await convertToModelMessages(messages),
-    // Free models answer in one call: a second step would resend the guide and blow Groq's per-minute cap.
-    // Claude can afford separate calls and reading an official page first.
-    tools: m.onePass ? { answer } : { ...display, web_fetch: m.webTools({ search: 1, fetch: 2 }).web_fetch },
-    stopWhen: isStepCount(m.onePass ? 1 : 6),
-    toolChoice: m.onePass ? "required" : "auto",
-    providerOptions: m.providerOptions,
+  // Free models flake now and then (a reply with no tool call, or a broken one). Each attempt is held until it
+  // finishes cleanly: the main model twice, then the backup, which streams as it writes.
+  const chain = [m, m, ...m.backups];
+  const stream = createUIMessageStream({
+    onError: friendlyError,
+    execute: async ({ writer }) => {
+      for (const [i, w] of chain.entries()) {
+        const lastTry = i === chain.length - 1;
+        const result = streamText({
+          model: w.model,
+          system: `${SYSTEM}${m.onePass ? "\nYou have one tool, answer: put each component above in its field of the same name, null for the ones you skip." : ""}\n\nGuide JSON:\n${compact(g)}`,
+          messages: await convertToModelMessages(messages),
+          // Free models answer in one call: a second step would resend the guide and blow Groq's per-minute cap.
+          // Claude can afford separate calls and reading an official page first.
+          tools: m.onePass ? { answer } : { ...display, web_fetch: m.webTools({ search: 1, fetch: 2 }).web_fetch },
+          stopWhen: isStepCount(m.onePass ? 1 : 6),
+          toolChoice: m.onePass ? "required" : "auto",
+          maxRetries: lastTry ? 2 : 0,
+          providerOptions: w.providerOptions,
+        });
+        const held: Parameters<typeof writer.write>[0][] = [];
+        let failed = false;
+        for await (const c of result.toUIMessageStream({ onError: friendlyError })) {
+          if (lastTry) writer.write(c);
+          else if (c.type === "error" || c.type === "tool-input-error") failed = true;
+          else held.push(c);
+        }
+        if (lastTry || !failed) {
+          held.forEach((c) => writer.write(c));
+          return;
+        }
+        console.warn(`ask: attempt ${i + 1} failed, trying ${chain[i + 1] === m ? "again" : "backup"}`);
+      }
+    },
   });
-  return result.toUIMessageStreamResponse({ onError: friendlyError });
+  return createUIMessageStreamResponse({ stream });
 }

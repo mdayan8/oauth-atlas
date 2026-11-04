@@ -28,7 +28,9 @@ export async function readComposio(slug: string) {
     const managed = (text.match(/Composio-managed OAuth available\?\*\*\s*(\w+)/i)?.[1] ?? "unknown").toLowerCase();
     const auth = text.match(/\*\*Auth:\*\*\s*([^\n]+)/)?.[1]?.trim();
     const faq = text.split("## Frequently Asked Questions")[1]?.split("## Tools")[0]?.trim().slice(0, 1200);
-    return { url, found: true as const, status, managed, auth, faq };
+    // Composio's page links to the provider's own developer docs: the keyless way to find them when search fails.
+    const links = [...new Set((text.match(/https:\/\/[^\s)"'<>\]]+/g) ?? []).map((u) => u.replace(/[.,]+$/, "")))].filter((u) => !/composio\.dev/.test(u)).slice(0, 60);
+    return { url, found: true as const, status, managed, auth, faq, links };
   } catch (e) {
     return { url, found: false as const, error: String(e).slice(0, 120) };
   }

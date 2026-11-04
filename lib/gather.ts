@@ -67,13 +67,33 @@ export async function gather(app: string, emit: Emit) {
   const common = [...counts].filter(([l, n]) => n >= 2 && !THIRD_PARTY.test(l)).sort((a, b) => b[1] - a[1])[0]?.[0];
   const anyNamed = hits.some((h) => named(h.url));
   const official = (u: string) => named(u) || (!anyNamed && label(u) === common);
-  const picked = [...hits.filter((h) => official(h.url)), ...hits.filter((h) => !official(h.url))].slice(0, 3);
+  // Search engines block cloud servers, so the live site often gets no hits. Composio's toolkit page links to the
+  // provider's developer docs: the host it links most is the official docs host, and its OAuth pages fill the gap.
+  const fromComposio: string[] = (composio.found ? composio.links : [])
+    .filter((u: string) => safeOrigin(u))
+    .map((u: string) => u.split("#")[0]);
+  const docHost = [...fromComposio.reduce((m, u) => m.set(new URL(u).hostname, (m.get(new URL(u).hostname) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1])[0]?.[0];
+  const fallback = docHost
+    ? [
+        ...new Set([
+          ...fromComposio.filter((u) => /oauth|auth|integrations|apps?\b|scopes|register/i.test(new URL(u).pathname)),
+          `https://${docHost}/docs/integrations/oauth/`,
+          `https://${docHost}/docs/oauth/`,
+          `https://${docHost}/docs/authentication/`,
+          `https://${docHost}/`,
+        ]),
+      ].map((url) => ({ url, title: new URL(url).hostname + new URL(url).pathname }))
+    : [];
+  if (docHost && !hits.some((h) => new URL(h.url).hostname === docHost)) hits.push({ url: `https://${docHost}/`, title: docHost });
+  const picked = [...hits.filter((h) => official(h.url)), ...fallback.filter((f) => !hits.some((h) => h.url === f.url)), ...hits.filter((h) => !official(h.url))].slice(0, 4);
 
-  const pages = await Promise.all(
-    picked.map((h) =>
-      emit("web_fetch", { url: h.url }, () => getText(h.url).then((r) => ({ url: h.url, status: r.status, raw: r.text })).catch(() => ({ url: h.url, status: 0, raw: "" }))),
-    ),
-  );
+  const pages = (
+    await Promise.all(
+      picked.map((h) =>
+        emit("web_fetch", { url: h.url }, () => getText(h.url).then((r) => ({ url: h.url, status: r.status, raw: r.text })).catch(() => ({ url: h.url, status: 0, raw: "" }))),
+      ),
+    )
+  ).filter((p) => p.status === 200 && p.raw);
 
   // Composio first: it decides whether the developer can skip all of this.
   if (composio.found) cite({ title: `Composio toolkit page`, url: composio.url, badge: "tested" }, `Composio-managed OAuth available: ${composio.managed}. Auth: ${composio.auth ?? "not stated"}.`);
