@@ -39,7 +39,7 @@ export function supported(text: string, evidence: string) {
 }
 
 // Sentences that describe our own endpoint check, which must never read as advice or a blocker.
-const PROBE = /made[- ]up|probe|authorize attempt|attempt(ed)? (the |an )?authoriz|without a registered (app|client)|not a snowflake|returned http \d{3}/i;
+const PROBE = /made[- ]up|probe|authorize attempt|attempt(ed)? (the |an )?authoriz|without a registered (app|client)|does not identify a registered|no registered (app|client)|unregistered (app|client)|not a snowflake|returned http \d{3}/i;
 export const scrub = (text: string) =>
   text
     .split(/(?<=[.!?])\s+/)
@@ -72,6 +72,20 @@ export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?:
     (d.requirements as { label?: string; detail?: string; sourceIds?: string[] }[] | undefined)?.forEach((x) => {
       if (!supported(`${x.label ?? ""} ${x.detail ?? ""}`, evidence)) x.sourceIds = [];
     });
+    // Clicking in a console, dashboard or portal needs a login the agent does not have.
+    (d.steps as { title?: string; actor?: string }[] | undefined)?.forEach((x) => {
+      if (x.actor === "agent" && /^(configure|set|add|register|create|enable|paste|open)\b.*\b(redirect|callback|console|dashboard|portal|settings)\b/i.test(x.title ?? "")) x.actor = "you";
+    });
+    // One card per situation, and Composio's managed app is the skip card, not a path.
+    if (Array.isArray(d["paths"])) {
+      const seen = new Set<string>();
+      d["paths"] = (d["paths"] as { label?: string; set?: unknown }[]).filter((p) => {
+        const key = JSON.stringify(p.set ?? {});
+        if (seen.has(key) || /composio|managed connection|managed app/i.test(p.label ?? "")) return false;
+        seen.add(key);
+        return true;
+      });
+    }
     // Dynamic client registration is a POST an agent makes; it is never a human step.
     (d.steps as { title?: string; detail?: string; actor?: string }[] | undefined)?.forEach((x) => {
       if (/dynamic client registration|registration endpoint|\/register\b/i.test(`${x.title ?? ""} ${x.detail ?? ""}`)) x.actor = "agent";
@@ -91,7 +105,6 @@ export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?:
     const d0 = g as Draft;
     const note = "No official documentation page could be read in this run, so only Composio's status and live endpoint checks are shown. Open the provider's developer docs for the steps.";
     d0.unverified = [note, ...((d0.unverified as string[] | undefined) ?? [])];
-    g.verdicts?.forEach((v) => ((v as { handsOn?: string }).handsOn = "Not published"));
     // Scope names and caps only come from docs; without any, they would be the model's memory.
     d0.scopes = [];
     d0.limits = [];

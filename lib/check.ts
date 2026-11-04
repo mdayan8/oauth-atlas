@@ -142,7 +142,7 @@ assert.equal((e.scopes as { triggersReview: boolean }[])[0].triggersReview, fals
 assert.deepEqual((e.blockers as { symptom: string }[]).map((b) => b.symptom), ["Redirect URI mismatch"], "probe artifacts are not blockers");
 const bare = tidyGuide({ verdicts: [{ difficulty: "easy", waiting: "None", handsOn: "10 min" }], scopes: [{ name: "x" }], limits: [{ title: "y" }], unverified: [] }, "", undefined, "Trello", { officialPages: 0 });
 assert.deepEqual(bare.scopes, [], "no docs read means no scope names");
-assert.equal((bare.verdicts[0] as { handsOn: string }).handsOn, "Not published");
+assert.equal((bare.verdicts[0] as { handsOn: string }).handsOn, "10 min", "hands-on time is an estimate and stays even without docs");
 assert.match(bare.unverified[0], /No official documentation/);
 const ev = "Scopes: read, write, issues:create, admin. Access tokens expire after 24 hours. [s2] Apps go through review.";
 const fab = tidyGuide(

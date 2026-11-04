@@ -51,7 +51,7 @@ export default function QuickAnswer({ g, r, s, live, Cite, style }: { g: Guide; 
           {v ? (
             <div className="mt-2 flex flex-col gap-2">
               <p className="text-[16px] leading-snug">
-                <span className="label block text-ink-3">Your time</span>
+                <span className="label block text-ink-3">Your time{g.generated && " · estimate"}</span>
                 {time(v.handsOn)}
               </p>
               <p className="text-[16px] leading-snug">

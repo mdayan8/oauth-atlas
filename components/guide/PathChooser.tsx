@@ -37,7 +37,11 @@ export default function PathChooser({
   const same = (a: string[], b: string[]) => a.length === b.length && a.every((x) => b.includes(x));
   const isOn = (p: PathOptionT) =>
     (!p.set.audience || p.set.audience === sit.audience) && (!p.set.profile || p.set.profile === sit.profile) && (!p.set.needs || same(p.set.needs, sit.needs));
-  const skip = g.skip.composioManaged === "yes" ? "Use Composio's managed app" : g.skip.mcpDcr === "yes" ? `Use ${g.name}'s MCP server` : "";
+  const skips = [
+    ...(g.skip.composioManaged === "yes" ? [{ label: "Use Composio's managed app", note: "No app, no review. Users see Composio on consent.", url: toolkitUrl(g), cta: "Use Composio →" }] : []),
+    ...(g.skip.mcpDcr === "yes" && g.skip.mcpServer ? [{ label: `Use ${g.name}'s MCP server`, note: "Agents register themselves. No app of your own.", url: g.skip.mcpServer, cta: "Open →" }] : []),
+  ];
+  const skip = skips.length > 0;
 
   return (
     <section id="paths" className="scroll-mt-24 rounded-xl border border-line bg-bg p-2" style={style} aria-label="Choose your path">
@@ -47,22 +51,23 @@ export default function PathChooser({
       </div>
       {(g.paths.length > 0 || skip) && (
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-          {skip && (
+          {skips.map((k) => (
             <a
-              href={g.skip.composioManaged === "yes" ? toolkitUrl(g) : (g.skip.mcpServer ?? "#")}
+              key={k.label}
+              href={k.url}
               target="_blank"
               rel="noreferrer"
               className="group rounded-xl p-4 transition-colors hover:bg-accent-soft"
               style={{ background: "color-mix(in srgb, var(--accent) 7%, var(--row))" }}
             >
               <p className="label text-accent">Skip it</p>
-              <p className="mt-2 text-[16px] font-medium">{skip}</p>
-              <p className="mt-1 text-[13px] text-ink-2">No app, no review. Users see Composio on consent.</p>
+              <p className="mt-2 text-[16px] font-medium">{k.label}</p>
+              <p className="mt-1 text-[13px] text-ink-2">{k.note}</p>
               <p className="mt-3 flex items-center justify-between text-[20px] leading-none" style={{ color: DIFF_COLOR.instant }}>
-                Instant <span className="label text-accent group-hover:translate-x-0.5">{g.skip.composioManaged === "yes" ? "Use Composio →" : "Open →"}</span>
+                Instant <span className="label text-accent group-hover:translate-x-0.5">{k.cta}</span>
               </p>
             </a>
-          )}
+          ))}
           {g.paths.map((p) => {
             const v = pickVerdict(g.verdicts, apply(p));
             const on = isOn(p);

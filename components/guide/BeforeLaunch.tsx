@@ -30,7 +30,7 @@ export default function BeforeLaunch({ r, live, Cite, style }: { r: Resolved; li
           <ul className="mt-3 flex flex-col gap-2.5">
             {r.scopes.map((x) => (
               <li key={x.name} className="grid gap-1 sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
-                <code className="whitespace-nowrap font-mono text-[12px]">{x.name}</code>
+                <code className="min-w-0 font-mono text-[12px] [overflow-wrap:anywhere]">{x.name}</code>
                 <span className="text-[13px] text-ink-2">{x.meaning}</span>
                 <span className="flex gap-1.5">
                   <Pill color={tierColor(x.tier)}>{x.tier}</Pill>
