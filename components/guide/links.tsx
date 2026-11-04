@@ -6,7 +6,7 @@ export function LinkButton({ l, main = false }: { l: LinkT; main?: boolean }) {
       href={l.url}
       target="_blank"
       rel="noreferrer"
-      className={`label inline-flex h-9 items-center gap-2 rounded-[4px] px-3.5 !text-[11px] transition-colors ${main ? "bg-accent text-on-accent hover:opacity-90" : "bg-card text-ink hover:text-accent"}`}
+      className={`label inline-flex h-9 items-center gap-2 rounded-[4px] px-3.5 transition-colors ${main ? "bg-accent text-on-accent hover:opacity-90" : "bg-card text-ink hover:text-accent"}`}
     >
       {l.label} ↗
     </a>

@@ -23,9 +23,6 @@
   --b-official: #0f7b45;
   --b-third: #a46a00;
   --b-unverified: rgb(15 15 15 / 0.5);
-  --ice: radial-gradient(120% 90% at 0% 0%, #dff3ff 0%, transparent 55%),
-    radial-gradient(90% 80% at 100% 0%, #e4e8ff 0%, transparent 60%),
-    radial-gradient(80% 90% at 60% 100%, #d9fbff 0%, transparent 60%), #f5f9ff;
   color-scheme: light;
 }
 
@@ -50,9 +47,6 @@
   --b-official: #3ecf8e;
   --b-third: #f0b429;
   --b-unverified: rgb(242 242 243 / 0.5);
-  --ice: radial-gradient(120% 90% at 0% 0%, rgb(56 132 255 / 0.22) 0%, transparent 55%),
-    radial-gradient(90% 80% at 100% 0%, rgb(91 80 255 / 0.18) 0%, transparent 60%),
-    radial-gradient(80% 90% at 60% 100%, rgb(0 200 255 / 0.14) 0%, transparent 60%), #0e1220;
   color-scheme: dark;
 }
 
@@ -110,16 +104,9 @@ body {
   }
 }
 
-.ice {
-  background: var(--ice);
-}
-
 /* Hero glow: Composio blue and cyan, soft and wide (the Sarvam-style halo behind the headline). */
 .glow {
-  background:
-    radial-gradient(40% 45% at 30% 40%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%),
-    radial-gradient(35% 40% at 70% 35%, rgb(0 200 255 / 0.28), transparent 70%),
-    radial-gradient(45% 40% at 50% 70%, rgb(120 110 255 / 0.18), transparent 70%);
+  background: radial-gradient(40% 45% at 50% 40%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
   filter: blur(40px);
 }
 

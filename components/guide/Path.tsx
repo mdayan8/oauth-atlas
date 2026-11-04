@@ -60,7 +60,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
                 <summary className="flex cursor-pointer list-none items-center gap-2.5 text-[15px]">
                   <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--ink-3)]" />
                   <span className="min-w-0 flex-1">{x.label}</span>
-                  {x.agentCanDraft && <span className="label shrink-0 whitespace-nowrap !text-[10px] text-accent">Agent can draft</span>}
+                  {x.agentCanDraft && <span className="label shrink-0 whitespace-nowrap text-accent">Agent can draft</span>}
                   <span className="text-ink-3 transition-transform group-open:rotate-90">›</span>
                 </summary>
                 <p className="mt-1.5 pl-4 text-[14px] leading-relaxed text-ink-2">{x.detail}</p>
@@ -124,8 +124,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
         </div>
         {x.actor === "provider" && (
           <p className="mt-3 rounded-lg bg-card px-3 py-2.5 text-[13px] text-ink-2">
-            Expected wait: <span className="text-ink">{x.duration || "not published"}</span>. Nothing to do but answer the reviewer quickly
-            if they email you.
+            Wait: <span className="text-ink">{x.duration || "not published"}</span>. Reply fast if the reviewer emails.
           </p>
         )}
         {!live && (
@@ -146,7 +145,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
   };
 
   return (
-    <section id="path" className="scroll-mt-24 rounded-2xl bg-card p-1.5">
+    <section id="path" className="scroll-mt-24 rounded-xl border border-line bg-bg p-2">
       <div className="flex items-center gap-3 px-3.5 pb-3 pt-3">
         <h2 className="label text-ink">Your path</h2>
         {items.length > 0 && (
@@ -157,7 +156,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
       </div>
       {items.length > 0 && (
         <div className="mx-3.5 mb-2 h-0.5 overflow-hidden rounded-full bg-line" aria-hidden>
-          <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${(doneCount / items.length) * 100}%`, background: "var(--d-instant)" }} />
+          <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${(doneCount / items.length) * 100}%`, background: "var(--accent)" }} />
         </div>
       )}
       <div className="rounded-xl bg-row px-4 pb-2 pt-5 sm:px-5">
@@ -177,7 +176,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
                     onClick={() => toggle(x.id)}
                     aria-pressed={isDone}
                     aria-label={isDone ? `Mark "${x.title}" not done` : `Mark "${x.title}" done`}
-                    className="label grid h-7 w-7 shrink-0 place-items-center rounded-full !text-[11px] transition-all"
+                    className="label grid h-7 w-7 shrink-0 place-items-center rounded-full transition-all"
                     style={
                       isDone
                         ? { background: "var(--d-instant)", color: "var(--bg)" }
@@ -204,7 +203,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
                     <span className="min-w-0 flex-1">
                       <span className={`block text-[16px] leading-7 ${isNext ? "font-medium" : ""} ${isDone ? "text-ink-3 line-through decoration-1" : ""}`}>{x.title}</span>
                       <span className="mt-0.5 flex flex-wrap items-center gap-x-2 text-[12px]">
-                        <span className="label !text-[10px]" style={{ color: x.actor === "you" ? "var(--ink-2)" : c }}>
+                        <span className="label" style={{ color: x.actor === "you" ? "var(--ink-2)" : c }}>
                           {x.id === prepId ? "Before you start" : ACTOR_LABEL[x.actor]}
                         </span>
                         {x.meta && <span className="text-ink-3">· {x.meta}</span>}
@@ -241,7 +240,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
         </ol>
         {!live && items.length > 0 && doneCount === items.length && (
           <p className="rise pb-3 text-[14px]" style={{ color: "var(--d-instant)" }}>
-            All done. Your users can now click Connect {g.name}.
+            Done. Users can connect {g.name}.
           </p>
         )}
       </div>
@@ -254,7 +253,7 @@ function MarkDone({ done, onClick, label = "Mark done" }: { done: boolean; onCli
     <button
       type="button"
       onClick={onClick}
-      className="label inline-flex h-9 items-center gap-1.5 bg-card px-3.5 !text-[11px] text-ink transition-colors hover:text-[var(--d-instant)]"
+      className="label inline-flex h-9 items-center gap-1.5 bg-card px-3.5 text-ink transition-colors hover:text-[var(--d-instant)]"
     >
       {done ? (
         "Mark not done"

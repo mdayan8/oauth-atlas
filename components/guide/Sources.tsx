@@ -24,18 +24,18 @@ export default function Sources({ g, style }: { g: Guide; style: React.CSSProper
   if (!g.sources.length) return null;
   const counts = g.sources.reduce<Record<string, number>>((a, x) => ((a[x.badge] = (a[x.badge] ?? 0) + 1), a), {});
   return (
-    <section id="sources" className="rounded-2xl bg-card p-1.5" style={style}>
+    <section id="sources" className="rounded-xl border border-line bg-bg p-2" style={style}>
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} className="flex w-full flex-wrap items-center gap-3 px-3.5 py-3 text-left">
         <h2 className="label text-ink">Sources</h2>
         <span className="flex flex-wrap gap-1.5">
           {(Object.keys(counts) as (keyof typeof counts)[]).map((b) => (
             <span key={b} className="flex items-center gap-1">
               <EvidenceBadge badge={b as never} />
-              <span className="label !text-[11px] text-ink-3">{counts[b]}</span>
+              <span className="label text-ink-3">{counts[b]}</span>
             </span>
           ))}
         </span>
-        <span className="label ml-auto !text-[11px] text-ink-3">{open ? "Hide −" : `Show all ${g.sources.length} +`}</span>
+        <span className="label ml-auto text-ink-3">{open ? "Hide −" : `Show all ${g.sources.length} +`}</span>
       </button>
       {open && (
         <div className="rows flex flex-col gap-1">
@@ -56,14 +56,14 @@ export default function Sources({ g, style }: { g: Guide; style: React.CSSProper
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <EvidenceBadge badge={x.badge} />
-                  <span className="label !text-[10px] text-ink-3">Checked {x.checked}</span>
+                  <span className="label text-ink-3">Checked {x.checked}</span>
                 </div>
               </div>
             </Row>
           ))}
           {g.unverified.length > 0 && (
             <Row>
-              <p className="label !text-[11px] text-ink-3">What we could not verify</p>
+              <p className="label text-ink-3">What we could not verify</p>
               <ul className="mt-2 flex flex-col gap-1.5 text-[14px] text-ink-2">
                 {g.unverified.map((x) => (
                   <li key={x} className="flex gap-2">

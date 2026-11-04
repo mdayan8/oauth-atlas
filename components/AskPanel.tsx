@@ -58,7 +58,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
   const asked = [...messages].reverse().find((m) => m.role === "user")?.parts.map((p) => (p.type === "text" ? p.text : "")).join("");
 
   return (
-    <section id="ask" className="scroll-mt-24 rounded-2xl bg-card p-1.5" aria-label={`Tell the guide about you`}>
+    <section id="ask" className="scroll-mt-24 rounded-xl border border-line bg-bg p-2" aria-label={`Tell the guide about you`}>
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -75,7 +75,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
           value={q}
           onChange={(e) => setQ(e.target.value)}
           maxLength={300}
-          placeholder={`I'm building ... for ... and my agent needs to ... in ${g.name}`}
+          placeholder={`I'm building ... and my agent needs to ... in ${g.name}`}
           className="h-11 min-w-0 flex-1 rounded-[4px] bg-card px-4 text-[15px] text-ink outline-none ring-1 ring-line placeholder:text-ink-3 focus:ring-2 focus:ring-accent"
         />
         <button disabled={busy || !q.trim()} className="label h-11 shrink-0 bg-accent px-5 text-on-accent hover:opacity-90 disabled:opacity-40">
@@ -84,13 +84,13 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
       </form>
       {(latest || status === "submitted" || error) && (
         <div className="flex flex-col gap-2 px-1.5 pb-1.5 pt-2" aria-live="polite">
-          {asked && <p className="label px-2 !text-[10px] text-ink-3">For: {asked}</p>}
+          {asked && <p className="label px-2 text-ink-3">For: {asked}</p>}
           {latest && expand(latest.parts as Part[]).map((p, i) => <Block key={p.toolCallId ?? i} p={p} Cite={Cite} onChoose={ask} busy={busy} />)}
           {status === "submitted" && (
             <div className="rise rounded-xl bg-row px-4 py-3.5">
               <p className="label flex items-center gap-2 text-ink-2">
                 <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent" />
-                Reading the {g.name} guide ({g.sources.length} sources), re-shaping it for you
+                Reading the guide
               </p>
               <Skeleton bare />
             </div>
@@ -109,7 +109,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
 function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (t: string) => void; busy: boolean }) {
   const i = p.input ?? {};
   const card = "rise rounded-2xl bg-row px-4 py-3.5";
-  const head = "label !text-[11px] text-ink-3";
+  const head = "label text-ink-3";
   switch (p.type) {
     case "tool-set_situation":
       // Free models sometimes skip the summary, so build one from what they did set.
@@ -135,9 +135,9 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
               {DIFFICULTY_LABEL[i.difficulty as keyof typeof DIFFICULTY_LABEL]}
             </p>
             <p className="text-[14px]">
-              <span className="label !text-[10px] text-ink-3">Your time</span> {i.handsOn}
+              <span className="label text-ink-3">Your time</span> {i.handsOn}
               <span className="mx-2 text-ink-3">·</span>
-              <span className="label !text-[10px] text-ink-3">Waiting</span> {i.waiting}
+              <span className="label text-ink-3">Waiting</span> {i.waiting}
             </p>
           </div>
           <div className="mt-3 max-w-md">
@@ -183,12 +183,12 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
               const a = x.actor && ACTOR_COLOR[x.actor] ? x.actor : "you";
               return (
                 <li key={k} className="flex flex-wrap items-center gap-2 text-[15px]">
-                  <span className="label grid h-6 w-6 place-items-center rounded-full !text-[10px]" style={{ color: ACTOR_COLOR[a], background: `color-mix(in srgb, ${ACTOR_COLOR[a]} 10%, transparent)` }}>
+                  <span className="label grid h-6 w-6 place-items-center rounded-full" style={{ color: ACTOR_COLOR[a], background: `color-mix(in srgb, ${ACTOR_COLOR[a]} 10%, transparent)` }}>
                     {k + 1}
                   </span>
                   {x.title}
                   <Pill color={ACTOR_COLOR[a]}>{ACTOR_LABEL[a]}</Pill>
-                  {x.duration && <span className="label ml-auto !text-[11px] text-ink-3">{x.duration}</span>}
+                  {x.duration && <span className="label ml-auto text-ink-3">{x.duration}</span>}
                 </li>
               );
             })}
@@ -215,7 +215,7 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
       return (
         <div className="rise flex flex-wrap gap-2 px-1">
           {links.filter((l) => l.url?.startsWith("https://")).map((l) => (
-            <a key={l.url} href={l.url} target="_blank" rel="noreferrer" className="label inline-flex h-10 items-center gap-2 bg-row px-4 !text-[11px] text-ink hover:text-accent">
+            <a key={l.url} href={l.url} target="_blank" rel="noreferrer" className="label inline-flex h-10 items-center gap-2 bg-row px-4 text-ink hover:text-accent">
               {l.label || l.url} ↗
             </a>
           ))}
@@ -226,7 +226,7 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
       const opts: string[] = Array.isArray(i.options) ? i.options.filter((o: unknown) => typeof o === "string") : [];
       return opts.length ? (
         <div className="rise flex flex-wrap items-baseline gap-x-4 gap-y-1 px-2 pt-1">
-          <span className="label !text-[10px] text-ink-3">Worth asking next</span>
+          <span className="label text-ink-3">Next</span>
           {opts.map((o) => (
             <button key={o} disabled={busy} onClick={() => onChoose(o)} className="text-left text-[13px] text-accent underline decoration-[var(--accent-soft)] underline-offset-4 hover:decoration-[var(--accent)] disabled:opacity-50">
               {o}
@@ -237,7 +237,7 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
     }
     case "tool-web_fetch":
       return (
-        <p className="label px-3 !text-[11px] text-ink-3">
+        <p className="label px-3 text-ink-3">
           {p.state === "output-available" ? "Checked" : "Checking"} {hostOf(i.url) || "an official page"}
         </p>
       );

@@ -5,9 +5,9 @@ import type { CiteFn } from "./shared";
 export default function Stuck({ r, live, Cite }: { r: Resolved; live: boolean; Cite: CiteFn }) {
   if (!r.blockers.length && !live) return null;
   return (
-    <section className="rounded-2xl bg-card p-1.5" aria-label="If you get stuck">
+    <section className="rounded-xl border border-line bg-bg p-2" aria-label="If you get stuck">
       <h2 className="label px-3.5 pb-3 pt-3 text-ink">If you get stuck</h2>
-      <div className="rounded-xl bg-row p-1.5">
+      <div className="rounded-lg bg-row p-1.5">
         {r.blockers.length === 0 && <Skeleton bare tall />}
         <div className="rows flex flex-col">
           {r.blockers.map((x) => (

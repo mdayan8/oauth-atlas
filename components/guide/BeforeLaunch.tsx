@@ -7,10 +7,10 @@ export default function BeforeLaunch({ r, live, Cite, style }: { r: Resolved; li
   if (!r.limits.length && !r.scopes.length && !live) return null;
   const tierColor = (t: string) => (t === "restricted" ? "var(--d-gated)" : t === "sensitive" ? "var(--d-moderate)" : "var(--d-instant)");
   return (
-    <section className="rounded-2xl bg-card p-1.5" style={style} aria-label="Before you launch">
+    <section className="rounded-xl border border-line bg-bg p-2" style={style} aria-label="Before you launch">
       <div className="px-3.5 pb-3 pt-3">
         <h2 className="label text-ink">Before you launch</h2>
-        <p className="mt-1 text-[13px] text-ink-3">Caps, expiry and permissions to design around.</p>
+        <p className="mt-1 text-[13px] text-ink-3"></p>
       </div>
       <div className="rows grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
         {r.limits.length === 0 && live && <Skeleton />}
@@ -26,7 +26,7 @@ export default function BeforeLaunch({ r, live, Cite, style }: { r: Resolved; li
       </div>
       {r.scopes.length > 0 && (
         <div className="mt-1.5 rounded-xl bg-row p-4">
-          <p className="label !text-[11px] text-ink-3">Permissions you ask for · sensitive and restricted ones trigger a review</p>
+          <p className="label text-ink-3">Scopes · sensitive and restricted ones trigger a review</p>
           <ul className="mt-3 flex flex-col gap-2.5">
             {r.scopes.map((x) => (
               <li key={x.name} className="grid gap-1 sm:grid-cols-[minmax(0,260px)_minmax(0,1fr)_auto] sm:items-center sm:gap-4">

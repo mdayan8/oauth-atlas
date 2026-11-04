@@ -39,20 +39,20 @@ export default function PathChooser({
   const skip = g.skip.composioManaged === "yes" ? "Use Composio's managed app" : g.skip.mcpDcr === "yes" ? `Use ${g.name}'s MCP server` : "";
 
   return (
-    <section id="paths" className="scroll-mt-24 rounded-2xl bg-card p-1.5" style={style} aria-label="Choose your path">
+    <section id="paths" className="scroll-mt-24 rounded-xl border border-line bg-bg p-2" style={style} aria-label="Choose your path">
       <div className="flex flex-wrap items-baseline justify-between gap-2 px-3.5 pb-3 pt-3">
         <h2 className="label text-ink">Choose your path</h2>
-        <p className="text-[12px] text-ink-3">{r.hidden > 0 ? `Hiding ${plural(r.hidden, "item")} that don't apply to this path.` : "Pick the one closest to you."}</p>
+        <p className="text-[12px] text-ink-3">{r.hidden > 0 ? `${plural(r.hidden, "item")} hidden` : ""}</p>
       </div>
       {(g.paths.length > 0 || skip) && (
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
           {skip && (
-            <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--d-instant) 8%, var(--row))" }}>
-              <p className="label !text-[11px]" style={{ color: "var(--d-instant)" }}>
+            <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--accent) 7%, var(--row))" }}>
+              <p className="label text-accent">
                 Skip it
               </p>
               <p className="mt-2 text-[16px] font-medium">{skip}</p>
-              <p className="mt-1 text-[13px] text-ink-2">No app of your own, no review. Your users see Composio on the consent screen.</p>
+              <p className="mt-1 text-[13px] text-ink-2">No app, no review. Users see Composio on consent.</p>
               <p className="mt-3 text-[20px] leading-none" style={{ color: DIFF_COLOR.instant }}>
                 Instant
               </p>
@@ -69,7 +69,7 @@ export default function PathChooser({
                 aria-pressed={on}
                 className={`group rounded-xl p-4 text-left transition-all ${on ? "bg-row shadow-[0_0_0_2px_var(--accent)]" : "bg-row/60 hover:bg-row"}`}
               >
-                <p className={`label !text-[11px] ${on ? "text-accent" : "text-ink-3"}`}>{on ? "Your path" : "Pick this"}</p>
+                <p className={`label ${on ? "text-accent" : "text-ink-3"}`}>{on ? "Your path" : ""}</p>
                 <p className="mt-2 text-[16px] font-medium">{p.label}</p>
                 <p className="mt-1 text-[13px] text-ink-2">{p.detail}</p>
                 {v && (
@@ -87,8 +87,8 @@ export default function PathChooser({
           })}
         </div>
       )}
-      <button type="button" onClick={() => setTune(!tune)} aria-expanded={tune} className="label px-3.5 py-3 !text-[11px] text-ink-3 hover:text-ink">
-        {tune ? "Hide adjustments" : "Adjust: who you are, what your agent needs"} {tune ? "−" : "+"}
+      <button type="button" onClick={() => setTune(!tune)} aria-expanded={tune} className="label px-3.5 py-3 text-ink-3 hover:text-ink">
+        {tune ? "Hide" : "Adjust"} {tune ? "−" : "+"}
       </button>
       {(tune || g.paths.length === 0) && (
         <div className="rise mx-1.5 mb-1.5 flex flex-wrap gap-x-8 rounded-xl bg-row px-4 pb-4">
@@ -131,7 +131,7 @@ function Chips<T extends string>({
               type="button"
               aria-pressed={on}
               onClick={() => onPick(id)}
-              className={`label min-h-9 rounded-full px-3 !text-[11px] transition-colors ${on ? "bg-ink text-bg" : "bg-row text-ink-2 hover:text-ink"}`}
+              className={`label min-h-9 rounded-full px-3 transition-colors ${on ? "bg-ink text-bg" : "bg-row text-ink-2 hover:text-ink"}`}
             >
               {text}
             </button>

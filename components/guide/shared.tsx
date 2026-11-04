@@ -24,7 +24,7 @@ export function Cite({ ids, sources }: { ids?: string[]; sources: Guide["sources
             e.preventDefault();
             window.dispatchEvent(new CustomEvent("atlas:source", { detail: n }));
           }}
-          className="label !text-[11px] text-ink-3 underline-offset-2 hover:text-accent hover:underline"
+          className="label text-ink-3 underline-offset-2 hover:text-accent hover:underline"
         >
           [{n}]
         </a>

@@ -54,7 +54,7 @@ export function DraftButton({
 
   if (state === "idle")
     return (
-      <button onClick={run} className="label inline-flex h-9 items-center gap-2 rounded-[4px] bg-accent px-3.5 !text-[11px] text-on-accent hover:opacity-90">
+      <button onClick={run} className="label inline-flex h-9 items-center gap-2 rounded-[4px] bg-accent px-3.5 text-on-accent hover:opacity-90">
         <Sparkle /> {label}
       </button>
     );
@@ -74,13 +74,13 @@ export function DraftButton({
                 () => {},
               )
             }
-            className="label ml-auto !text-[11px] text-accent hover:opacity-80"
+            className="label ml-auto text-accent hover:opacity-80"
           >
             {copied ? "Copied" : "Copy draft"}
           </button>
         )}
         {state !== "writing" && (
-          <button onClick={run} className={`label !text-[11px] text-ink-3 hover:text-ink ${state === "done" ? "" : "ml-auto"}`}>
+          <button onClick={run} className={`label text-ink-3 hover:text-ink ${state === "done" ? "" : "ml-auto"}`}>
             Redo
           </button>
         )}
@@ -114,7 +114,7 @@ export function Recheck({ slug }: { slug: string }) {
   const good = items?.filter((x) => x.ok).length ?? 0;
   return (
     <div className="flex flex-col gap-2">
-      <button onClick={run} disabled={busy} className="label inline-flex h-9 w-fit items-center gap-2 rounded-full bg-row px-3 !text-[11px] text-ink hover:text-accent disabled:opacity-60">
+      <button onClick={run} disabled={busy} className="label inline-flex h-9 w-fit items-center gap-2 rounded-full bg-row px-3 text-ink hover:text-accent disabled:opacity-60">
         <span className={`h-1.5 w-1.5 rounded-full bg-[var(--b-tested)] ${busy ? "pulse-dot" : ""}`} />
         {busy ? "Re-checking live endpoints..." : items ? "Re-check again" : "Re-check live now"}
       </button>
@@ -167,7 +167,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
           () => {},
         )
       }
-      className="label inline-flex h-9 items-center bg-card px-3.5 !text-[11px] text-ink hover:text-accent"
+      className="label inline-flex h-9 items-center bg-card px-3.5 text-ink hover:text-accent"
     >
       {copied ? "Copied" : label}
     </button>

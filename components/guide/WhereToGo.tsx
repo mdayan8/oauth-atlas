@@ -13,9 +13,9 @@ export default function WhereToGo({ g, live }: { g: Guide; live: boolean }) {
   const every = g.links.length ? g.links : g.portal ? [{ kind: "console" as const, label: `Open the ${g.name} developer portal`, url: g.portal }] : [];
   const links = all ? every : every.slice(0, 5);
   return (
-    <section className="rounded-2xl bg-card p-1.5" aria-label="Where to go">
+    <section className="rounded-xl border border-line bg-bg p-2" aria-label="Where to go">
       <h2 className="label px-3.5 pb-3 pt-3 text-ink">Where to go</h2>
-      <div className="rounded-xl bg-row p-1.5">
+      <div className="rounded-lg bg-row p-1.5">
         {links.length === 0 && <Skeleton bare tall />}
         <ul className="rows flex flex-col">
           {links.map((l) => {
@@ -41,7 +41,7 @@ export default function WhereToGo({ g, live }: { g: Guide; live: boolean }) {
         </ul>
       </div>
       {every.length > 5 && (
-        <button type="button" onClick={() => setAll(!all)} className="label px-3.5 py-3 !text-[11px] text-ink-3 hover:text-ink">
+        <button type="button" onClick={() => setAll(!all)} className="label px-3.5 py-3 text-ink-3 hover:text-ink">
           {all ? "Show fewer −" : `${plural(every.length - 5, "more link")} +`}
         </button>
       )}

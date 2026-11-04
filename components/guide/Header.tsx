@@ -7,7 +7,7 @@ export default function Header({ g, r, s, live, shareLink }: { g: Guide; r: Reso
     <div className="build relative flex flex-col gap-6 pb-8 pt-10 sm:pt-14 lg:flex-row lg:items-end">
       <div aria-hidden className="glow pointer-events-none absolute -left-40 -top-40 h-[480px] w-[820px] max-w-[100vw] opacity-70" />
       <div className="relative max-w-2xl">
-        <p className="label text-accent">OAuth app guide{g.generated && " · generated live"}</p>
+        <p className="label text-accent">Guide{g.generated && " · generated live"}</p>
         <h1 className="h-display mt-4">{g.name || "Investigating..."}</h1>
         {g.summary && <p className="mt-4 text-[16px] leading-relaxed text-ink-2 sm:text-[18px]">{g.summary}</p>}
         <p className="label mt-4 text-ink-3">
@@ -18,7 +18,7 @@ export default function Header({ g, r, s, live, shareLink }: { g: Guide; r: Reso
           ) : (
             g.domain
           )}
-          {g.checked && <> · <span className="whitespace-nowrap">Last checked {g.checked}</span></>}
+          {g.checked && <> · <span className="whitespace-nowrap">Checked {g.checked}</span></>}
         </p>
       </div>
       {!live && (

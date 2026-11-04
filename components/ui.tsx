@@ -21,7 +21,7 @@ export function Pill({ color, children, title }: { color: string; children: Reac
   return (
     <span
       title={title}
-      className="label inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 !text-[11px]"
+      className="label inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5"
       style={{ color, background: `color-mix(in srgb, ${color} 11%, transparent)` }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
@@ -42,9 +42,6 @@ export function Meter({ d }: { d: Difficulty }) {
   const i = difficultyIndex(d);
   return (
     <div role="img" aria-label={`Difficulty ${DIFFICULTY_LABEL[d]}, ${i + 1} of 5`}>
-      <p className="label mb-2 !text-[10px] text-ink-3">
-        <span className="text-ink">{DIFFICULTY_LABEL[d]}</span> · {i + 1} of 5
-      </p>
       <div className="flex gap-1">
       {(["instant", "easy", "moderate", "hard", "gated"] as const).map((k, j) => (
         <div key={k} className="h-1.5 flex-1 rounded-full transition-colors duration-500" style={{ background: j <= i ? DIFF_COLOR[d] : "var(--line)" }} />

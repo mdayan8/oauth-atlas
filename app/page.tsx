@@ -3,15 +3,14 @@ import { GUIDES } from "@/lib/guides";
 import { applyPreset, defaultSituation, difficultyIndex, pickVerdict } from "@/lib/situation";
 
 const POINTS = [
-  ["Answer first, then one step at a time", "How hard, how long, what you need and who does what, shaped to your situation. Then a path where only your next step is open."],
-  ["The agent does its part", "Privacy policy, scope justification, demo video script: anything marked Agent can draft, it writes for you on the spot."],
-  ["Proof you can re-run", "Every claim shows its evidence. Re-check live fetches the tested endpoints again, in front of you, with no key needed."],
+  ["Answer first", "A verdict for your situation, then one open step at a time."],
+  ["The agent does its part", "Privacy policy, scope justification, demo script: drafted for you."],
+  ["Proof you can re-run", "Every claim cites a source. Re-check hits the endpoints again."],
 ];
 
 export default function Home() {
   const cards: Card[] = GUIDES.map((g) => {
     const sorted = [...g.verdicts].sort((a, b) => difficultyIndex(a.difficulty) - difficultyIndex(b.difficulty));
-    const base = g.verdicts.find((v) => !v.when) ?? sorted[0];
     return {
       slug: g.slug,
       name: g.name,
@@ -19,10 +18,6 @@ export default function Home() {
       summary: g.summary,
       min: sorted[0].difficulty,
       max: sorted.at(-1)!.difficulty,
-      handsOn: base.handsOn,
-      waiting: base.waiting,
-      managed: g.skip.composioManaged,
-      sources: g.sources.length,
       // Each real route through setup with the verdict it gets: the "same app, different answer" preview.
       routes: g.paths.flatMap((p) => {
         const base = defaultSituation(g);
@@ -39,27 +34,21 @@ export default function Home() {
           cards={cards}
           hero={
             <>
-              <p className="label inline-flex items-center gap-2 rounded-full bg-row/70 px-3 py-1.5 text-accent ring-1 ring-[var(--line)] backdrop-blur">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                OAuth app guides for agent builders
-              </p>
-              <h1 className="mx-auto mt-5 max-w-[820px] text-[36px] leading-[1.05] tracking-[-1.2px] [text-wrap:balance] sm:text-[50px] sm:tracking-[-1.6px]">
+              <h1 className="h-display mx-auto max-w-[820px] [text-wrap:balance]">
                 Know how hard an OAuth app is, <span className="text-ink-3">before&nbsp;you&nbsp;start.</span>
               </h1>
-              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-ink-2 sm:text-[17px]">
-                How hard, how long, what you need, and what an agent can do for you. Every line has a source.
-              </p>
+              <p className="mx-auto mt-4 max-w-xl text-[16px] leading-relaxed text-ink-2">How hard, how long, what you need. Every line cites a source.</p>
             </>
           }
         />
       </div>
 
-      <section className="mt-24 grid gap-3 sm:grid-cols-3">
+      <section className="mt-24 grid gap-4 sm:grid-cols-3">
         {POINTS.map(([t, d], i) => (
-          <div key={t} className="rounded-2xl bg-card p-6">
+          <div key={t} className="rounded-xl border border-line p-4">
             <p className="label text-accent">0{i + 1}</p>
-            <p className="mt-3 text-[18px]">{t}</p>
-            <p className="mt-2 text-[14px] leading-relaxed text-ink-2">{d}</p>
+            <p className="mt-2 text-[16px]">{t}</p>
+            <p className="mt-1 text-[14px] leading-relaxed text-ink-2">{d}</p>
           </div>
         ))}
       </section>

@@ -28,16 +28,16 @@ export default function ShareBar({ g, r, s, shareLink }: { g: Guide; r: Resolved
         <button onClick={() => setFallback("")} className="label mt-1 h-9 px-2 text-ink-3 hover:text-ink">Done</button>
       </div>
     );
-  const btn = "label inline-flex h-11 items-center justify-center rounded-[4px] px-4 transition-colors";
+  const btn = "label inline-flex h-10 items-center justify-center rounded-[4px] px-4 transition-colors";
   return (
     <div className="flex flex-wrap gap-2 lg:flex-nowrap">
-      <button className={`${btn} bg-accent text-on-accent hover:opacity-90`} onClick={() => copy("prompt", toAgentPrompt(g, r, s))}>
-        {done === "prompt" ? "Copied" : "Copy prompt for your agent"}
+      <button className={`${btn} bg-accent text-on-accent hover:bg-[color-mix(in_srgb,var(--accent)_88%,black)] active:scale-[0.98]`} onClick={() => copy("prompt", toAgentPrompt(g, r, s))}>
+        {done === "prompt" ? "Copied" : "Copy for your agent"}
       </button>
-      <button className={`${btn} bg-card text-ink hover:bg-row-hover`} onClick={() => copy("md", link().then((u) => toMarkdown(g, r, s, u)))}>
+      <button className={`${btn} text-ink-2 hover:text-ink`} onClick={() => copy("md", link().then((u) => toMarkdown(g, r, s, u)))}>
         {done === "md" ? "Copied" : "Copy Markdown"}
       </button>
-      <button className={`${btn} bg-card text-ink hover:bg-row-hover`} onClick={() => copy("link", link())}>
+      <button className={`${btn} text-ink-2 hover:text-ink`} onClick={() => copy("link", link())}>
         {done === "link" ? "Copied" : "Copy link"}
       </button>
     </div>
