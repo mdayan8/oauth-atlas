@@ -38,30 +38,56 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-end">
-        <div>
-          {hero}
-          <div className="mt-10 max-w-2xl">
-            <AppSearch onSubmit={go} onChange={setQ} />
-        <p className="mt-4 flex flex-wrap items-center gap-2 text-[14px] text-ink-3">
-          Not in the library? The agent investigates it live. Try
-          {TRY.map((t) => (
-            <button key={t} onClick={() => go(t)} className="label rounded-full bg-card px-3 py-1.5 !text-[11px] text-ink-2 hover:text-accent">
-              {t}
-            </button>
-          ))}
-            </p>
+      {/* Hero: centred headline over a soft glow, then a product window with the real search and a live preview. */}
+      <div className="relative">
+        <div aria-hidden className="glow pointer-events-none absolute left-1/2 top-[-180px] h-[720px] w-[1200px] max-w-[100vw] -translate-x-1/2" />
+        <div className="relative mx-auto max-w-3xl text-center">{hero}</div>
+
+        <div className="relative mx-auto mt-12 max-w-5xl rounded-[28px] bg-card/80 p-1.5 shadow-[0_40px_120px_-40px_rgba(0,7,205,0.35)] ring-1 ring-[var(--line)] backdrop-blur">
+          <div className="flex items-center gap-2 px-4 py-2.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-[color-mix(in_srgb,var(--ink)_15%,transparent)]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[color-mix(in_srgb,var(--ink)_15%,transparent)]" />
+            <span className="h-2.5 w-2.5 rounded-full bg-[color-mix(in_srgb,var(--ink)_15%,transparent)]" />
+            <span className="label ml-3 !text-[10px] text-ink-3">oauth atlas · look up any app</span>
+          </div>
+          <div className="grid grid-cols-1 gap-6 rounded-[22px] bg-row p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-center">
+            <div className="min-w-0">
+              <p className="label text-accent">Start here</p>
+              <p className="mt-3 text-[28px] leading-tight tracking-[-0.6px] sm:text-[32px]">Which app do your users need to connect?</p>
+              <div className="mt-6">
+                <AppSearch onSubmit={go} onChange={setQ} />
+              </div>
+              <p className="label mt-6 !text-[10px] text-ink-3">Hand-checked guides</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {cards.map((c) => (
+                  <Link key={c.slug} href={`/guide/${c.slug}`} className="inline-flex h-9 items-center gap-2 rounded-full bg-card px-3.5 text-[13px] hover:text-accent">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: DIFF_COLOR[c.max] }} />
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+              <p className="label mt-5 !text-[10px] text-ink-3">Or watch the agent build one live</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {TRY.map((t) => (
+                  <button key={t} onClick={() => go(t)} className="inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-[13px] text-accent ring-1 ring-[var(--accent-soft)] hover:bg-accent-soft">
+                    <span className="text-[11px]">✦</span>
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <Spectrum cards={cards} />
           </div>
         </div>
-        <Spectrum cards={cards} />
       </div>
 
-      <section id="library" className="mt-20 scroll-mt-24">
-        <div className="flex items-baseline gap-3">
-          <h2 className="label text-ink">Library</h2>
-          <span className="label text-ink-3">{shown.length} hand-checked guides</span>
+      <section id="library" className="mt-28 scroll-mt-24">
+        <div className="text-center">
+          <p className="label text-accent">Library</p>
+          <h2 className="mt-3 text-[36px] leading-tight tracking-[-0.9px]">Six apps, six different shapes</h2>
+          <p className="mx-auto mt-3 max-w-xl text-[16px] text-ink-2">Picked to cover the range: instant, scope-dependent, cost-gated, review-gated. Each one checked against official docs.</p>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((c) => (
             <Link key={c.slug} href={`/guide/${c.slug}`} className="group flex flex-col rounded-2xl bg-card p-1.5 transition-transform hover:-translate-y-0.5">
               <div className="flex flex-1 flex-col rounded-xl bg-row p-5">

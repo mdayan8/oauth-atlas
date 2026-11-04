@@ -114,6 +114,15 @@ body {
   background: var(--ice);
 }
 
+/* Hero glow: Composio blue and cyan, soft and wide (the Sarvam-style halo behind the headline). */
+.glow {
+  background:
+    radial-gradient(40% 45% at 30% 40%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 70%),
+    radial-gradient(35% 40% at 70% 35%, rgb(0 200 255 / 0.28), transparent 70%),
+    radial-gradient(45% 40% at 50% 70%, rgb(120 110 255 / 0.18), transparent 70%);
+  filter: blur(40px);
+}
+
 @keyframes rise {
   from {
     opacity: 0;
