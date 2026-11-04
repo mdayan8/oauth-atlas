@@ -99,8 +99,9 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
                 <CopyButton text={COMPOSIO_CALLBACK} label="Copy" />
               </span>
             </li>
-            <li>In Composio, create an auth config for {g.name}, choose OAuth2, turn on Use your own developer credentials, and paste the client ID and secret. Set the same redirect URI there.</li>
-            <li>Keep the client secret on your server. Use separate apps for staging and production.</li>
+            <li>In Composio, create an auth config for {g.name}, choose OAuth2, turn on Use your own developer credentials, and paste the client ID and secret. The dashboard shows the redirect URI to use; it matches the one above.</li>
+            <li>Copy the auth config ID (it looks like ac_1234abcd) and pass it in your session under authConfigs, keyed by toolkit. A toolkit you leave out keeps using Composio&rsquo;s managed app.</li>
+            <li>Your users then connect through a Connect Link; Composio stores and refreshes their tokens as connected accounts, so your app never handles them. Keep the client secret on your server and use separate apps for staging and production.</li>
             <li>
               Check in code which OAuth app applies (Composio&rsquo;s or yours):
               <span className="mt-1.5 flex flex-wrap items-center gap-2">
@@ -116,7 +117,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <LinkButton l={{ kind: "console", label: "Open Composio auth configs", url: COMPOSIO_DASHBOARD }} main />
               {COMPOSIO_GUIDES.has(g.slug) && <LinkButton l={{ kind: "docs", label: `Composio's ${g.name} guide`, url: `https://composio.dev/auth/${g.slug}` }} />}
-              <LinkButton l={{ kind: "docs", label: "Composio docs", url: "https://docs.composio.dev/docs/authentication/white-labeling-authentication" }} />
+              <LinkButton l={{ kind: "docs", label: "Managed vs custom auth", url: "https://docs.composio.dev/docs/authentication/custom-app-vs-managed-app" }} />
               <MarkDone done={done.includes(id)} onClick={() => toggle(id)} />
             </div>
           )}

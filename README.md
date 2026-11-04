@@ -36,6 +36,7 @@ The library, re-checks and sharing work with no keys. The live agent, Ask and Dr
 
 ## Limitations
 
+- The home page indexes the 276 OAuth toolkits in Composio's published `toolkits.json` (127 Composio-managed); Composio's directory page counts more, so the two totals differ.
 - Six deep guides, not 100. The schema, live agent and keyless probes are what scale.
 - Search engines answer nothing to cloud servers, so on the live site the docs come from three keyless sources: the links on Composio's toolkit page, the provider's `llms.txt` index, and a hand-checked map of OAuth docs for about 50 common apps (`data/docs.json`). An app outside all three gets Composio's status and the live endpoint checks only, and the guide says so.
 - Live runs were tested on the free route (Groq, NVIDIA NIM backup), not yet with a Claude key. Groq's free tier caps each model at 200K tokens a day, about 30 live guides; repeats of the same app are served from a 24-hour cache.

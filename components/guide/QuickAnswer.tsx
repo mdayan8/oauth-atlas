@@ -114,6 +114,9 @@ export default function QuickAnswer({ g, r, s, live, Cite, style }: { g: Guide; 
             <p className="mt-1 text-[15px] leading-relaxed">
               {skip.replace(/^Quickest path: /, "")} {g.skip.sourceIds.length > 0 && <Cite ids={g.skip.sourceIds} />}
             </p>
+            <p className="mt-2 text-[13px] text-ink-3">
+              Either way your users connect through a Composio Connect Link and become connected accounts; Composio stores and refreshes their tokens. The OAuth app is the only part that changes: Composio&rsquo;s, or yours in a custom auth config.
+            </p>
             {g.skip.composioManaged === "yes" && (
               <div className="mt-3 flex flex-wrap gap-2">
                 <LinkButton l={{ kind: "console", label: `Use Composio for ${name}`, url: toolkitUrl(g) }} main />

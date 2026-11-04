@@ -73,7 +73,7 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
                 ))}
               </div>
               <p className="mt-4 text-[14px] text-ink-3">
-                Any other app: the agent builds its guide live, with sources. {TOOLKITS.length} OAuth apps indexed from Composio&rsquo;s directory, {MANAGED_COUNT} of them Composio-managed.
+                Any other app: the agent builds its guide live, with sources. {TOOLKITS.length} OAuth apps indexed from Composio&rsquo;s toolkit data, {MANAGED_COUNT} of them Composio-managed.
               </p>
             </div>
             <Spectrum cards={cards} />
@@ -117,7 +117,7 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
       <section id="directory" className="mt-24 scroll-mt-24">
         <h2 className="text-center text-[28px] leading-tight tracking-[-0.6px]">Every OAuth app Composio knows</h2>
         <p className="mx-auto mt-2 max-w-xl text-center text-[14px] text-ink-2">
-          From Composio&rsquo;s managed OAuth app directory. Composio-managed means no app of your own; bring your own means you register one and the guide shows how hard that is.
+          From Composio&rsquo;s published toolkit data. Composio-managed means no app of your own; bring your own means you register one and the guide shows how hard that is.
         </p>
         <div className="mt-6 flex justify-center gap-2">
           {(["managed", "own"] as const).map((k) => (
