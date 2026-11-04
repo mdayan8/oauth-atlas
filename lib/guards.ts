@@ -20,7 +20,7 @@ type Draft = {
 
 const empty = (w: When) => !w || (!w.profile?.length && !w.audience?.length && !w.needs?.length);
 
-export type Found = {
+type Found = {
   mcp?: { server: string; dcr: boolean };
   composio?: { managed: string; auth?: string; slug?: string };
   officialPages?: number;

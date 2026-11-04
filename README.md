@@ -24,6 +24,14 @@ The library, re-checks and sharing work with no keys. The live agent, Ask and Dr
 - **Evidence**: every claim carries a badge (Tested by agent, Official docs, Third-party, Unverified) and a numbered, dated source. **Re-check live** re-fetches the tested endpoints on the spot.
 - **Share**: permalink, Copy Markdown, Copy prompt for your coding agent. Live guides share as a link that carries the whole guide.
 
+## Layout
+
+- `app/` pages and API routes: `generate` (live guide), `ask` (In your words), `draft`, `recheck`.
+- `components/guide/` one file per section of a guide; `components/GuideView.tsx` composes them.
+- `lib/gather.ts` collects evidence (docs, Composio, discovery, authorize attempt); `lib/guards.ts` enforces the honesty rules on the model's output; `lib/situation.ts` re-shapes a guide for a situation; `lib/fold.ts` turns the stream into a guide.
+- `data/guides/` the six hand-checked guides; `data/docs.json` official OAuth docs for 49 apps; `data/toolkits.json` Composio's OAuth toolkits and who provides the app.
+- `lib/check.ts` the checks behind `pnpm check`.
+
 ## Key decisions
 
 - **Answer the developer's real question first.** Not "how do I click through registration" but "how hard, how long, what blocks me, how sure are you". Hands-on time and waiting time are shown apart.

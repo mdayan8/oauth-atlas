@@ -16,7 +16,7 @@ const RELEVANT = /oauth|scope|sensitive|restricted|security assessment|redirect|
 const AUTHORIZE = /https:\/\/[a-z0-9.-]+\/[^\s"'<>()\\]*?(oauth2?\/(v\d\/)?auth(orize)?|\/authorize)\b[^\s"'<>()\\]*/gi;
 
 // Keep only sentences about OAuth setup, so a short budget holds the useful part of a long doc page.
-export function excerpt(text: string, max = 1200) {
+function excerpt(text: string, max = 1200) {
   const out: string[] = [];
   let n = 0;
   for (const s of text.split(/(?<=[.!?])\s+/)) {

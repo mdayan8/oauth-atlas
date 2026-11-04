@@ -10,7 +10,7 @@ type ProviderOptions = NonNullable<Parameters<typeof streamText>[0]["providerOpt
 // (NVIDIA_API_KEY) as backup when Groq is missing or hits its limit. Keys only ever come from the environment.
 // Groq rate limits are per model, so each feature gets its own free model and they never share a quota.
 // Drafts are short and rare, so they share the Ask model. (Qwen was tried: it answers fast but drops fields and makes things up.)
-export const GROQ_MODELS = { write: "openai/gpt-oss-120b", ask: "openai/gpt-oss-20b", draft: "openai/gpt-oss-20b" } as const;
+const GROQ_MODELS = { write: "openai/gpt-oss-120b", ask: "openai/gpt-oss-20b", draft: "openai/gpt-oss-20b" } as const;
 
 export function pickModel(opts: { effort?: "low" | "medium"; use?: keyof typeof GROQ_MODELS } = {}) {
   if (process.env.ANTHROPIC_API_KEY)

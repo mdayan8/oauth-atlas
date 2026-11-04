@@ -3,8 +3,8 @@ import { z } from "zod";
 import { readComposio, readMetadata, safeOrigin, tryAuthorize } from "./probes";
 import { Blocker, Limit, Link, Need, PathOption, Requirement, Scope, SkipPath, Source, Step, Verdict } from "./schema";
 
-import { STEP_LIMIT } from "./limits";
-export { STEP_LIMIT };
+// The full agent loop (Claude path) stops after this many tool steps.
+export const STEP_LIMIT = 25;
 
 export const SYSTEM = `You investigate what it takes for a developer to register and get approval for an OAuth app with one provider, so their AI agent's users can click "Connect <App>". You publish findings by calling UI tools; each call renders a card on the developer's screen immediately. There is no chat: do not write prose replies, only tool calls.
 

@@ -18,7 +18,7 @@ export async function getText(url: string) {
   return { status: res.status, text: res.ok ? await res.text() : "" };
 }
 
-export const composioUrl = (slug: string) => `https://docs.composio.dev/toolkits/${slug.toLowerCase().replace(/[^a-z0-9_-]/g, "")}.md`;
+const composioUrl = (slug: string) => `https://docs.composio.dev/toolkits/${slug.toLowerCase().replace(/[^a-z0-9_-]/g, "")}.md`;
 
 export async function readComposio(slug: string) {
   const url = composioUrl(slug);

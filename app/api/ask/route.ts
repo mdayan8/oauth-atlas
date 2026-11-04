@@ -68,8 +68,6 @@ const display = {
   }),
 };
 
-export type AskTools = typeof display;
-
 // The same components as fields of one call, for free models that make one tool call per reply.
 // The Ask panel splits it back into the components above, in this order.
 const schema = (k: keyof typeof display) => display[k].inputSchema as unknown as z.ZodType;

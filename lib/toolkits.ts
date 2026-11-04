@@ -2,7 +2,7 @@ import data from "../data/toolkits.json";
 
 // Composio's managed OAuth app directory (docs.composio.dev/toolkits/managed-auth), slimmed to the OAuth
 // toolkits: who provides the OAuth app for each. From the MIT-licensed toolkits.json in Composio's docs.
-export type Toolkit = { slug: string; name: string; managed: boolean; category: string };
+type Toolkit = { slug: string; name: string; managed: boolean; category: string };
 export const TOOLKITS: Toolkit[] = data;
 export const MANAGED_COUNT = TOOLKITS.filter((t) => t.managed).length;
 

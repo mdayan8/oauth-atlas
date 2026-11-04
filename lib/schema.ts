@@ -2,13 +2,13 @@ import { z } from "zod";
 
 // One schema for library guides and live agent guides.
 
-export const DIFFICULTIES = ["instant", "easy", "moderate", "hard", "gated"] as const;
-export const BADGES = ["tested", "official", "third_party", "unverified"] as const;
+const DIFFICULTIES = ["instant", "easy", "moderate", "hard", "gated"] as const;
+const BADGES = ["tested", "official", "third_party", "unverified"] as const;
 export const PROFILES = ["individual", "startup", "company"] as const;
 export const AUDIENCES = ["few", "many"] as const;
 
 export const Difficulty = z.enum(DIFFICULTIES);
-export const Badge = z.enum(BADGES);
+const Badge = z.enum(BADGES);
 
 // An item applies only when every listed dimension matches the reader's situation.
 // Omitted dimension = applies to everyone.
@@ -88,7 +88,7 @@ export const Source = z.object({
 
 export const Need = z.object({ id: z.string(), label: z.string() });
 
-export const LINK_KINDS = ["register", "console", "review", "docs", "support", "status"] as const;
+const LINK_KINDS = ["register", "console", "review", "docs", "support", "status"] as const;
 export const Link = z.object({
   kind: z.enum(LINK_KINDS),
   label: z.string().describe("Short, verb-first, e.g. 'Create an OAuth app'"),
