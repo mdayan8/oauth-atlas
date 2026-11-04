@@ -43,6 +43,7 @@ export const SkipPath = z.object({
   composioManaged: z.enum(["yes", "no", "unknown"]),
   mcpDcr: z.enum(["yes", "no", "unknown"]).describe("Provider MCP server supports dynamic client registration"),
   mcpServer: z.string().nullish(),
+  composioSlug: z.string().nullish().describe("Composio toolkit slug when Composio knows the app"),
   note: z.string(),
   whyOwnApp: z.array(z.string()).default([]).describe("Reasons to register your own app anyway"),
   sourceIds: z.array(z.string()).default([]),

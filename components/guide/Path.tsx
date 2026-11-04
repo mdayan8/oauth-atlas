@@ -1,5 +1,6 @@
 "use client";
 
+import { COMPOSIO_CALLBACK, COMPOSIO_DASHBOARD } from "@/lib/composio";
 import { useEffect, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import type { Resolved, Situation } from "@/lib/situation";
@@ -10,7 +11,6 @@ import { LinkButton, linkFor, stepPrompt } from "./links";
 import { ACTOR_COLOR, plural, type CiteFn } from "./shared";
 
 // From Composio's "Using your own OAuth apps" docs (checked 2026-11-04). Guides exist for these slugs at composio.dev/auth/<slug>.
-const COMPOSIO_CALLBACK = "https://backend.composio.dev/api/v3/toolkits/auth/callback";
 const COMPOSIO_GUIDES = new Set(["github", "notion", "slack", "shopify", "linear"]);
 
 // One path from start to approved, as a vertical timeline: get the requirements ready, then each step.
@@ -105,7 +105,7 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
           </div>
           {!live && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <LinkButton l={{ kind: "console", label: "Open Composio auth configs", url: "https://dashboard.composio.dev/" }} main />
+              <LinkButton l={{ kind: "console", label: "Open Composio auth configs", url: COMPOSIO_DASHBOARD }} main />
               {COMPOSIO_GUIDES.has(g.slug) && <LinkButton l={{ kind: "docs", label: `Composio's ${g.name} guide`, url: `https://composio.dev/auth/${g.slug}` }} />}
               <LinkButton l={{ kind: "docs", label: "Composio docs", url: "https://docs.composio.dev/docs/authentication/white-labeling-authentication" }} />
               <MarkDone done={done.includes(id)} onClick={() => toggle(id)} />

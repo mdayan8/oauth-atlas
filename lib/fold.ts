@@ -4,7 +4,7 @@ import type { Guide } from "./schema";
 // Tool inputs may be partial while streaming, so every field gets a fallback.
 
 type Part = { type: string; toolCallId?: string; state?: string; input?: any; output?: any };
-export type Activity = { id: string; text: string; done: boolean; kind: "read" | "probe" | "write" };
+export type Activity = { id: string; text: string; done: boolean; kind: "read" | "probe" | "write"; url?: string };
 
 const empty = (q: string): Guide => ({
   slug: "",
@@ -87,16 +87,16 @@ export function fold(parts: Part[], query: string) {
         log.push({ id, kind: "read", done, text: `Searching "${s(i.query, "...")}"` });
         break;
       case "web_fetch":
-        log.push({ id, kind: "read", done, text: `Reading ${host(i.url) || "page"}` });
+        log.push({ id, kind: "read", done, text: `Reading ${host(i.url) || "page"}`, url: s(i.url) || undefined });
         break;
       case "check_composio":
-        log.push({ id, kind: "probe", done, text: `Checking Composio managed list for ${s(i.slug, "...")}` });
+        log.push({ id, kind: "probe", done, text: `Checking Composio managed list for ${s(i.slug, "...")}`, url: i.slug ? `https://docs.composio.dev/toolkits/${s(i.slug)}` : undefined });
         break;
       case "try_authorize":
-        log.push({ id, kind: "probe", done, text: `Trying the authorize step at ${host(i.authorizeUrl) || "..."}` });
+        log.push({ id, kind: "probe", done, text: `Trying the authorize step at ${host(i.authorizeUrl) || "..."}`, url: s(i.authorizeUrl) || undefined });
         break;
       case "probe_oauth_metadata":
-        log.push({ id, kind: "probe", done, text: `Probing ${host(i.origin) || "..."}/.well-known` });
+        log.push({ id, kind: "probe", done, text: `Probing ${host(i.origin) || "..."}/.well-known`, url: i.origin ? `${s(i.origin)}/.well-known/oauth-authorization-server` : undefined });
         break;
       case "wait_quota":
         log.push({ id, kind: "write", done, text: done ? "Free AI quota freed up, writing" : `Free AI is busy: waiting ${i.seconds ?? 60}s for the next minute` });
@@ -126,6 +126,7 @@ export function fold(parts: Part[], query: string) {
           composioManaged: i.composioManaged ?? "unknown",
           mcpDcr: i.mcpDcr ?? "unknown",
           mcpServer: s(i.mcpServer) || undefined,
+          composioSlug: s(i.composioSlug) || undefined,
           note: s(i.note),
           whyOwnApp: ids(i.whyOwnApp),
           sourceIds: ids(i.sourceIds),
@@ -151,7 +152,7 @@ export function fold(parts: Part[], query: string) {
           // The server may downgrade an untested "tested" badge; trust its output once it arrives.
           const badge = p.output?.badge ?? i.badge ?? "unverified";
           g.sources.push({ id: s(i.id), title: s(i.title, i.url), url: s(i.url), badge, checked: p.output?.checked ?? g.checked, note: s(i.note) || undefined });
-          log.push({ id, kind: "write", done, text: `Cited ${host(i.url)}` });
+          log.push({ id, kind: "write", done, text: `Cited ${host(i.url)}`, url: s(i.url) });
         }
         break;
       case "add_link":

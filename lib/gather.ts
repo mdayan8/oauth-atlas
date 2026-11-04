@@ -49,7 +49,7 @@ export async function gather(app: string, emit: Emit) {
   const [hitsA, hitsB, composio] = await Promise.all([
     ...queries.map((query) => emit("web_search", { query }, () => searchWeb(query).then((results) => ({ query, results })).catch(() => ({ query, results: [] })))),
     emit("check_composio", { slug }, async () => {
-      const all = await Promise.all(candidates.map(readComposio));
+      const all = await Promise.all(candidates.map(async (c) => ({ ...(await readComposio(c)), slug: c })));
       return all.find((r) => r.found) ?? all[0];
     }),
   ]);
@@ -184,7 +184,7 @@ export async function gather(app: string, emit: Emit) {
   return {
     sources,
     mcp,
-    composio: composio.found ? { managed: composio.managed, auth: composio.auth } : undefined,
+    composio: composio.found ? { managed: composio.managed, auth: composio.auth, slug: composio.slug } : undefined,
     evidence: [...lines, unread.length ? `Other pages found, not read: ${unread.join("; ")}` : ""].join("\n"),
   };
 }

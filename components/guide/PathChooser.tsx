@@ -1,5 +1,6 @@
 "use client";
 
+import { toolkitUrl } from "@/lib/composio";
 import { useState } from "react";
 import type { Guide, PathOptionT } from "@/lib/schema";
 import { applyPreset, pickVerdict, type Audience, type Profile, type Resolved, type Situation } from "@/lib/situation";
@@ -47,16 +48,20 @@ export default function PathChooser({
       {(g.paths.length > 0 || skip) && (
         <div className="grid gap-1.5 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
           {skip && (
-            <div className="rounded-xl p-4" style={{ background: "color-mix(in srgb, var(--accent) 7%, var(--row))" }}>
-              <p className="label text-accent">
-                Skip it
-              </p>
+            <a
+              href={g.skip.composioManaged === "yes" ? toolkitUrl(g) : (g.skip.mcpServer ?? "#")}
+              target="_blank"
+              rel="noreferrer"
+              className="group rounded-xl p-4 transition-colors hover:bg-accent-soft"
+              style={{ background: "color-mix(in srgb, var(--accent) 7%, var(--row))" }}
+            >
+              <p className="label text-accent">Skip it</p>
               <p className="mt-2 text-[16px] font-medium">{skip}</p>
               <p className="mt-1 text-[13px] text-ink-2">No app, no review. Users see Composio on consent.</p>
-              <p className="mt-3 text-[20px] leading-none" style={{ color: DIFF_COLOR.instant }}>
-                Instant
+              <p className="mt-3 flex items-center justify-between text-[20px] leading-none" style={{ color: DIFF_COLOR.instant }}>
+                Instant <span className="label text-accent group-hover:translate-x-0.5">{g.skip.composioManaged === "yes" ? "Use Composio →" : "Open →"}</span>
               </p>
-            </div>
+            </a>
           )}
           {g.paths.map((p) => {
             const v = pickVerdict(g.verdicts, apply(p));

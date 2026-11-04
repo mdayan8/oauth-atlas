@@ -1,3 +1,5 @@
+import { LinkButton } from "./links";
+import { COMPOSIO_DASHBOARD, toolkitUrl } from "@/lib/composio";
 import type { Guide } from "@/lib/schema";
 import type { Resolved, Situation } from "@/lib/situation";
 import { ACTOR_LABEL, DIFFICULTY_LABEL, situationLine } from "@/lib/share";
@@ -112,6 +114,12 @@ export default function QuickAnswer({ g, r, s, live, Cite, style }: { g: Guide; 
             <p className="mt-1 text-[15px] leading-relaxed">
               {skip.replace(/^Quickest path: /, "")} {g.skip.sourceIds.length > 0 && <Cite ids={g.skip.sourceIds} />}
             </p>
+            {g.skip.composioManaged === "yes" && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                <LinkButton l={{ kind: "console", label: `Use Composio for ${name}`, url: toolkitUrl(g) }} main />
+                <LinkButton l={{ kind: "console", label: "Open the dashboard", url: COMPOSIO_DASHBOARD }} />
+              </div>
+            )}
           </div>
         )}
         {v?.why && (

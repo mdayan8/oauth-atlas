@@ -131,7 +131,13 @@ function Stages({ log, running, name, sources, steps, started }: { log: Activity
               <ul className="mt-2 flex flex-col gap-1 pl-9">
                 {last.map((a) => (
                   <li key={a.id + a.text} className="rise truncate font-mono text-[12px] text-ink-2">
-                    {a.text}
+                    {a.url ? (
+                      <a href={a.url} target="_blank" rel="noreferrer" className="hover:text-accent">
+                        {a.text} ↗
+                      </a>
+                    ) : (
+                      a.text
+                    )}
                   </li>
                 ))}
               </ul>

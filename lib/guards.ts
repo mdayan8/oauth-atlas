@@ -22,7 +22,7 @@ const empty = (w: When) => !w || (!w.profile?.length && !w.audience?.length && !
 
 export type Found = {
   mcp?: { server: string; dcr: boolean };
-  composio?: { managed: string; auth?: string };
+  composio?: { managed: string; auth?: string; slug?: string };
   officialPages?: number;
 };
 
@@ -84,6 +84,7 @@ export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?:
       g.skip.mcpDcr = found.mcp.dcr ? "yes" : "no";
     }
     if (found.composio?.managed === "yes" || found.composio?.managed === "no") g.skip.composioManaged = found.composio.managed;
+    if (found.composio?.slug) (g.skip as { composioSlug?: string }).composioSlug = found.composio.slug;
   }
   // No official page could be read (search blocked, no docs link): say so instead of showing an empty guide.
   if (found.officialPages === 0) {

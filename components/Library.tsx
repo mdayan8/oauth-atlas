@@ -8,6 +8,7 @@ import { DIFFICULTY_LABEL } from "@/lib/share";
 import { difficultyIndex } from "@/lib/situation";
 import AppSearch from "./AppSearch";
 import { DIFF_COLOR, DifficultyPill } from "./ui";
+import AppLogo from "./AppLogo";
 
 export type Card = {
   slug: string;
@@ -43,8 +44,8 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
               <AppSearch onSubmit={go} onChange={setQ} />
               <div className="mt-4 flex flex-wrap gap-2">
                 {cards.map((c) => (
-                  <Link key={c.slug} href={`/guide/${c.slug}`} className="inline-flex h-9 items-center gap-2 rounded-full bg-card px-4 text-[14px] hover:text-accent">
-                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: DIFF_COLOR[c.max] }} />
+                  <Link key={c.slug} href={`/guide/${c.slug}`} className="inline-flex h-9 items-center gap-2 rounded-full bg-card pl-2.5 pr-4 text-[14px] hover:text-accent">
+                    <AppLogo src={`https://logos.composio.dev/api/${c.slug}`} name={c.name} size={18} />
                     {c.name}
                   </Link>
                 ))}
@@ -62,7 +63,10 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
           {shown.map((c) => (
             <Link key={c.slug} href={`/guide/${c.slug}`} className="group flex flex-col gap-2 rounded-xl border border-line bg-bg p-4 transition-colors hover:border-accent">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-[16px] font-medium group-hover:text-accent">{c.name}</p>
+                <p className="flex items-center gap-2.5 text-[16px] font-medium group-hover:text-accent">
+                  <AppLogo src={`https://logos.composio.dev/api/${c.slug}`} name={c.name} size={22} />
+                  {c.name}
+                </p>
                 <span className="flex items-center gap-1">
                   <DifficultyPill d={c.min} />
                   {difficultyIndex(c.max) > difficultyIndex(c.min) && (
@@ -111,7 +115,10 @@ function Spectrum({ cards }: { cards: Card[] }) {
     <div className="relative min-w-0 overflow-hidden rounded-xl border border-line bg-bg p-5" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}>
       {!paused && <span key={`${pos.app}-${pos.route}`} className="tick absolute left-0 top-0 h-0.5 bg-accent" style={{ animationDuration: `${STEP}ms` }} />}
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[16px] font-medium">{c.name}</span>
+        <span className="flex items-center gap-2 text-[16px] font-medium">
+          <AppLogo src={`https://logos.composio.dev/api/${c.slug}`} name={c.name} size={20} />
+          {c.name}
+        </span>
         <span className="flex gap-1.5" aria-label={`Path ${pos.route + 1} of ${c.routes.length}`}>
           {c.routes.map((x, k) => (
             <button
