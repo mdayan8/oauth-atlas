@@ -14,6 +14,15 @@ const ACTOR_COLOR = { agent: "var(--accent)", you: "var(--ink)", provider: "var(
 type Part = { type: string; toolCallId?: string; state?: string; input?: any; text?: string };
 type CiteFn = (p: { ids?: string[] }) => React.ReactNode;
 
+// A free model answers with one "answer" call holding every component; split it back into components.
+const ORDER = ["set_situation", "say", "show_verdict", "show_compare", "show_steps", "show_warning", "show_links", "offer_choices"];
+const expand = (parts: Part[]): Part[] =>
+  parts.flatMap((p) =>
+    p.type === "tool-answer"
+      ? ORDER.filter((k) => p.input?.[k]).map((k) => ({ type: `tool-${k}`, toolCallId: `${p.toolCallId}-${k}`, state: p.state, input: p.input[k] }))
+      : [p],
+  );
+
 type Preset = { profile?: "individual" | "startup" | "company" | null; audience?: "few" | "many" | null; needs?: string[] | null };
 
 export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: CiteFn; onSituation: (p: Preset) => void }) {
@@ -26,7 +35,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
   const applied = useRef(new Set<string>());
   useEffect(() => {
     for (const m of messages)
-      for (const p of m.parts as Part[])
+      for (const p of expand(m.parts as Part[]))
         if (p.type === "tool-set_situation" && p.state === "output-available" && p.toolCallId && !applied.current.has(p.toolCallId)) {
           applied.current.add(p.toolCallId);
           const known = new Set(g.needs.map((n) => n.id));
@@ -68,7 +77,7 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
             </div>
           ) : (
             <div key={m.id} className="flex flex-col gap-2">
-              {(m.parts as Part[]).map((p, i) => (
+              {expand(m.parts as Part[]).map((p, i) => (
                 <Block key={p.toolCallId ?? i} p={p} Cite={Cite} onChoose={ask} busy={busy} />
               ))}
             </div>
@@ -126,10 +135,12 @@ function Block({ p, Cite, onChoose, busy }: { p: Part; Cite: CiteFn; onChoose: (
   const head = "label !text-[11px] text-ink-3";
   switch (p.type) {
     case "tool-set_situation":
-      return i.summary ? (
+      // Free models sometimes skip the summary, so build one from what they did set.
+      const summary = i.summary || [i.profile, i.audience === "many" ? "real users" : i.audience === "few" ? "testers" : null, ...(i.needs ?? [])].filter(Boolean).join(", ");
+      return summary ? (
         <p className="rise mx-1 inline-flex w-fit items-center gap-2 rounded-full bg-row px-3 py-1.5 text-[13px]">
           <span style={{ color: "var(--d-instant)" }}>✓</span>
-          Guide updated for: <span className="font-medium">{i.summary}</span>
+          Guide updated for: <span className="font-medium">{summary}</span>
         </p>
       ) : null;
     case "tool-say":

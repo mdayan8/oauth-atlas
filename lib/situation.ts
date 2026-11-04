@@ -59,3 +59,4 @@ export function applyPreset(s: Situation, set: { profile?: Profile | null; audie
 }
 
 export const difficultyIndex = (d: Difficulty) => ORDER.indexOf(d);
+

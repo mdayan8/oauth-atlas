@@ -90,3 +90,37 @@ export async function tryAuthorize(authorizeUrl: string) {
     return { url: u.origin + u.pathname, error: String(e).slice(0, 120) };
   }
 }
+
+export const cleanHtml = (html: string) =>
+  html
+    .replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>|<nav[\s\S]*?<\/nav>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
+    .trim();
+
+// ponytail: scrapes DuckDuckGo's HTML results page; swap for a search API if it starts failing.
+export async function searchWeb(query: string) {
+  const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
+    signal: AbortSignal.timeout(8000),
+    headers: { "user-agent": "Mozilla/5.0 (Macintosh) OAuthAtlas/1.0" },
+  });
+  const html = await res.text();
+  return [...html.matchAll(/<a[^>]+class="result__a"[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)].slice(0, 6).map((m) => {
+    const real = m[1].match(/uddg=([^&]+)/);
+    return { url: real ? decodeURIComponent(real[1]) : m[1], title: m[2].replace(/<[^>]+>/g, "").trim() };
+  });
+}
+
+// Does this public page answer? Used on every link a model publishes: a dead or made-up URL never reaches the screen.
+export async function linkAlive(url: string) {
+  if (!safeOrigin(url)) return false;
+  try {
+    const res = await fetch(url, { method: "GET", redirect: "follow", signal: AbortSignal.timeout(6000), headers: { "user-agent": "Mozilla/5.0 (Macintosh) OAuthAtlas/1.0", accept: "text/html" } });
+    // 401/403 pages exist (consoles behind login); 404, 410 and 5xx do not.
+    return res.status < 400 || res.status === 401 || res.status === 403;
+  } catch {
+    return false;
+  }
+}

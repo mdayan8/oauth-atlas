@@ -36,18 +36,47 @@ const host = (u?: string) => {
   }
 };
 
+// publish_guide carries the whole guide in one call; split it into the single-item calls below so a
+// partially streamed guide renders exactly like one built call by call.
+function expand(parts: Part[]): Part[] {
+  return parts.flatMap((p) => {
+    if (p.type !== "tool-publish_guide") return [p];
+    const i = p.input ?? {};
+    const state = p.state;
+    const one = (name: string, input: unknown, k: string): Part => ({ type: `tool-${name}`, toolCallId: `${p.toolCallId}-${k}`, state, input });
+    const many = (name: string, xs: unknown) => (Array.isArray(xs) ? xs.filter(Boolean).map((x, n) => one(name, x, `${name}${n}`)) : []);
+    return [
+      ...(i.overview ? [one("set_overview", i.overview, "overview")] : []),
+      ...(i.skip ? [one("set_skip_path", i.skip, "skip")] : []),
+      ...many("set_verdict", i.verdicts),
+      ...many("add_requirement", i.requirements),
+      ...many("add_step", i.steps),
+      ...many("add_scope", i.scopes),
+      ...many("add_limit", i.limits),
+      ...many("add_blocker", i.blockers),
+      ...many("add_path_option", i.paths),
+      ...many("add_link", i.links),
+      ...many("flag_unverified", Array.isArray(i.unverified) ? i.unverified.map((claim: unknown) => ({ claim })) : []),
+    ];
+  });
+}
+
 export function fold(parts: Part[], query: string) {
   const g = empty(query);
   const log: Activity[] = [];
   const s = (x: unknown, d = "") => (typeof x === "string" ? x : d);
   const arr = <T>(x: unknown): T[] => (Array.isArray(x) ? x.filter((v) => v != null) : []);
   const ids = (x: unknown) => arr<string>(x).filter((v) => typeof v === "string");
+  const used = new Set<string>();
 
-  for (const p of parts) {
+  for (const p of expand(parts)) {
     if (!p.type.startsWith("tool-")) continue;
     const name = p.type.slice(5);
     const i = p.input ?? {};
-    const id = s(i.id) || p.toolCallId || String(log.length);
+    // Models reuse ids (even source ids like "s3") across items; ids key the timeline and progress, so keep them unique.
+    let id = s(i.id) || p.toolCallId || String(log.length);
+    while (used.has(id)) id += "-2";
+    used.add(id);
     const done = p.state === "output-available" || p.state === "output-error";
     const when = i.when && typeof i.when === "object" ? i.when : undefined;
     const sourced = { when, sourceIds: ids(i.sourceIds) };
@@ -68,6 +97,9 @@ export function fold(parts: Part[], query: string) {
         break;
       case "probe_oauth_metadata":
         log.push({ id, kind: "probe", done, text: `Probing ${host(i.origin) || "..."}/.well-known` });
+        break;
+      case "wait_quota":
+        log.push({ id, kind: "write", done, text: done ? "Free AI quota freed up, writing" : `Free AI is busy: waiting ${i.seconds ?? 60}s for the next minute` });
         break;
       case "set_overview":
         g.name = s(i.name, g.name);

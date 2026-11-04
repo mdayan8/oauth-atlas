@@ -6,9 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo } from "react";
 import GuideView from "@/components/GuideView";
 import AppSearch from "@/components/AppSearch";
-import { fold } from "@/lib/fold";
+import { fold, type Activity } from "@/lib/fold";
 import { pack } from "@/lib/pack";
-import { STEP_LIMIT } from "@/lib/limits";
 
 export default function LivePage() {
   return (
@@ -37,7 +36,6 @@ function Live() {
   const steps = parts.filter((p) => p.type === "step-start").length;
   const running = status === "submitted" || status === "streaming";
   const missingKey = error?.message.includes("missing_key");
-  const recent = log.slice(-6).reverse();
 
   return (
     <>
@@ -54,8 +52,8 @@ function Live() {
               </p>
               <p className="mt-2 text-[14px] text-ink-2">
                 {running
-                  ? `Step ${Math.max(steps, 1)} of up to ${STEP_LIMIT}. Cards appear as the agent finds evidence.`
-                  : "It reads official docs, checks Composio, probes discovery endpoints, and cites everything."}
+                  ? "Real searches and live checks against the provider first. Then the guide is written from what was found."
+                  : "It searches the web, reads official docs, checks Composio, tests the provider, and cites everything."}
               </p>
               <div className="mt-5">
                 <AppSearch compact initial={q} onSubmit={(v) => router.push(`/live?q=${encodeURIComponent(v)}`)} />
@@ -69,29 +67,12 @@ function Live() {
             <div className="min-w-0 flex-1">
               {missingKey ? (
                 <Notice title="The live agent needs an API key">
-                  Set ANTHROPIC_API_KEY in the server environment to run it. The guide library works without one.
+                  Set GROQ_API_KEY (free) or ANTHROPIC_API_KEY in the server environment to run it. The guide library works without one.
                 </Notice>
               ) : error ? (
                 <Notice title="The agent hit an error">{error.message.slice(0, 240)} Try again, or pick a library guide.</Notice>
               ) : (
-                <ol className="flex flex-col gap-1.5" aria-live="polite">
-                  {recent.length === 0 && (
-                    <li className="label rounded-xl bg-row/70 px-4 py-3 text-ink-3">{q ? "Starting up..." : "Waiting for an app name"}</li>
-                  )}
-                  {recent.map((a, i) => (
-                    <li
-                      key={a.id + a.text}
-                      className="rise flex items-center gap-3 rounded-xl bg-row/80 px-4 py-3 backdrop-blur"
-                      style={{ opacity: 1 - i * 0.12 }}
-                    >
-                      <span
-                        className={`h-1.5 w-1.5 shrink-0 rounded-full ${a.done ? "" : "pulse-dot"}`}
-                        style={{ background: a.kind === "probe" ? "var(--b-tested)" : a.kind === "write" ? "var(--d-instant)" : "var(--ink-3)" }}
-                      />
-                      <span className="min-w-0 truncate font-mono text-[13px] text-ink-2">{a.text}</span>
-                    </li>
-                  ))}
-                </ol>
+                <Stages log={log} running={running} name={guide.name || q} sources={guide.sources.length} steps={guide.steps.length} started={!!q} />
               )}
             </div>
           </div>
@@ -99,6 +80,51 @@ function Live() {
       </div>
       {q && !missingKey && <GuideView key={q} guide={guide} live={running} shareLink={async () => `${location.origin}/shared#${await pack(guide)}`} />}
     </>
+  );
+}
+
+// Four plain stages instead of a raw event list: anyone can see what the agent is doing and how far it got.
+function Stages({ log, running, name, sources, steps, started }: { log: Activity[]; running: boolean; name: string; sources: number; steps: number; started: boolean }) {
+  const of = (test: (a: Activity) => boolean) => log.filter(test);
+  const groups = [
+    { label: "Search the web", items: of((a) => a.text.startsWith("Searching")) },
+    { label: "Read the official docs", items: of((a) => a.text.startsWith("Reading")) },
+    { label: `Test ${name} for real`, items: of((a) => a.kind === "probe") },
+    { label: "Write the guide", items: of((a) => a.kind === "write"), summary: steps ? `${steps} steps, ${sources} sources` : "" },
+  ];
+  // A stage is done once a later stage has started (or the run is over); the furthest started one is live.
+  const furthest = groups.reduce((at, g, i) => (g.items.length ? i : at), -1);
+  return (
+    <ol className="flex flex-col gap-2" aria-live="polite">
+      {groups.map((g, i) => {
+        const state = !started ? "wait" : i < furthest || (!running && g.items.length) ? "done" : i === Math.max(furthest, 0) && running ? "live" : "wait";
+        const last = g.items.slice(-2);
+        return (
+          <li key={g.label} className={`rounded-2xl px-4 py-3 transition-colors ${state === "live" ? "bg-card shadow-[0_8px_30px_-12px_rgba(0,7,205,0.35)]" : "bg-row/70"}`}>
+            <div className="flex items-center gap-3">
+              <span
+                className={`grid h-6 w-6 shrink-0 place-items-center rounded-full font-mono text-[11px] ${
+                  state === "done" ? "bg-accent text-on-accent" : state === "live" ? "border-2 border-accent text-accent" : "border border-line text-ink-3"
+                }`}
+              >
+                {state === "done" ? "✓" : state === "live" ? <span className="pulse-dot h-2 w-2 rounded-full bg-accent" /> : i + 1}
+              </span>
+              <span className={`text-[15px] ${state === "wait" ? "text-ink-3" : "text-ink"}`}>{g.label}</span>
+              <span className="label ml-auto text-ink-3">{g.summary || (g.items.length ? `${g.items.length}` : "")}</span>
+            </div>
+            {state !== "wait" && last.length > 0 && (
+              <ul className="mt-2 flex flex-col gap-1 pl-9">
+                {last.map((a) => (
+                  <li key={a.id + a.text} className="rise truncate font-mono text-[12px] text-ink-2">
+                    {a.text}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 

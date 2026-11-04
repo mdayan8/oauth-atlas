@@ -25,6 +25,21 @@ Rules:
 - Publish after every one or two pages you read: never read more than two pages in a row without calling UI tools.
 - You have about ${STEP_LIMIT} steps. Publish early and keep publishing. Finish with a verdict, at least 4 steps, the key scopes and limits, and every source you used.`;
 
+// One-pass writer for free models: the evidence is already collected and cited, so one call writes the whole guide.
+export const WRITE_SYSTEM = `You turn collected evidence into an OAuth setup guide for a developer whose AI agent's users will click "Connect <App>". Call publish_guide exactly once with the whole guide. No prose.
+Fill: overview (2 to 4 needs with short ids, defaultNeeds); skip (can they use Composio's managed app or the provider's MCP server instead; mcpServer only if the evidence names an MCP server URL, and mcpDcr "yes" only for that server); verdicts (the base case, then a harder one with a "when" if the evidence shows a harder situation); requirements (1 to 3); steps (4 to 7, in order); scopes (the key ones seen); limits (any seen); blockers (1 or 2, symptom then fix); paths (2 routes, easiest first); links (register, console, docs: only URLs in the evidence); unverified (important gaps).
+Difficulty is for registering their OWN app (Composio's managed app belongs in skip, not in verdicts): instant = nothing to register, an MCP server signs agents up automatically; easy = self-serve console, no review; moderate = review, verification or business details before real users; hard = a security assessment or a long review; gated = a paid plan, partnership or approval you cannot count on. Sensitive or restricted scopes for real users usually mean moderate or harder, so add that as a "when" verdict if the evidence mentions them.
+Rules: use only facts in the evidence. sourceIds are evidence ids like "s2". Never invent numbers, fees or review times: say "Not published". Step actors: agent = an AI coding agent can do it without logging in; you = a human must; provider = waiting on review. "when" uses profile (individual, startup, company), audience (few = testers, many = real users), needs (your ids). Short plain sentences. No em dashes.`;
+
+const Overview = z.object({
+  name: z.string(),
+  domain: z.string(),
+  portal: z.string().nullish().describe("Developer portal URL"),
+  summary: z.string().describe("One sentence: what getting an OAuth app here involves"),
+  needs: z.array(Need),
+  defaultNeeds: z.array(z.string()).describe("Most common pick, ids from needs"),
+});
+
 const ok = (extra: Record<string, unknown> = {}) => ({ ok: true, ...extra });
 const unsourced = (ids?: string[]) =>
   ids?.length ? ok() : ok({ warning: "No sourceIds: this shows as Unverified. Cite a source to upgrade it." });
@@ -37,13 +52,24 @@ export function makeTools(web: Record<string, any>) {
   return {
     set_overview: tool({
       description: "Name the app and list the 2 to 4 things the developer's agent might need to do.",
+      inputSchema: Overview,
+      execute: async () => ok(),
+    }),
+    // The whole guide in one call, for free models that make one tool call per reply. Fields stream in order.
+    publish_guide: tool({
+      description: "Publish the whole guide in one call.",
       inputSchema: z.object({
-        name: z.string(),
-        domain: z.string(),
-        portal: z.string().nullish().describe("Developer portal URL"),
-        summary: z.string().describe("One sentence: what getting an OAuth app here involves"),
-        needs: z.array(Need),
-        defaultNeeds: z.array(z.string()).describe("Most common pick, ids from needs"),
+        overview: Overview,
+        skip: SkipPath,
+        verdicts: z.array(Verdict).describe("Base case first, then harder ones with a when"),
+        requirements: z.array(Requirement),
+        steps: z.array(Step).describe("4 to 7, in order"),
+        scopes: z.array(Scope),
+        limits: z.array(Limit),
+        blockers: z.array(Blocker),
+        paths: z.array(PathOption).describe("2 routes, easiest first"),
+        links: z.array(Link).describe("Only URLs in the evidence"),
+        unverified: z.array(z.string()).describe("Important things the evidence does not settle"),
       }),
       execute: async () => ok(),
     }),

@@ -15,7 +15,7 @@ Keep it short and plain. No em dashes.`;
 
 export async function POST(req: Request) {
   if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
-  const m = pickModel({ effort: "low" });
+  const m = pickModel({ effort: "low", use: "draft" });
   if (!m) return Response.json({ error: "missing_key" }, { status: 503 });
 
   const body = await req.json().catch(() => ({}));
