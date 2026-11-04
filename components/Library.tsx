@@ -9,6 +9,7 @@ import { difficultyIndex } from "@/lib/situation";
 import AppSearch from "./AppSearch";
 import { DIFF_COLOR, DifficultyPill } from "./ui";
 import AppLogo from "./AppLogo";
+import { findToolkits, MANAGED_COUNT, TOOLKITS } from "@/lib/toolkits";
 
 export type Card = {
   slug: string;
@@ -25,6 +26,9 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
   const [q, setQ] = useState("");
   const needle = q.trim().toLowerCase();
   const shown = cards.filter((c) => !needle || c.name.toLowerCase().includes(needle) || c.domain.includes(needle));
+  const hits = findToolkits(q);
+  const [dir, setDir] = useState<"managed" | "own">("managed");
+  const listed = TOOLKITS.filter((t) => (dir === "managed") === t.managed);
 
   function go(v: string) {
     const hit = cards.find((c) => c.name.toLowerCase() === v.toLowerCase() || c.slug === v.toLowerCase() || c.domain === v.toLowerCase());
@@ -42,6 +46,24 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
           <div className="grid grid-cols-1 gap-6 rounded-[22px] bg-row p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_400px] lg:items-center">
             <div className="min-w-0">
               <AppSearch onSubmit={go} onChange={setQ} />
+              {hits.length > 0 && (
+                <ul className="mt-2 flex flex-col overflow-hidden rounded-xl border border-line bg-bg" aria-label="Matching apps">
+                  {hits.map((t) => (
+                    <li key={t.slug}>
+                      <button
+                        type="button"
+                        onClick={() => go(cards.some((c) => c.slug === t.slug) ? t.slug : t.name)}
+                        className="flex w-full items-center gap-3 px-3 py-2 text-left text-[14px] hover:bg-row"
+                      >
+                        <AppLogo src={`https://logos.composio.dev/api/${t.slug}`} name={t.name} size={18} />
+                        <span className="flex-1">{t.name}</span>
+                        <span className={`label ${t.managed ? "text-accent" : "text-ink-3"}`}>{t.managed ? "Composio-managed" : "Bring your own app"}</span>
+                        <span className="label text-ink-3">{cards.some((c) => c.slug === t.slug) ? "Guide" : "Generate"}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className="mt-4 flex flex-wrap gap-2">
                 {cards.map((c) => (
                   <Link key={c.slug} href={`/guide/${c.slug}`} className="inline-flex h-9 items-center gap-2 rounded-full bg-card pl-2.5 pr-4 text-[14px] hover:text-accent">
@@ -50,7 +72,9 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
                   </Link>
                 ))}
               </div>
-              <p className="mt-4 text-[14px] text-ink-3">Any other app: the agent builds its guide live, with sources.</p>
+              <p className="mt-4 text-[14px] text-ink-3">
+                Any other app: the agent builds its guide live, with sources. {TOOLKITS.length} OAuth apps indexed from Composio&rsquo;s directory, {MANAGED_COUNT} of them Composio-managed.
+              </p>
             </div>
             <Spectrum cards={cards} />
           </div>
@@ -86,6 +110,42 @@ export default function Library({ cards, hero }: { cards: Card[]; hero: React.Re
               <p className="mt-1 text-[14px] text-ink-2">Generate one live.</p>
             </button>
           )}
+        </div>
+      </section>
+
+      {/* Composio's managed OAuth app directory: the first question for any app is whether you can skip registration. */}
+      <section id="directory" className="mt-24 scroll-mt-24">
+        <h2 className="text-center text-[28px] leading-tight tracking-[-0.6px]">Every OAuth app Composio knows</h2>
+        <p className="mx-auto mt-2 max-w-xl text-center text-[14px] text-ink-2">
+          From Composio&rsquo;s managed OAuth app directory. Composio-managed means no app of your own; bring your own means you register one and the guide shows how hard that is.
+        </p>
+        <div className="mt-6 flex justify-center gap-2">
+          {(["managed", "own"] as const).map((k) => (
+            <button
+              key={k}
+              type="button"
+              onClick={() => setDir(k)}
+              aria-pressed={dir === k}
+              className={`label h-10 rounded-full px-4 transition-colors ${dir === k ? "bg-ink text-bg" : "bg-row text-ink-2 hover:text-ink"}`}
+            >
+              {k === "managed" ? `Composio-managed · ${MANAGED_COUNT}` : `Bring your own app · ${TOOLKITS.length - MANAGED_COUNT}`}
+            </button>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-wrap justify-center gap-1.5">
+          {listed.map((t) => {
+            const inLibrary = cards.some((c) => c.slug === t.slug);
+            return (
+              <Link
+                key={t.slug}
+                href={inLibrary ? `/guide/${t.slug}` : `/live?q=${encodeURIComponent(t.name)}`}
+                className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] transition-colors hover:text-accent ${inLibrary ? "bg-accent-soft text-accent" : "bg-row"}`}
+              >
+                <AppLogo src={`https://logos.composio.dev/api/${t.slug}`} name={t.name} size={14} />
+                {t.name}
+              </Link>
+            );
+          })}
         </div>
       </section>
     </>

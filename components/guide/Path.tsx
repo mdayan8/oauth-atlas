@@ -1,6 +1,6 @@
 "use client";
 
-import { COMPOSIO_CALLBACK, COMPOSIO_DASHBOARD } from "@/lib/composio";
+import { COMPOSIO_CALLBACK, COMPOSIO_DASHBOARD, toolkitSlug } from "@/lib/composio";
 import { useEffect, useState } from "react";
 import type { Guide } from "@/lib/schema";
 import type { Resolved, Situation } from "@/lib/situation";
@@ -37,6 +37,8 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
 
   const prepId = "prep";
   const composioId = "composio";
+  // From Composio's managed-auth directory: the field that says who provides the OAuth app.
+  const apiCheck = `composio.toolkits.get("${toolkitSlug(g)}").composio_managed_auth_schemes`;
   const drafts = r.requirements.filter((x) => x.agentCanDraft).length;
   const items = [
     ...(r.requirements.length
@@ -99,6 +101,13 @@ export default function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved;
             </li>
             <li>In Composio, create an auth config for {g.name}, choose OAuth2, turn on Use your own developer credentials, and paste the client ID and secret. Set the same redirect URI there.</li>
             <li>Keep the client secret on your server. Use separate apps for staging and production.</li>
+            <li>
+              Check in code which OAuth app applies (Composio&rsquo;s or yours):
+              <span className="mt-1.5 flex flex-wrap items-center gap-2">
+                <code className="break-all rounded-md bg-card px-2 py-1 font-mono text-[12px] text-ink">{apiCheck}</code>
+                <CopyButton text={apiCheck} label="Copy" />
+              </span>
+            </li>
           </ol>
           <div className="mt-2">
             <EvidenceBadge badge="official" />

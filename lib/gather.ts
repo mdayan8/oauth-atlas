@@ -1,6 +1,7 @@
 import { cleanHtml, getText, readComposio, readMetadata, safeOrigin, searchWeb, tryAuthorize } from "./probes";
 import type { Source } from "./schema";
 import docs from "../data/docs.json";
+import { toolkit } from "./toolkits";
 
 // Hand-checked official OAuth docs for common apps (every URL opened before it went in). Search engines answer
 // nothing to cloud servers, so this is how the live site reads real docs for the apps people try first.
@@ -50,7 +51,11 @@ export async function gather(app: string, emit: Emit) {
     ...queries.map((query) => emit("web_search", { query }, () => searchWeb(query).then((results) => ({ query, results })).catch(() => ({ query, results: [] })))),
     emit("check_composio", { slug }, async () => {
       const all = await Promise.all(candidates.map(async (c) => ({ ...(await readComposio(c)), slug: c })));
-      return all.find((r) => r.found) ?? all[0];
+      const hit = all.find((r) => r.found);
+      if (hit) return hit;
+      // The docs page did not answer; Composio's directory still knows the toolkit.
+      const known = candidates.map(toolkit).find(Boolean);
+      return known ? { ...all[0], found: true as const, slug: known.slug, managed: known.managed ? "yes" : "no", auth: undefined, faq: undefined, links: [] as string[] } : all[0];
     }),
   ]);
 

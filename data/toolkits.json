@@ -1,0 +1,1658 @@
+[
+{
+"slug":"adroll",
+"name":"AdRoll",
+"managed":false,
+"category":"marketing"
+},
+{
+"slug":"aha",
+"name":"Aha!",
+"managed":false,
+"category":"product management"
+},
+{
+"slug":"ahrefs",
+"name":"Ahrefs",
+"managed":false,
+"category":"seo & ai visibility"
+},
+{
+"slug":"aircall",
+"name":"Aircall",
+"managed":true,
+"category":"communication"
+},
+{
+"slug":"airtable",
+"name":"Airtable",
+"managed":true,
+"category":"productivity"
+},
+{
+"slug":"alpaca",
+"name":"Alpaca",
+"managed":false,
+"category":"commerce"
+},
+{
+"slug":"amazon",
+"name":"Amazon",
+"managed":true,
+"category":"ecommerce"
+},
+{
+"slug":"apaleo",
+"name":"Apaleo",
+"managed":true,
+"category":"scheduling & booking"
+},
+{
+"slug":"asana",
+"name":"Asana",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"attio",
+"name":"Attio",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"aweber",
+"name":"AWeber",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"azure_monitor_activity_log",
+"name":"Azure Monitor Activity Log",
+"managed":false,
+"category":"it operations"
+},
+{
+"slug":"bamboohr",
+"name":"BambooHR",
+"managed":false,
+"category":"human resources"
+},
+{
+"slug":"basecamp",
+"name":"Basecamp",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"beeminder",
+"name":"Beeminder",
+"managed":false,
+"category":"task management"
+},
+{
+"slug":"bexio",
+"name":"bexio",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"bitbucket",
+"name":"Bitbucket",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"bitly",
+"name":"Bitly",
+"managed":false,
+"category":"url shortener"
+},
+{
+"slug":"blackbaud",
+"name":"Blackbaud",
+"managed":true,
+"category":"fundraising"
+},
+{
+"slug":"blackboard",
+"name":"Blackboard",
+"managed":false,
+"category":"education"
+},
+{
+"slug":"boldsign",
+"name":"Boldsign",
+"managed":true,
+"category":"signatures"
+},
+{
+"slug":"borneo",
+"name":"Borneo",
+"managed":false,
+"category":"security & identity tools"
+},
+{
+"slug":"box",
+"name":"Box",
+"managed":true,
+"category":"file management & storage"
+},
+{
+"slug":"box_mcp",
+"name":"Box MCP",
+"managed":false,
+"category":"model context protocol"
+},
+{
+"slug":"brevo",
+"name":"Brevo",
+"managed":false,
+"category":"email newsletters"
+},
+{
+"slug":"brex",
+"name":"Brex",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"buffer",
+"name":"Buffer",
+"managed":false,
+"category":"social media accounts"
+},
+{
+"slug":"cal",
+"name":"Cal",
+"managed":true,
+"category":"scheduling & booking"
+},
+{
+"slug":"calendly",
+"name":"Calendly",
+"managed":true,
+"category":"scheduling & booking"
+},
+{
+"slug":"canva",
+"name":"Canva",
+"managed":true,
+"category":"images & design"
+},
+{
+"slug":"canvas",
+"name":"Canvas",
+"managed":false,
+"category":"online courses"
+},
+{
+"slug":"capsule_crm",
+"name":"Capsule CRM",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"cleverreach",
+"name":"CleverReach",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"clickfunnels",
+"name":"ClickFunnels 2.0",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"clickup",
+"name":"ClickUp",
+"managed":true,
+"category":"productivity"
+},
+{
+"slug":"clio_manage",
+"name":"Clio Manage",
+"managed":false,
+"category":"legal & public records"
+},
+{
+"slug":"clockify",
+"name":"Clockify",
+"managed":false,
+"category":"time tracking software"
+},
+{
+"slug":"cloud_66",
+"name":"Cloud 66",
+"managed":false,
+"category":"it operations"
+},
+{
+"slug":"clover",
+"name":"Clover",
+"managed":false,
+"category":"commerce"
+},
+{
+"slug":"confluence",
+"name":"Confluence",
+"managed":true,
+"category":"team collaboration"
+},
+{
+"slug":"constant_contact",
+"name":"Constant Contact",
+"managed":false,
+"category":"marketing"
+},
+{
+"slug":"contacts_plus",
+"name":"Contacts+",
+"managed":false,
+"category":"contact management"
+},
+{
+"slug":"contentful",
+"name":"Contentful",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"coupa",
+"name":"Coupa",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"crowdin",
+"name":"Crowdin",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"d2lbrightspace",
+"name":"D2L Brightspace",
+"managed":false,
+"category":"education"
+},
+{
+"slug":"dart",
+"name":"Dart",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"databricks",
+"name":"Databricks",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"datadog",
+"name":"Datadog",
+"managed":false,
+"category":"server monitoring"
+},
+{
+"slug":"daytona",
+"name":"Daytona",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"dbt_cloud",
+"name":"dbt Cloud",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"deel",
+"name":"Deel",
+"managed":false,
+"category":"hr talent & recruitment"
+},
+{
+"slug":"deputy",
+"name":"Deputy",
+"managed":false,
+"category":"human resources"
+},
+{
+"slug":"dialpad",
+"name":"Dialpad",
+"managed":true,
+"category":"communication"
+},
+{
+"slug":"digital_ocean",
+"name":"DigitalOcean",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"discord",
+"name":"Discord",
+"managed":true,
+"category":"team chat"
+},
+{
+"slug":"discordbot",
+"name":"Discord Bot",
+"managed":true,
+"category":"team chat"
+},
+{
+"slug":"disqus",
+"name":"Disqus",
+"managed":false,
+"category":"social media accounts"
+},
+{
+"slug":"docusign",
+"name":"DocuSign",
+"managed":false,
+"category":"signatures"
+},
+{
+"slug":"dribbble",
+"name":"Dribbble",
+"managed":false,
+"category":"images & design"
+},
+{
+"slug":"dropbox",
+"name":"Dropbox",
+"managed":true,
+"category":"file management & storage"
+},
+{
+"slug":"dropbox_sign",
+"name":"Dropbox Sign",
+"managed":false,
+"category":"signatures"
+},
+{
+"slug":"dub",
+"name":"Dub",
+"managed":true,
+"category":"url shortener"
+},
+{
+"slug":"dynamics365",
+"name":"Dynamics 365",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"dynatrace",
+"name":"Dynatrace",
+"managed":false,
+"category":"analytics"
+},
+{
+"slug":"egnyte",
+"name":"Egnyte",
+"managed":false,
+"category":"file management & storage"
+},
+{
+"slug":"epic_games",
+"name":"Epic Games",
+"managed":false,
+"category":"gaming"
+},
+{
+"slug":"eventbrite",
+"name":"Eventbrite",
+"managed":true,
+"category":"event management"
+},
+{
+"slug":"excel",
+"name":"Excel",
+"managed":true,
+"category":"spreadsheets"
+},
+{
+"slug":"exist",
+"name":"Exist",
+"managed":true,
+"category":"analytics"
+},
+{
+"slug":"facebook",
+"name":"Facebook",
+"managed":true,
+"category":"social media accounts"
+},
+{
+"slug":"fathom",
+"name":"Fathom",
+"managed":true,
+"category":"ai meeting assistants"
+},
+{
+"slug":"figma",
+"name":"Figma",
+"managed":true,
+"category":"images & design"
+},
+{
+"slug":"follow_up_boss",
+"name":"Follow Up Boss",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"frame_io_v4",
+"name":"Frame.io V4",
+"managed":false,
+"category":"video & audio"
+},
+{
+"slug":"freeagent",
+"name":"Freeagent",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"freee",
+"name":"freee",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"freshbooks",
+"name":"FreshBooks",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"freshsales",
+"name":"Freshsales",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"front",
+"name":"Front",
+"managed":false,
+"category":"customer support"
+},
+{
+"slug":"getresponse",
+"name":"GetResponse",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"github",
+"name":"GitHub",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"gitlab",
+"name":"GitLab",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"gmail",
+"name":"Gmail",
+"managed":true,
+"category":"email"
+},
+{
+"slug":"gong",
+"name":"Gong",
+"managed":true,
+"category":"analytics"
+},
+{
+"slug":"google_admin",
+"name":"Google Admin",
+"managed":false,
+"category":"security & identity tools"
+},
+{
+"slug":"googleads",
+"name":"Google Ads",
+"managed":true,
+"category":"ads & conversion"
+},
+{
+"slug":"google_adsense",
+"name":"Google AdSense",
+"managed":false,
+"category":"ads & conversion"
+},
+{
+"slug":"google_analytics",
+"name":"Google Analytics",
+"managed":true,
+"category":"analytics"
+},
+{
+"slug":"googlebigquery",
+"name":"Google BigQuery",
+"managed":true,
+"category":"databases"
+},
+{
+"slug":"google_business_profile",
+"name":"Google Business Profile",
+"managed":false,
+"category":"marketing"
+},
+{
+"slug":"googlecalendar",
+"name":"Google Calendar",
+"managed":true,
+"category":"scheduling & booking"
+},
+{
+"slug":"google_chat",
+"name":"Google Chat",
+"managed":false,
+"category":"productivity"
+},
+{
+"slug":"google_classroom",
+"name":"Google Classroom",
+"managed":true,
+"category":"education"
+},
+{
+"slug":"google_data_studio",
+"name":"Google Data Studio",
+"managed":false,
+"category":"business intelligence"
+},
+{
+"slug":"googledocs",
+"name":"Google Docs",
+"managed":true,
+"category":"documents"
+},
+{
+"slug":"googledrive",
+"name":"Google Drive",
+"managed":true,
+"category":"file management & storage"
+},
+{
+"slug":"google_maps",
+"name":"Google Maps",
+"managed":true,
+"category":"places & weather"
+},
+{
+"slug":"googlemeet",
+"name":"Google Meet",
+"managed":true,
+"category":"video conferencing"
+},
+{
+"slug":"google_merchant",
+"name":"Google Merchant Center",
+"managed":false,
+"category":"ecommerce"
+},
+{
+"slug":"googlephotos",
+"name":"Google Photos",
+"managed":true,
+"category":"images & design"
+},
+{
+"slug":"google_search_console",
+"name":"Google Search Console",
+"managed":true,
+"category":"analytics"
+},
+{
+"slug":"googlesheets",
+"name":"Google Sheets",
+"managed":true,
+"category":"spreadsheets"
+},
+{
+"slug":"googleslides",
+"name":"Google Slides",
+"managed":true,
+"category":"documents"
+},
+{
+"slug":"googlesuper",
+"name":"Google Super",
+"managed":true,
+"category":"file management & storage"
+},
+{
+"slug":"googletasks",
+"name":"Google Tasks",
+"managed":true,
+"category":"task management"
+},
+{
+"slug":"googlecontacts",
+"name":"Googlecontacts",
+"managed":false,
+"category":"productivity"
+},
+{
+"slug":"googleforms",
+"name":"Googleforms",
+"managed":false,
+"category":"productivity"
+},
+{
+"slug":"gorgias",
+"name":"Gorgias",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"go_to_training",
+"name":"GoTo Training",
+"managed":false,
+"category":"education"
+},
+{
+"slug":"greenhouse",
+"name":"Greenhouse",
+"managed":true,
+"category":"hr talent & recruitment"
+},
+{
+"slug":"gumroad",
+"name":"Gumroad",
+"managed":true,
+"category":"ecommerce"
+},
+{
+"slug":"gusto",
+"name":"Gusto",
+"managed":false,
+"category":"human resources"
+},
+{
+"slug":"halopsa",
+"name":"HaloPSA",
+"managed":false,
+"category":"customer support"
+},
+{
+"slug":"harvest",
+"name":"Harvest",
+"managed":true,
+"category":"time tracking software"
+},
+{
+"slug":"help_scout",
+"name":"Help Scout",
+"managed":false,
+"category":"customer support"
+},
+{
+"slug":"highlevel_agency",
+"name":"HighLevel Agency",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"highlevel_location",
+"name":"HighLevel Location",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"hubspot",
+"name":"HubSpot",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"hugging_face",
+"name":"Hugging Face",
+"managed":true,
+"category":"artificial intelligence"
+},
+{
+"slug":"infisical",
+"name":"Infisical",
+"managed":false,
+"category":"security & identity tools"
+},
+{
+"slug":"instagram",
+"name":"Instagram",
+"managed":true,
+"category":"social media accounts"
+},
+{
+"slug":"intercom",
+"name":"Intercom",
+"managed":true,
+"category":"customer support"
+},
+{
+"slug":"ironclad",
+"name":"Ironclad",
+"managed":false,
+"category":"documents"
+},
+{
+"slug":"jira",
+"name":"Jira",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"jobber",
+"name":"Jobber",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"judge_me",
+"name":"Judge.me",
+"managed":false,
+"category":"reviews"
+},
+{
+"slug":"kick",
+"name":"Kick",
+"managed":false,
+"category":"social media accounts"
+},
+{
+"slug":"kintone_rest",
+"name":"Kintone REST",
+"managed":false,
+"category":"app builder"
+},
+{
+"slug":"kit",
+"name":"Kit",
+"managed":true,
+"category":"marketing automation"
+},
+{
+"slug":"klaviyo",
+"name":"Klaviyo",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"kommo",
+"name":"Kommo",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"launch_darkly",
+"name":"LaunchDarkly",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"lever",
+"name":"Lever",
+"managed":false,
+"category":"hr talent & recruitment"
+},
+{
+"slug":"lightspeed",
+"name":"Lightspeed Retail X-Series",
+"managed":false,
+"category":"commerce"
+},
+{
+"slug":"linear",
+"name":"Linear",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"linkedin",
+"name":"LinkedIn",
+"managed":true,
+"category":"social media accounts"
+},
+{
+"slug":"linkedin_ads",
+"name":"Linkedin Ads",
+"managed":false,
+"category":"marketing"
+},
+{
+"slug":"linkhut",
+"name":"Linkhut",
+"managed":true,
+"category":"bookmark managers"
+},
+{
+"slug":"linode",
+"name":"Linode",
+"managed":false,
+"category":"it operations"
+},
+{
+"slug":"livechat",
+"name":"LiveChat",
+"managed":false,
+"category":"customer support"
+},
+{
+"slug":"lodgify",
+"name":"Lodgify",
+"managed":false,
+"category":"scheduling & booking"
+},
+{
+"slug":"mailchimp",
+"name":"Mailchimp",
+"managed":true,
+"category":"email newsletters"
+},
+{
+"slug":"mail_up",
+"name":"MailUp",
+"managed":false,
+"category":"email"
+},
+{
+"slug":"matterport",
+"name":"Matterport",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"metaads",
+"name":"Meta Ads",
+"managed":false,
+"category":"ads & conversion"
+},
+{
+"slug":"microsoft_advertising",
+"name":"Microsoft Advertising",
+"managed":false,
+"category":"ads & conversion"
+},
+{
+"slug":"microsoft_bookings",
+"name":"Microsoft Bookings",
+"managed":false,
+"category":"scheduling & booking"
+},
+{
+"slug":"microsoft_entra_id",
+"name":"Microsoft Entra ID",
+"managed":false,
+"category":"security & identity tools"
+},
+{
+"slug":"onenote",
+"name":"Microsoft OneNote",
+"managed":true,
+"category":"productivity"
+},
+{
+"slug":"microsoft_power_bi",
+"name":"Microsoft Power Bi",
+"managed":false,
+"category":"business intelligence"
+},
+{
+"slug":"microsoft_powerpoint",
+"name":"Microsoft PowerPoint",
+"managed":false,
+"category":"documents"
+},
+{
+"slug":"microsoft_teams",
+"name":"Microsoft Teams",
+"managed":true,
+"category":"team chat"
+},
+{
+"slug":"microsoft_todo",
+"name":"Microsoft To Do",
+"managed":false,
+"category":"task management"
+},
+{
+"slug":"microsoft_word",
+"name":"Microsoft Word",
+"managed":false,
+"category":"documents"
+},
+{
+"slug":"miro",
+"name":"Miro",
+"managed":true,
+"category":"team collaboration"
+},
+{
+"slug":"monday",
+"name":"Monday",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"money_forward",
+"name":"Money Forward",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"moneybird",
+"name":"Moneybird",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"mural",
+"name":"Mural",
+"managed":true,
+"category":"team collaboration"
+},
+{
+"slug":"neo4j",
+"name":"Neo4J",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"neon",
+"name":"Neon",
+"managed":false,
+"category":"databases"
+},
+{
+"slug":"netsuite",
+"name":"Netsuite",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"notebook_lm",
+"name":"NotebookLM",
+"managed":true,
+"category":"ai assistants"
+},
+{
+"slug":"notion",
+"name":"Notion",
+"managed":true,
+"category":"notes"
+},
+{
+"slug":"omnisend",
+"name":"Omnisend",
+"managed":true,
+"category":"marketing automation"
+},
+{
+"slug":"one_drive",
+"name":"OneDrive",
+"managed":true,
+"category":"file management & storage"
+},
+{
+"slug":"outlook",
+"name":"Outlook",
+"managed":true,
+"category":"email"
+},
+{
+"slug":"pagerduty",
+"name":"PagerDuty",
+"managed":true,
+"category":"server monitoring"
+},
+{
+"slug":"parma",
+"name":"Parma",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"zettle",
+"name":"PayPal Zettle",
+"managed":false,
+"category":"commerce"
+},
+{
+"slug":"pinecone",
+"name":"Pinecone",
+"managed":false,
+"category":"artificial intelligence"
+},
+{
+"slug":"pinterest",
+"name":"Pinterest",
+"managed":true,
+"category":"social media accounts"
+},
+{
+"slug":"pinterest_ads",
+"name":"Pinterest Ads",
+"managed":true,
+"category":"ads & conversion"
+},
+{
+"slug":"pipedrive",
+"name":"Pipedrive",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"planetscale",
+"name":"PlanetScale",
+"managed":false,
+"category":"databases"
+},
+{
+"slug":"podio",
+"name":"Podio",
+"managed":false,
+"category":"project management"
+},
+{
+"slug":"polar",
+"name":"Polar",
+"managed":false,
+"category":"payment processing"
+},
+{
+"slug":"prisma",
+"name":"Prisma",
+"managed":true,
+"category":"databases"
+},
+{
+"slug":"productboard",
+"name":"Productboard",
+"managed":true,
+"category":"product management"
+},
+{
+"slug":"pushbullet",
+"name":"Pushbullet",
+"managed":true,
+"category":"notifications"
+},
+{
+"slug":"quickbooks",
+"name":"QuickBooks",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"quire",
+"name":"Quire",
+"managed":false,
+"category":"project management"
+},
+{
+"slug":"railway",
+"name":"Railway",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"railway_mcp",
+"name":"Railway MCP",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"ramp",
+"name":"Ramp",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"razorpay",
+"name":"Razorpay",
+"managed":false,
+"category":"payment processing"
+},
+{
+"slug":"rd_station_marketing",
+"name":"RD Station Marketing",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"rebrandly",
+"name":"Rebrandly",
+"managed":false,
+"category":"url shortener"
+},
+{
+"slug":"recruitee",
+"name":"Recruitee",
+"managed":false,
+"category":"hr talent & recruitment"
+},
+{
+"slug":"reddit",
+"name":"Reddit",
+"managed":true,
+"category":"social media accounts"
+},
+{
+"slug":"reddit_ads",
+"name":"Reddit Ads",
+"managed":true,
+"category":"marketing"
+},
+{
+"slug":"resend",
+"name":"Resend",
+"managed":false,
+"category":"email"
+},
+{
+"slug":"roam",
+"name":"Roam",
+"managed":true,
+"category":"communication"
+},
+{
+"slug":"sage_intacct",
+"name":"Sage Intacct",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"salesforce",
+"name":"Salesforce",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"salesforce_data_360",
+"name":"Salesforce Data 360",
+"managed":false,
+"category":"business intelligence"
+},
+{
+"slug":"salesforce_service_cloud",
+"name":"Salesforce Service Cloud",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"scheduleonce",
+"name":"Scheduleonce",
+"managed":false,
+"category":"scheduling & booking"
+},
+{
+"slug":"sendloop",
+"name":"Sendloop",
+"managed":false,
+"category":"email newsletters"
+},
+{
+"slug":"sentry",
+"name":"Sentry",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"servicem8",
+"name":"Servicem8",
+"managed":true,
+"category":"scheduling & booking"
+},
+{
+"slug":"servicenow",
+"name":"ServiceNow",
+"managed":false,
+"category":"it operations"
+},
+{
+"slug":"share_point",
+"name":"SharePoint",
+"managed":true,
+"category":"documents"
+},
+{
+"slug":"sharepoint_graph",
+"name":"SharePoint Graph",
+"managed":false,
+"category":"documents"
+},
+{
+"slug":"shippo",
+"name":"Shippo",
+"managed":true,
+"category":"ecommerce"
+},
+{
+"slug":"shopify",
+"name":"Shopify",
+"managed":false,
+"category":"ecommerce"
+},
+{
+"slug":"sign_now",
+"name":"SignNow",
+"managed":false,
+"category":"signatures"
+},
+{
+"slug":"slack",
+"name":"Slack",
+"managed":true,
+"category":"team chat"
+},
+{
+"slug":"slackbot",
+"name":"Slackbot",
+"managed":true,
+"category":"team chat"
+},
+{
+"slug":"smartsheet",
+"name":"Smartsheet",
+"managed":false,
+"category":"project management"
+},
+{
+"slug":"smokeball",
+"name":"Smokeball",
+"managed":false,
+"category":"project management"
+},
+{
+"slug":"snapchat",
+"name":"Snapchat",
+"managed":false,
+"category":"marketing"
+},
+{
+"slug":"snowflake",
+"name":"Snowflake",
+"managed":false,
+"category":"databases"
+},
+{
+"slug":"snyk",
+"name":"Snyk",
+"managed":false,
+"category":"security & identity tools"
+},
+{
+"slug":"soundcloud",
+"name":"SoundCloud",
+"managed":false,
+"category":"video & audio"
+},
+{
+"slug":"splitwise",
+"name":"Splitwise",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"spotify",
+"name":"Spotify",
+"managed":false,
+"category":"news & lifestyle"
+},
+{
+"slug":"square",
+"name":"Square",
+"managed":true,
+"category":"payment processing"
+},
+{
+"slug":"stack_exchange",
+"name":"Stack Exchange",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"storyblok",
+"name":"Storyblok",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"strava",
+"name":"Strava",
+"managed":true,
+"category":"fitness"
+},
+{
+"slug":"stripe",
+"name":"Stripe",
+"managed":true,
+"category":"payment processing"
+},
+{
+"slug":"supabase",
+"name":"Supabase",
+"managed":true,
+"category":"developer tools"
+},
+{
+"slug":"survey_monkey",
+"name":"SurveyMonkey",
+"managed":false,
+"category":"forms & surveys"
+},
+{
+"slug":"tally",
+"name":"Tally",
+"managed":false,
+"category":"forms & surveys"
+},
+{
+"slug":"teamleader",
+"name":"Teamleader Focus",
+"managed":false,
+"category":"crm"
+},
+{
+"slug":"threads",
+"name":"Threads",
+"managed":false,
+"category":"social media accounts"
+},
+{
+"slug":"ticketmaster",
+"name":"Ticketmaster",
+"managed":true,
+"category":"event management"
+},
+{
+"slug":"ticktick",
+"name":"Ticktick",
+"managed":true,
+"category":"productivity"
+},
+{
+"slug":"tiktok",
+"name":"Tiktok",
+"managed":false,
+"category":"social media accounts"
+},
+{
+"slug":"tiktok_ads",
+"name":"TikTok Ads",
+"managed":true,
+"category":"marketing"
+},
+{
+"slug":"timely",
+"name":"Timely",
+"managed":true,
+"category":"time tracking software"
+},
+{
+"slug":"todoist",
+"name":"Todoist",
+"managed":true,
+"category":"task management"
+},
+{
+"slug":"toneden",
+"name":"Toneden",
+"managed":false,
+"category":"social media marketing"
+},
+{
+"slug":"trello",
+"name":"Trello",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"twitch",
+"name":"Twitch",
+"managed":true,
+"category":"video & audio"
+},
+{
+"slug":"twitter",
+"name":"Twitter",
+"managed":false,
+"category":"social media accounts"
+},
+{
+"slug":"typeform",
+"name":"Typeform",
+"managed":true,
+"category":"forms & surveys"
+},
+{
+"slug":"vercel",
+"name":"Vercel",
+"managed":false,
+"category":"developer tools"
+},
+{
+"slug":"vibe",
+"name":"Vibe",
+"managed":false,
+"category":"ads & conversion"
+},
+{
+"slug":"vimeo",
+"name":"Vimeo",
+"managed":false,
+"category":"video & audio"
+},
+{
+"slug":"wakatime",
+"name":"WakaTime",
+"managed":true,
+"category":"time tracking software"
+},
+{
+"slug":"webex",
+"name":"Webex",
+"managed":true,
+"category":"video conferencing"
+},
+{
+"slug":"webflow",
+"name":"Webflow",
+"managed":false,
+"category":"website builders"
+},
+{
+"slug":"whatsapp",
+"name":"WhatsApp",
+"managed":true,
+"category":"phone & sms"
+},
+{
+"slug":"whop",
+"name":"Whop",
+"managed":false,
+"category":"ecommerce"
+},
+{
+"slug":"wix",
+"name":"Wix",
+"managed":false,
+"category":"website builders"
+},
+{
+"slug":"wordpress_com",
+"name":"WordPress.com",
+"managed":false,
+"category":"content & files"
+},
+{
+"slug":"workable",
+"name":"Workable",
+"managed":false,
+"category":"human resources"
+},
+{
+"slug":"workday",
+"name":"Workday",
+"managed":false,
+"category":"human resources"
+},
+{
+"slug":"wrike",
+"name":"Wrike",
+"managed":true,
+"category":"project management"
+},
+{
+"slug":"x_mcp",
+"name":"X MCP",
+"managed":false,
+"category":"model context protocol"
+},
+{
+"slug":"xero",
+"name":"Xero",
+"managed":false,
+"category":"accounting"
+},
+{
+"slug":"yandex",
+"name":"Yandex",
+"managed":true,
+"category":"email"
+},
+{
+"slug":"ynab",
+"name":"YNAB",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"youtube",
+"name":"YouTube",
+"managed":true,
+"category":"video & audio"
+},
+{
+"slug":"zendesk",
+"name":"Zendesk",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"zeplin",
+"name":"Zeplin",
+"managed":true,
+"category":"images & design"
+},
+{
+"slug":"zoho",
+"name":"Zoho",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"zoho_bigin",
+"name":"Zoho Bigin",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"zoho_books",
+"name":"Zoho Books",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"zoho_calendar",
+"name":"Zoho Calendar",
+"managed":false,
+"category":"calendar"
+},
+{
+"slug":"zoho_campaigns",
+"name":"Zoho Campaigns",
+"managed":false,
+"category":"marketing automation"
+},
+{
+"slug":"zoho_desk",
+"name":"Zoho Desk",
+"managed":true,
+"category":"crm"
+},
+{
+"slug":"zoho_inventory",
+"name":"Zoho Inventory",
+"managed":true,
+"category":"accounting"
+},
+{
+"slug":"zoho_invoice",
+"name":"Zoho Invoice",
+"managed":true,
+"category":"proposal & invoice management"
+},
+{
+"slug":"zoho_mail",
+"name":"Zoho Mail",
+"managed":true,
+"category":"email"
+},
+{
+"slug":"zoho_people",
+"name":"Zoho People",
+"managed":false,
+"category":"human resources"
+},
+{
+"slug":"zoho_projects",
+"name":"Zoho Projects",
+"managed":false,
+"category":"project management"
+},
+{
+"slug":"zoho_recruit",
+"name":"Zoho Recruit",
+"managed":false,
+"category":"hr talent & recruitment"
+},
+{
+"slug":"zoho_sign",
+"name":"Zoho Sign",
+"managed":false,
+"category":"signatures"
+},
+{
+"slug":"zoho_work_drive",
+"name":"Zoho WorkDrive",
+"managed":false,
+"category":"file management & storage"
+},
+{
+"slug":"zoom",
+"name":"Zoom",
+"managed":true,
+"category":"video conferencing"
+},
+{
+"slug":"zoom_chat",
+"name":"Zoom Team Chat",
+"managed":false,
+"category":"team chat"
+},
+{
+"slug":"zoominfo",
+"name":"Zoominfo",
+"managed":false,
+"category":"crm"
+}
+]

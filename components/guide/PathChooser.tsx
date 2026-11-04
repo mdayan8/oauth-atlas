@@ -38,7 +38,7 @@ export default function PathChooser({
   const isOn = (p: PathOptionT) =>
     (!p.set.audience || p.set.audience === sit.audience) && (!p.set.profile || p.set.profile === sit.profile) && (!p.set.needs || same(p.set.needs, sit.needs));
   const skips = [
-    ...(g.skip.composioManaged === "yes" ? [{ label: "Use Composio's managed app", note: "No app, no review. Users see Composio on consent.", url: toolkitUrl(g), cta: "Use Composio →" }] : []),
+    ...(g.skip.composioManaged === "yes" ? [{ label: "Composio-managed OAuth", note: "No app of your own, no review. Users see Composio on consent.", url: toolkitUrl(g), cta: "Use Composio →" }] : []),
     ...(g.skip.mcpDcr === "yes" && g.skip.mcpServer ? [{ label: `Use ${g.name}'s MCP server`, note: "Agents register themselves. No app of your own.", url: g.skip.mcpServer, cta: "Open →" }] : []),
   ];
   const skip = skips.length > 0;

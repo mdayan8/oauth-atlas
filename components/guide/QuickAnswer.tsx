@@ -16,11 +16,11 @@ export default function QuickAnswer({ g, r, s, live, Cite, style }: { g: Guide; 
   const name = g.name || "this app";
   const skip =
     g.skip.composioManaged === "yes"
-      ? `Quickest path: Composio already manages ${name}. Your own app only for your own branding, scopes or quota.`
+      ? `Quickest path: Composio-managed OAuth is available for ${name}. Bring your own app only for your own branding, scopes or quota.`
       : g.skip.mcpDcr === "yes"
         ? `Quickest path: ${name}'s MCP server signs agents up automatically, so MCP users can skip this.`
         : g.skip.composioManaged === "no"
-          ? `No shortcut: you need your own ${name} app.`
+          ? `Bring your own OAuth app: Composio does not manage ${name}.`
           : "";
   const tile = "rounded-xl bg-row p-5";
   const head = "label text-ink-3";
@@ -109,7 +109,7 @@ export default function QuickAnswer({ g, r, s, live, Cite, style }: { g: Guide; 
         {skip && (
           <div className="rounded-xl px-4 py-3" style={{ background: `color-mix(in srgb, ${g.skip.composioManaged === "yes" || g.skip.mcpDcr === "yes" ? "var(--accent)" : "var(--ink-3)"} 7%, var(--row))` }}>
             <p className="label" style={{ color: g.skip.composioManaged === "yes" || g.skip.mcpDcr === "yes" ? "var(--accent)" : "var(--ink-3)" }}>
-              {g.skip.composioManaged === "yes" || g.skip.mcpDcr === "yes" ? "Quickest path" : "No shortcut"}
+              {g.skip.composioManaged === "yes" || g.skip.mcpDcr === "yes" ? "Quickest path" : "Bring your own OAuth app"}
             </p>
             <p className="mt-1 text-[15px] leading-relaxed">
               {skip.replace(/^Quickest path: /, "")} {g.skip.sourceIds.length > 0 && <Cite ids={g.skip.sourceIds} />}
