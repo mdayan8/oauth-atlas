@@ -83,7 +83,15 @@ export default function AskPanel({ g, Cite, onSituation }: { g: Guide; Cite: Cit
             </div>
           ),
         )}
-        {status === "submitted" && <Skeleton />}
+        {status === "submitted" && (
+          <div className="rise rounded-xl bg-row px-4 py-3.5">
+            <p className="label flex items-center gap-2 text-ink-2">
+              <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-accent" />
+              Reading the {g.name} guide ({g.sources.length} sources), picking the parts that answer you
+            </p>
+            <Skeleton bare />
+          </div>
+        )}
         {error && (
           <div className="rounded-xl bg-row px-4 py-3 text-[14px] text-ink-2">
             {error.message.includes("missing_key")

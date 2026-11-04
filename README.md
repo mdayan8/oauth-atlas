@@ -40,6 +40,6 @@ The library, re-checks and sharing work with no keys. The live agent, Ask and Dr
 - Live runs were tested on the free route (Groq, NVIDIA NIM backup), not yet with a Claude key. Groq's free tier caps each model at 200K tokens a day, about 30 live guides; repeats of the same app are served from a 24-hour cache.
 - Hands-on times are estimates; waiting times come from providers where published ("Not published" otherwise). CASA cost only comes from third parties.
 - Composio-managed status is read from Composio's public toolkit docs, so it depends on that page format.
-- Key-spending routes only answer this site's own pages, but there is no per-user rate limit.
+- Key-spending routes check the Origin header and cap each visitor (12 live guides an hour). Origin can be forged by a script, so this stops casual abuse, not a determined attacker; the free-tier quota is the real ceiling.
 
 No credentials are in this repo. Keys are read only from the environment.

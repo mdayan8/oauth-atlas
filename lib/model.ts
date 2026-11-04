@@ -28,7 +28,7 @@ export function pickModel(opts: { effort?: "low" | "medium"; use?: keyof typeof 
     };
   // Free tiers: Groq is fast but caps each free model at 8K tokens a minute.
   // NIM has no token cap but answers slowly. MiniMax was the only NIM model on the free account with correct tool calls.
-  // ponytail: NIM speaks the same chat API, so the installed Groq client calls it; add a dedicated client if params drift.
+  // NIM speaks the same chat API, so the installed Groq client calls it; add a dedicated client if params drift.
   const nimKey = process.env.NVIDIA_API_KEY;
   const nim = nimKey ? { model: createGroq({ baseURL: "https://integrate.api.nvidia.com/v1", apiKey: nimKey })("minimaxai/minimax-m3.1-flash") as LanguageModel, providerOptions: {} as ProviderOptions } : null;
   const onGroq = (id: string) => ({ model: groq(id) as LanguageModel, providerOptions: { groq: { reasoningEffort: "low" } } as ProviderOptions });
@@ -62,7 +62,7 @@ const fetchPage = (budget: number) => {
       if (!safeOrigin(url)) return { url, error: "Only public https URLs can be read." };
       try {
         const { status, text } = await getText(url);
-        // ponytail: first 4k characters only, to stay inside free-tier token limits; long docs lose their tail.
+        // first 4k characters only, to stay inside free-tier token limits; long docs lose their tail.
         return { url, status, text: cleanHtml(text).slice(0, 4000) };
       } catch (e) {
         return { url, error: String(e).slice(0, 120) };

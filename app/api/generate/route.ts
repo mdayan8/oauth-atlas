@@ -9,7 +9,7 @@ import { fromThisSite } from "@/lib/guard";
 export const maxDuration = 300;
 
 type Chunk = Parameters<Parameters<typeof createUIMessageStream>[0]["execute"]>[0]["writer"]["write"] extends (c: infer C) => void ? C : never;
-// ponytail: per-instance memory cache, lost on cold start; move to a KV store if many people share one deploy.
+// per-instance memory cache, lost on cold start; move to a KV store if many people share one deploy.
 const cache = new Map<string, { at: number; chunks: Chunk[] }>();
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -17,7 +17,7 @@ const DAY = 24 * 60 * 60 * 1000;
 const onError = friendlyError;
 
 export async function POST(req: Request) {
-  if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
+  if (!fromThisSite(req, "generate")) return Response.json({ error: "forbidden" }, { status: 403 });
   const m = pickModel({ effort: "medium" });
   if (!m) return Response.json({ error: "missing_key" }, { status: 503 });
   const { messages }: { messages: UIMessage[] } = await req.json();
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         out({ type: "tool-input-available", toolCallId, toolName, input });
         out({ type: "tool-output-available", toolCallId, output });
       };
-      const { sources, evidence } = await gather(text, async (toolName, input, run) => {
+      const { sources, evidence, mcp, composio } = await gather(text, async (toolName, input, run) => {
         const toolCallId = `g${++n}`;
         out({ type: "tool-input-available", toolCallId, toolName, input });
         const output = await run();
@@ -106,7 +106,7 @@ export async function POST(req: Request) {
         let failed = false;
         for await (const c of result.toUIMessageStream({ sendStart: false, onError })) {
           if (c.type === "tool-input-available" && c.toolName === "publish_guide") {
-            const g = tidyGuide(c.input as Parameters<typeof tidyGuide>[0] & { links?: { url: string }[] }, evidence, officialUrl, text);
+            const g = tidyGuide(c.input as Parameters<typeof tidyGuide>[0] & { links?: { url: string }[] }, evidence, officialUrl, text, { mcp, composio });
             // Every "Where to go" link is opened for real before it is shown.
             if (Array.isArray(g.links)) {
               const alive = await Promise.all(g.links.map((l) => linkAlive(l.url)));

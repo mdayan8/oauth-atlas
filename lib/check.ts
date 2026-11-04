@@ -114,7 +114,7 @@ const n = tidyGuide(
     ],
     steps: [{ title: "A", when: { needs: ["s9"] } }],
   },
-  "",
+  "Public apps go through review.",
 );
 assert.equal(n.overview.name, "Jira");
 assert.equal(tidyGuide({ overview: { name: "OAuth Setup Guide" } }, "", undefined, "Zendesk").overview.name, "Zendesk");
@@ -122,4 +122,22 @@ assert.equal(tidyGuide({ overview: { name: "X OAuth Setup Guide" } }, "", undefi
 assert.deepEqual(n.verdicts.map((v) => v.difficulty), ["easy", "hard"], "a verdict tied only to made-up needs is dropped");
 assert.deepEqual(n.verdicts[1].when?.needs, ["read"]);
 assert.equal((n.steps as { when: unknown }[])[0].when, null, "a step tied only to made-up needs shows for everyone");
+const e = tidyGuide(
+  {
+    skip: { mcpServer: null, mcpDcr: "unknown", composioManaged: "no" },
+    verdicts: [{ difficulty: "hard", waiting: "None" }],
+    scopes: [{ name: "admin", triggersReview: true }],
+    blockers: [{ symptom: "HTTP 404 when using a made-up client id" }, { symptom: "Redirect URI mismatch" }],
+  },
+  "The docs describe scopes. No mention of any gate.",
+  undefined,
+  "Linear",
+  { mcp: { server: "https://mcp.linear.app", dcr: true }, composio: { managed: "yes" } },
+);
+assert.equal(e.skip.mcpDcr, "yes", "probes decide the skip section");
+assert.equal(e.skip.mcpServer, "https://mcp.linear.app");
+assert.equal(e.skip.composioManaged, "yes");
+assert.equal(e.verdicts[0].difficulty, "moderate", "no review in the evidence means nothing harder than moderate");
+assert.equal((e.scopes as { triggersReview: boolean }[])[0].triggersReview, false);
+assert.deepEqual((e.blockers as { symptom: string }[]).map((b) => b.symptom), ["Redirect URI mismatch"], "probe artifacts are not blockers");
 console.log("guards: checks pass");

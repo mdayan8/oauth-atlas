@@ -1,5 +1,5 @@
 // Live guides have no database: the whole guide travels in the URL fragment, deflated.
-// ponytail: fragment length caps out around a few hundred KB; add storage if guides get that big.
+// fragment length caps out around a few hundred KB; add storage if guides get that big.
 
 const b64url = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 

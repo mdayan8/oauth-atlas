@@ -100,7 +100,7 @@ export const cleanHtml = (html: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-// ponytail: scrapes DuckDuckGo's HTML results page; swap for a search API if it starts failing.
+// scrapes DuckDuckGo's HTML results page; swap for a search API if it starts failing.
 export async function searchWeb(query: string) {
   const res = await fetch(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`, {
     signal: AbortSignal.timeout(8000),

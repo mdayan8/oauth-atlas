@@ -12,14 +12,35 @@ export function sourcedWait(waiting: string, evidence: string) {
 type When = { profile?: unknown[] | null; audience?: unknown[] | null; needs?: string[] | null } | null;
 type Draft = {
   overview?: { name?: string; domain?: string | null; needs?: { id: string }[] } | null;
-  skip?: { mcpServer?: string | null; mcpDcr?: string } | null;
+  skip?: { mcpServer?: string | null; mcpDcr?: string; composioManaged?: string } | null;
   verdicts?: { difficulty?: string; waiting: string; when?: When }[] | null;
   [list: string]: unknown;
 };
 
 const empty = (w: When) => !w || (!w.profile?.length && !w.audience?.length && !w.needs?.length);
 
-export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?: string, app = ""): T {
+export type Found = {
+  mcp?: { server: string; dcr: boolean };
+  composio?: { managed: string; auth?: string };
+};
+
+export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?: string, app = "", found: Found = {}): T {
+  // What the probes saw beats what the model wrote: the skip section is the headline and it must be right.
+  if (g.skip) {
+    if (found.mcp) {
+      g.skip.mcpServer = found.mcp.server;
+      g.skip.mcpDcr = found.mcp.dcr ? "yes" : "no";
+    }
+    if (found.composio?.managed === "yes" || found.composio?.managed === "no") g.skip.composioManaged = found.composio.managed;
+  }
+  // The authorize attempt is evidence of the flow, not something the developer will hit.
+  const d = g as Draft;
+  if (Array.isArray(d.blockers)) d.blockers = (d.blockers as { symptom?: string }[]).filter((b) => !/made-up|probe|fake client|invalid[_ ]client|client[_ ]id was not found|not a real client/i.test(b.symptom ?? ""));
+  // No source mentions a review at all: then no scope triggers one and nothing is harder than moderate.
+  if (!/review|verif|approv|assessment|certif/i.test(evidence)) {
+    (d.scopes as { triggersReview?: boolean }[] | undefined)?.forEach((s) => (s.triggersReview = false));
+    g.verdicts?.forEach((v) => (v.difficulty === "hard" || v.difficulty === "gated") && (v.difficulty = "moderate"));
+  }
   // "X OAuth Setup Guide" and "OAuth Setup for Jira" are titles, not names. If nothing of the app's name is left,
   // use what the developer typed.
   if (g.overview) {

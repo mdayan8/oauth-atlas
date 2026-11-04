@@ -89,25 +89,29 @@ export async function gather(app: string, emit: Emit) {
   }
 
   // Discovery documents on the official domain, plus any auth host the docs point at.
+  // Providers that let agents sign themselves up host it at mcp.<domain> (Linear, Notion, Figma), so that is
+  // probed on every official domain, not only hosts the docs happen to mention.
   const origins = new Set<string>();
   for (const u of [...picked.filter((h) => official(h.url)).map((h) => h.url), ...authorizeUrls].slice(0, 4)) {
     const host = new URL(u).hostname;
-    for (const h of [host, baseDomain(host)]) {
+    for (const h of [host, baseDomain(host), `mcp.${baseDomain(host)}`]) {
       const o = safeOrigin(`https://${h}`);
       if (o) origins.add(o);
     }
   }
   const meta = await Promise.all(
-    [...origins].slice(0, 3).map((origin) =>
+    [...origins].slice(0, 5).map((origin) =>
       emit("probe_oauth_metadata", { origin }, async () => {
         const paths = ["/.well-known/openid-configuration", "/.well-known/oauth-authorization-server"];
         return { origin, results: await Promise.all(paths.map((p) => readMetadata(origin + p))) };
       }),
     ),
   );
+  let mcp: { server: string; dcr: boolean } | undefined;
   for (const m of meta)
     for (const r of m.results)
       if (r.status === 200 && r.authorization_endpoint) {
+        if (/^https:\/\/mcp\./.test(m.origin) && !mcp) mcp = { server: m.origin, dcr: !!r.registration_endpoint };
         authorizeUrls.unshift(r.authorization_endpoint);
         cite(
           { title: `Discovery document at ${new URL(r.url).host}`, url: r.url, badge: "tested" },
@@ -116,7 +120,7 @@ export async function gather(app: string, emit: Emit) {
       }
 
   // The hands-on attempt: the real authorize step with a made-up client id, no login.
-  const target = authorizeUrls.find((u) => safeOrigin(u));
+  const target = authorizeUrls.find((u) => safeOrigin(u) && !/[{}<>]|your[a-z_-]*key|example/i.test(u));
   if (target) {
     const r = await emit("try_authorize", { authorizeUrl: target }, () => tryAuthorize(target));
     cite(
@@ -126,6 +130,11 @@ export async function gather(app: string, emit: Emit) {
   }
 
   const unread = hits.filter((h) => !picked.includes(h)).slice(0, 4).map((h) => `${h.title.slice(0, 70)}: ${h.url}`);
-  return { sources, evidence: [...lines, unread.length ? `Other pages found, not read: ${unread.join("; ")}` : ""].join("\n") };
+  return {
+    sources,
+    mcp,
+    composio: composio.found ? { managed: composio.managed, auth: composio.auth } : undefined,
+    evidence: [...lines, unread.length ? `Other pages found, not read: ${unread.join("; ")}` : ""].join("\n"),
+  };
 }
 

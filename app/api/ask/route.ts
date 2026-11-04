@@ -11,7 +11,7 @@ const SYSTEM = `You answer a developer's question about getting an OAuth app set
 Answer ONLY with display tool calls, and make ALL of them together in this one reply (several calls in parallel). Each call renders a component on screen. No prose outside tools.
 In that one reply, call:
 - set_situation, if the developer said anything about their situation (individual, startup or company; just them and testers or real users; what their agent must do). Use need ids from the guide's "needs" list only. The guide on screen re-shapes to match.
-- say: the direct answer in one or two plain sentences.
+- say: the direct answer in one or two plain sentences. If the guide has a harder verdict whose "when" matches what they described, lead with that verdict and its reason, and use show_warning for the thing that blocks them, in this same reply, never only as a follow-up choice. When their agent acts for other people (real users), some of those users will be in the harder situations the guide lists (an organization, a restricted scope): name the one that would bite them in a show_warning, even if they did not mention it.
 - only the components that make the answer clearer: show_verdict when their situation changes how hard it is, show_compare for alternatives side by side, show_steps for what to do in order, show_warning for a real risk, show_links for where to go.
 - offer_choices: two or three short follow-up questions they are likely to ask next.
 Rules: use only facts in the guide or on an official page you fetched; pass sourceIds from the guide's sources where they support a claim. If the guide does not cover it, say so plainly. Never invent numbers, fees or review times. No em dashes. Keep every text short.`;
@@ -92,7 +92,7 @@ const compact = (g: unknown) =>
   JSON.stringify(g, (k, v) => (k === "note" || k === "checked" || k === "paths" || v === null || v === "" || (Array.isArray(v) && !v.length) ? undefined : v));
 
 export async function POST(req: Request) {
-  if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
+  if (!fromThisSite(req, "ask")) return Response.json({ error: "forbidden" }, { status: 403 });
   const m = pickModel({ effort: "low", use: "ask" });
   if (!m) return Response.json({ error: "missing_key" }, { status: 503 });
 

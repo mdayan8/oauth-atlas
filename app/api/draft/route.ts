@@ -14,7 +14,7 @@ If the task is code, write short working TypeScript (Node 20, fetch, no extra li
 Keep it short and plain. No em dashes.`;
 
 export async function POST(req: Request) {
-  if (!fromThisSite(req)) return Response.json({ error: "forbidden" }, { status: 403 });
+  if (!fromThisSite(req, "draft")) return Response.json({ error: "forbidden" }, { status: 403 });
   const m = pickModel({ effort: "low", use: "draft" });
   if (!m) return Response.json({ error: "missing_key" }, { status: 503 });
 
