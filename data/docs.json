@@ -1,0 +1,154 @@
+{
+  "linear": [
+    "https://linear.app/developers/oauth-2-0-authentication"
+  ],
+  "notion": [
+    "https://developers.notion.com/docs/authorization"
+  ],
+  "trello": [
+    "https://developer.atlassian.com/cloud/trello/guides/rest-api/authorization/"
+  ],
+  "hubspot": [
+    "https://developers.hubspot.com/docs/guides/apps/authentication/working-with-oauth",
+    "https://developers.hubspot.com/docs/guides/apps/authentication/scopes"
+  ],
+  "calendly": [
+    "https://developer.calendly.com/docs/authentication/creating-an-oauth-app",
+    "https://developer.calendly.com/docs/authentication/scopes"
+  ],
+  "zoom": [
+    "https://developers.zoom.us/docs/integrations/oauth/"
+  ],
+  "salesforce": [
+    "https://help.salesforce.com/s/articleView?id=platform.ev_relay_create_connected_app.htm&language=en_US&type=5"
+  ],
+  "discord": [
+    "https://discord.com/developers/docs/topics/oauth2"
+  ],
+  "figma": [
+    "https://developers.figma.com/docs/rest-api/oauth-apps/"
+  ],
+  "airtable": [
+    "https://airtable.com/developers/web/guides/oauth-integrations"
+  ],
+  "jira": [
+    "https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/"
+  ],
+  "confluence": [
+    "https://developer.atlassian.com/cloud/confluence/oauth-2-3lo-apps/"
+  ],
+  "bitbucket": [
+    "https://developer.atlassian.com/cloud/bitbucket/oauth-2/"
+  ],
+  "asana": [
+    "https://developers.asana.com/docs/oauth"
+  ],
+  "dropbox": [
+    "https://developers.dropbox.com/oauth-guide"
+  ],
+  "box": [
+    "https://developer.box.com/guides/authentication/oauth2/"
+  ],
+  "stripe": [
+    "https://docs.stripe.com/connect/oauth-reference"
+  ],
+  "mailchimp": [
+    "https://mailchimp.com/developer/marketing/guides/access-user-data-oauth-2/"
+  ],
+  "intercom": [
+    "https://developers.intercom.com/docs/build-an-integration/learn-more/authentication/setting-up-oauth"
+  ],
+  "zendesk": [
+    "https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/"
+  ],
+  "twitter": [
+    "https://docs.x.com/fundamentals/authentication/oauth-2-0/overview"
+  ],
+  "outlook": [
+    "https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app",
+    "https://learn.microsoft.com/en-us/graph/auth-v2-user"
+  ],
+  "microsoft": [
+    "https://learn.microsoft.com/en-us/entra/identity-platform/quickstart-register-app"
+  ],
+  "onedrive": [
+    "https://learn.microsoft.com/en-us/graph/auth-v2-user"
+  ],
+  "googlecalendar": [
+    "https://developers.google.com/workspace/calendar/api/auth",
+    "https://support.google.com/cloud/answer/13461325"
+  ],
+  "googledrive": [
+    "https://developers.google.com/workspace/drive/api/guides/api-specific-auth",
+    "https://support.google.com/cloud/answer/13461325"
+  ],
+  "googlesheets": [
+    "https://developers.google.com/workspace/sheets/api/guides/authorizing"
+  ],
+  "youtube": [
+    "https://developers.google.com/youtube/v3/guides/auth/installed-apps"
+  ],
+  "todoist": [
+    "https://developer.todoist.com/api/v1/"
+  ],
+  "clickup": [
+    "https://developer.clickup.com/docs/authentication"
+  ],
+  "webflow": [
+    "https://developers.webflow.com/data/reference/oauth-app"
+  ],
+  "monday": [
+    "https://developer.monday.com/apps/docs/oauth"
+  ],
+  "pipedrive": [
+    "https://pipedrive.readme.io/docs/marketplace-oauth-authorization"
+  ],
+  "quickbooks": [
+    "https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0"
+  ],
+  "canva": [
+    "https://www.canva.dev/docs/connect/authentication/"
+  ],
+  "miro": [
+    "https://developers.miro.com/docs/getting-started-with-oauth"
+  ],
+  "typeform": [
+    "https://www.typeform.com/developers/get-started/applications/"
+  ],
+  "gitlab": [
+    "https://docs.gitlab.com/ee/api/oauth2.html"
+  ],
+  "xero": [
+    "https://developer.xero.com/documentation/guides/oauth2/auth-flow/"
+  ],
+  "docusign": [
+    "https://developers.docusign.com/platform/auth/"
+  ],
+  "strava": [
+    "https://developers.strava.com/docs/authentication/"
+  ],
+  "linkedin": [
+    "https://learn.microsoft.com/en-us/linkedin/shared/authentication/authorization-code-flow"
+  ],
+  "facebook": [
+    "https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow"
+  ],
+  "instagram": [
+    "https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/business-login"
+  ],
+  "github": [
+    "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/creating-an-oauth-app"
+  ],
+  "slack": [
+    "https://api.slack.com/authentication/oauth-v2"
+  ],
+  "gmail": [
+    "https://developers.google.com/workspace/gmail/api/auth/scopes"
+  ],
+  "spotify": [
+    "https://developer.spotify.com/documentation/web-api/concepts/authorization"
+  ],
+  "shopify": [
+    "https://shopify.dev/docs/apps/build/authentication-authorization"
+  ]
+}

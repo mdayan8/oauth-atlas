@@ -105,6 +105,13 @@ export async function POST(req: Request) {
 
   // Free models flake now and then (a reply with no tool call, or a broken one). Each attempt is held until it
   // finishes cleanly: the main model twice, then the backup, which streams as it writes.
+  // The harder situations are the facts a small model drops most, so they are spelled out above the JSON.
+  const harder = g.verdicts.filter((v) => v.when).length
+    ? `Harder situations this guide lists. If one could apply to this developer or some of their users, show_warning it:\n${g.verdicts
+        .filter((v) => v.when)
+        .map((v) => `- ${v.difficulty} when ${JSON.stringify(v.when)}: ${v.why}`)
+        .join("\n")}\n\n`
+    : "";
   const chain = [m, m, ...m.backups];
   const stream = createUIMessageStream({
     onError: friendlyError,
@@ -113,7 +120,7 @@ export async function POST(req: Request) {
         const lastTry = i === chain.length - 1;
         const result = streamText({
           model: w.model,
-          system: `${SYSTEM}${m.onePass ? "\nYou have one tool, answer: put each component above in its field of the same name, null for the ones you skip." : ""}\n\nGuide JSON:\n${compact(g)}`,
+          system: `${SYSTEM}${m.onePass ? "\nYou have one tool, answer: put each component above in its field of the same name, null for the ones you skip." : ""}\n\n${harder}Guide JSON:\n${compact(g)}`,
           messages: await convertToModelMessages(messages),
           // Free models answer in one call: a second step would resend the guide and blow Groq's per-minute cap.
           // Claude can afford separate calls and reading an official page first.

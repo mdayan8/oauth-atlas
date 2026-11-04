@@ -1,7 +1,7 @@
 // Run: pnpm check
 import assert from "node:assert/strict";
 import { claimBadge, matches, pickVerdict, type Situation } from "./situation.ts";
-import { sourcedWait, tidyGuide } from "./guards.ts";
+import { sourcedWait, supported, tidyGuide } from "./guards.ts";
 import { fold } from "./fold.ts";
 
 const s: Situation = { profile: "individual", audience: "many", needs: ["send"] };
@@ -144,4 +144,18 @@ const bare = tidyGuide({ verdicts: [{ difficulty: "easy", waiting: "None", hands
 assert.deepEqual(bare.scopes, [], "no docs read means no scope names");
 assert.equal((bare.verdicts[0] as { handsOn: string }).handsOn, "Not published");
 assert.match(bare.unverified[0], /No official documentation/);
+const ev = "Scopes: read, write, issues:create, admin. Access tokens expire after 24 hours. [s2] Apps go through review.";
+const fab = tidyGuide(
+  {
+    verdicts: [{ difficulty: "easy", waiting: "None" }],
+    scopes: [{ name: "issues:create", sourceIds: ["s2"] }, { name: "manage_databases", sourceIds: ["s2"] }],
+    limits: [{ title: "Tokens expire", detail: "Access tokens expire after 24 hours.", sourceIds: ["s2"] }, { title: "Rate limits", detail: "Enforced per account.", sourceIds: ["s2"] }],
+    steps: [{ title: "Register the client", detail: "POST to the registration endpoint at /register.", actor: "you" }],
+  },
+  ev,
+);
+assert.deepEqual((fab.scopes as { sourceIds: string[] }[]).map((x) => x.sourceIds), [["s2"], []], "a scope keeps its citation only if the evidence names it");
+assert.deepEqual((fab.limits as { sourceIds: string[] }[]).map((x) => x.sourceIds), [["s2"], []], "a limit keeps its citation only if the evidence supports it");
+assert.equal((fab.steps as { actor: string }[])[0].actor, "agent", "dynamic registration is the agent's step");
+assert.equal(supported("Up to 100 users in testing", "Testing mode allows 100 users."), true);
 console.log("guards: checks pass");

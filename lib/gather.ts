@@ -1,5 +1,10 @@
 import { cleanHtml, getText, readComposio, readMetadata, safeOrigin, searchWeb, tryAuthorize } from "./probes";
 import type { Source } from "./schema";
+import docs from "../data/docs.json";
+
+// Hand-checked official OAuth docs for common apps (every URL opened before it went in). Search engines answer
+// nothing to cloud servers, so this is how the live site reads real docs for the apps people try first.
+const DOCS: Record<string, string[]> = docs;
 
 // The free-tier route: collect real evidence in code, in parallel, in a few seconds, then let one model
 // call write the guide. Each probe streams to the screen as a tool part, so the ticker shows real work.
@@ -65,8 +70,10 @@ export async function gather(app: string, emit: Emit) {
   const counts = new Map<string, number>();
   for (const h of hits) counts.set(label(h.url), (counts.get(label(h.url)) ?? 0) + 1);
   const common = [...counts].filter(([l, n]) => n >= 2 && !THIRD_PARTY.test(l)).sort((a, b) => b[1] - a[1])[0]?.[0];
-  const anyNamed = hits.some((h) => named(h.url));
-  const official = (u: string) => named(u) || (!anyNamed && label(u) === common);
+  const mapped = [...new Set(candidates.flatMap((c) => DOCS[c] ?? []))];
+  const mappedHosts = new Set(mapped.map((u) => new URL(u).hostname));
+  const anyNamed = hits.some((h) => named(h.url)) || mapped.length > 0;
+  const official = (u: string) => named(u) || mappedHosts.has(new URL(u).hostname) || (!anyNamed && label(u) === common);
   // Search engines block cloud servers, so the live site often gets no hits. Composio's toolkit page links to the
   // provider's developer docs: the host it links most is the official docs host, and its OAuth pages fill the gap.
   const fromComposio: string[] = (composio.found ? composio.links : [])
@@ -102,7 +109,12 @@ export async function gather(app: string, emit: Emit) {
       ].map((url) => ({ url, title: new URL(url).hostname + new URL(url).pathname }))
     : [];
   if (docHost && !hits.some((h) => new URL(h.url).hostname === docHost)) hits.push({ url: `https://${docHost}/`, title: docHost });
-  const picked = [...hits.filter((h) => official(h.url)), ...fallback.filter((f) => !hits.some((h) => h.url === f.url)), ...hits.filter((h) => !official(h.url))].slice(0, 4);
+  const picked = [
+    ...mapped.map((url) => ({ url, title: new URL(url).hostname + new URL(url).pathname })),
+    ...hits.filter((h) => official(h.url) && !mapped.includes(h.url)),
+    ...fallback.filter((f) => !hits.some((h) => h.url === f.url) && !mapped.includes(f.url)),
+    ...hits.filter((h) => !official(h.url)),
+  ].slice(0, 5);
 
   const pages = (
     await Promise.all(

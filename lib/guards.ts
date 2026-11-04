@@ -26,7 +26,34 @@ export type Found = {
   officialPages?: number;
 };
 
+// A citation is kept only when the cited evidence actually contains the claim: a scope name verbatim; for a
+// limit or requirement, one of its numbers or at least two of its longer words. Otherwise the item stays but
+// shows as Unverified, so a confident-looking badge can never cover something the model made up.
+const STOP = new Set(["should", "before", "their", "which", "users", "application", "request", "requests", "tokens", "access", "cannot", "without", "require", "requires", "required", "between", "account", "accounts", "through", "integration", "developer", "developers"]);
+export function supported(text: string, evidence: string) {
+  const hay = evidence.toLowerCase();
+  if ((text.match(/\d+/g) ?? []).some((n) => new RegExp(`\\b${n}\\b`).test(evidence))) return true;
+  const words = [...new Set((text.toLowerCase().match(/[a-z][a-z_:.-]{5,}/g) ?? []).filter((w) => !STOP.has(w)))];
+  const hits = words.filter((w) => hay.includes(w)).length;
+  return hits >= 2 || (words.length > 0 && hits / words.length >= 0.5);
+}
+
 export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?: string, app = "", found: Found = {}): T {
+  {
+    const d = g as Draft;
+    const hay = evidence.toLowerCase();
+    (d.scopes as { name: string; sourceIds?: string[] }[] | undefined)?.forEach((x) => {
+      if (!hay.includes(x.name.toLowerCase())) x.sourceIds = [];
+    });
+    for (const k of ["limits", "requirements"] as const)
+      (d[k] as { title?: string; label?: string; detail?: string; sourceIds?: string[] }[] | undefined)?.forEach((x) => {
+        if (!supported(`${x.title ?? x.label ?? ""} ${x.detail ?? ""}`, evidence)) x.sourceIds = [];
+      });
+    // Dynamic client registration is a POST an agent makes; it is never a human step.
+    (d.steps as { title?: string; detail?: string; actor?: string }[] | undefined)?.forEach((x) => {
+      if (/dynamic client registration|registration endpoint|\/register\b/i.test(`${x.title ?? ""} ${x.detail ?? ""}`)) x.actor = "agent";
+    });
+  }
   // What the probes saw beats what the model wrote: the skip section is the headline and it must be right.
   if (g.skip) {
     if (found.mcp) {

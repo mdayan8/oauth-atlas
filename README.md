@@ -1,6 +1,6 @@
 # OAuth Atlas
 
-Look up an app and get a shareable guide to registering its OAuth app and getting it approved: how hard it is, your time versus time waiting on the provider, what you need, what an agent can do for you, and the evidence behind every line. For apps outside the library, an agent investigates live (real web search, the official docs, live checks against the provider) and the guide builds itself on screen in about 10 seconds.
+Look up an app and get a shareable guide to registering its OAuth app and getting it approved: how hard it is, your time versus time waiting on the provider, what you need, what an agent can do for you, and the evidence behind every line. For apps outside the library, an agent investigates live (the provider's official docs, live checks against its endpoints, Composio's managed-auth status) and the guide builds itself on screen in about 10 seconds.
 
 Built for the Composio APM Integrations take-home. Library: GitHub, Notion, Slack, Gmail, Spotify, Shopify, picked to cover the range (instant, scope-dependent, cost-gated, review-gated).
 
@@ -30,13 +30,14 @@ The library, re-checks and sharing work with no keys. The live agent, Ask and Dr
 - **Can you skip it?** Checking Composio-managed auth and MCP auto-registration first saves many developers the whole process.
 - **Difficulty depends on the situation.** Items carry `when` conditions (profile, audience, needs) and the guide filters deterministically on the client: instant and reliable, no model call.
 - **Generative UI from a fixed catalog.** The agent and Ask never write HTML. They call typed tools (`set_verdict`, `add_step`, `show_compare`...) that render pre-designed components as they stream, the pattern used by the AI SDK, assistant-ui and CopilotKit. The same components render library and live guides.
-- **Evidence enforced in code.** A claim without a source shows as Unverified; a "tested" badge on a URL our probes did not fetch in that run is downgraded on the server; a review time the evidence does not state becomes "Not published".
+- **Evidence enforced in code.** A claim without a source shows as Unverified; a "tested" badge on a URL our probes did not fetch in that run is downgraded on the server; a review time the evidence does not state becomes "Not published"; a scope, limit or requirement keeps its citation only if the cited text actually contains it. The probes' findings (Composio-managed, MCP sign-up) override whatever the model wrote.
 - **Gather first, then write once (free models).** Free tiers allow about 8K tokens a minute, so a 20-step agent loop takes minutes. Instead the server runs the search, reads three docs pages, checks Composio, probes discovery documents and tries the real authorize step, all in parallel (about 4 seconds), then one model call writes the whole guide from that cited evidence. With an Anthropic key the full agent loop runs instead. Each feature uses its own free model so quotas never collide, and a busy model falls back to the next.
 - **Verified by hand, and recorded.** `VERIFICATION.md` (also `/verification`) lists 97 claims: 78 confirmed, 7 corrected, 12 could not verify. Every "Where to go" link was opened.
 
 ## Limitations
 
 - Six deep guides, not 100. The schema, live agent and keyless probes are what scale.
+- Search engines answer nothing to cloud servers, so on the live site the docs come from three keyless sources: the links on Composio's toolkit page, the provider's `llms.txt` index, and a hand-checked map of OAuth docs for about 50 common apps (`data/docs.json`). An app outside all three gets Composio's status and the live endpoint checks only, and the guide says so.
 - Live runs were tested on the free route (Groq, NVIDIA NIM backup), not yet with a Claude key. Groq's free tier caps each model at 200K tokens a day, about 30 live guides; repeats of the same app are served from a 24-hour cache.
 - Hands-on times are estimates; waiting times come from providers where published ("Not published" otherwise). CASA cost only comes from third parties.
 - Composio-managed status is read from Composio's public toolkit docs, so it depends on that page format.
