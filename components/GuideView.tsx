@@ -351,7 +351,6 @@ function PathChooser({
 // Only the next step is open, with a clear "Mark done". Progress is kept per guide in this browser.
 function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved; sit: Situation; live: boolean; Cite: CiteFn }) {
   const key = g.slug && !g.generated ? `atlas-progress:${g.slug}` : "";
-  const signup = g.links.find((l) => l.kind === "register") ?? g.links.find((l) => l.kind === "console");
   const [done, setDone] = useState<string[]>([]);
   const [open, setOpen] = useState<string | null>(null);
   useEffect(() => {
@@ -406,12 +405,15 @@ function Path({ g, r, sit, live, Cite }: { g: Guide; r: Resolved; sit: Situation
                       <DraftButton g={g} requirementId={x.id} scopes={r.scopes.map((sc) => sc.name)} situation={situationLine(g, sit)} />
                     </div>
                   )}
-                  {/* An account, org or workspace to create: take them straight to the sign-up page. */}
-                  {!x.agentCanDraft && /account|organization|organisation|workspace|partner|tenant|developer program/i.test(x.label) && signup && (
-                    <div className="mt-2.5">
-                      <LinkButton l={{ ...signup, label: `Create it: ${signup.label}` }} main />
-                    </div>
-                  )}
+                  {/* Where to get it: the sign-up page for an account, the console for an app or redirect URL, the scopes page for scopes. */}
+                  {(() => {
+                    const l = linkFor(g, `${x.label} ${x.detail}`, "you");
+                    return l ? (
+                      <div className="mt-2.5">
+                        <LinkButton l={{ ...l, label: `${/account|organization|organisation|workspace|partner|tenant/i.test(x.label) ? "Create it" : "Open"}: ${l.label}` }} main={!x.agentCanDraft} />
+                      </div>
+                    ) : null;
+                  })()}
                 </div>
               </details>
             </li>
@@ -619,12 +621,20 @@ function LinkButton({ l, main = false }: { l: LinkT; main?: boolean }) {
 }
 
 // The official page that fits a step, picked from the guide's verified links by what the step is about.
+// The page where this step or requirement actually happens. A link whose own label names the thing (scopes,
+// redirect, consent screen, Search Console) wins; otherwise the kind of page that kind of work happens on.
 function linkFor(g: Guide, text: string, actor: "agent" | "you" | "provider"): LinkT | undefined {
   const t = text.toLowerCase();
   const by = (...kinds: LinkT["kind"][]) => kinds.map((k) => g.links.find((l) => l.kind === k)).find(Boolean);
+  const topics = ["scope", "redirect", "callback", "consent", "privacy", "search console", "domain", "verif", "review", "billing", "webhook", "marketplace", "distribution", "install"];
+  for (const topic of topics)
+    if (t.includes(topic)) {
+      const hit = g.links.find((l) => `${l.label} ${l.note ?? ""} ${l.url}`.toLowerCase().includes(topic));
+      if (hit) return hit;
+    }
   if (actor === "provider" || /submit|review|verif|publish|listing|marketplace|quota/.test(t)) return by("review", "console");
-  if (/create|register|new app|set up|client id|credential|consent screen|dashboard|enable/.test(t)) return by("register", "console");
-  if (/install|test|manage|settings|store|distribution|redirect/.test(t)) return by("console", "register");
+  if (/account|organization|organisation|workspace|partner|tenant|create|register|new app|set up|client id|credential|consent screen|dashboard|enable/.test(t)) return by("register", "console");
+  if (/install|test|manage|settings|store|distribution|redirect|callback|scope/.test(t)) return by("console", "register");
   return by("docs");
 }
 
