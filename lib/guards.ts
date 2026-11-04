@@ -14,6 +14,7 @@ type Draft = {
   overview?: { name?: string; domain?: string | null; needs?: { id: string }[] } | null;
   skip?: { mcpServer?: string | null; mcpDcr?: string; composioManaged?: string } | null;
   verdicts?: { difficulty?: string; waiting: string; when?: When }[] | null;
+  unverified?: string[] | null;
   [list: string]: unknown;
 };
 
@@ -22,6 +23,7 @@ const empty = (w: When) => !w || (!w.profile?.length && !w.audience?.length && !
 export type Found = {
   mcp?: { server: string; dcr: boolean };
   composio?: { managed: string; auth?: string };
+  officialPages?: number;
 };
 
 export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?: string, app = "", found: Found = {}): T {
@@ -32,6 +34,13 @@ export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?:
       g.skip.mcpDcr = found.mcp.dcr ? "yes" : "no";
     }
     if (found.composio?.managed === "yes" || found.composio?.managed === "no") g.skip.composioManaged = found.composio.managed;
+  }
+  // No official page could be read (search blocked, no docs link): say so instead of showing an empty guide.
+  if (found.officialPages === 0) {
+    const d0 = g as Draft;
+    const note = "No official documentation page could be read in this run, so only Composio's status and live endpoint checks are shown. Open the provider's developer docs for the steps.";
+    d0.unverified = [note, ...((d0.unverified as string[] | undefined) ?? [])];
+    g.verdicts?.forEach((v) => ((v as { handsOn?: string }).handsOn = "Not published"));
   }
   // The authorize attempt is evidence of the flow, not something the developer will hit.
   const d = g as Draft;

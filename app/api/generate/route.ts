@@ -106,7 +106,7 @@ export async function POST(req: Request) {
         let failed = false;
         for await (const c of result.toUIMessageStream({ sendStart: false, onError })) {
           if (c.type === "tool-input-available" && c.toolName === "publish_guide") {
-            const g = tidyGuide(c.input as Parameters<typeof tidyGuide>[0] & { links?: { url: string }[] }, evidence, officialUrl, text, { mcp, composio });
+            const g = tidyGuide(c.input as Parameters<typeof tidyGuide>[0] & { links?: { url: string }[] }, evidence, officialUrl, text, { mcp, composio, officialPages: sources.filter((s) => s.badge === "official").length });
             // Every "Where to go" link is opened for real before it is shown.
             if (Array.isArray(g.links)) {
               const alive = await Promise.all(g.links.map((l) => linkAlive(l.url)));

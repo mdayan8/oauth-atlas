@@ -72,10 +72,27 @@ export async function gather(app: string, emit: Emit) {
   const fromComposio: string[] = (composio.found ? composio.links : [])
     .filter((u: string) => safeOrigin(u))
     .map((u: string) => u.split("#")[0]);
-  const docHost = [...fromComposio.reduce((m, u) => m.set(new URL(u).hostname, (m.get(new URL(u).hostname) ?? 0) + 1), new Map<string, number>())].sort((a, b) => b[1] - a[1])[0]?.[0];
+  // Developer hosts beat support sites; among those, the one Composio links most.
+  const hostScore = (h: string) => (/developer|docs|api|^dev\./.test(h) ? 2 : /support|help|status/.test(h) ? 0 : 1);
+  const hostCounts = fromComposio.reduce((m, u) => m.set(new URL(u).hostname, (m.get(new URL(u).hostname) ?? 0) + 1), new Map<string, number>());
+  const docHost = [...hostCounts].sort((a, b) => hostScore(b[0]) - hostScore(a[0]) || b[1] - a[1])[0]?.[0];
+  // Many docs sites publish llms.txt, an index of every page: the OAuth pages are picked from it directly.
+  const llms = docHost
+    ? await emit("web_fetch", { url: `https://${docHost}/llms.txt` }, () =>
+        getText(`https://${docHost}/llms.txt`).then((r) => ({ url: `https://${docHost}/llms.txt`, status: r.status, raw: r.status === 200 ? r.text.slice(0, 400_000) : "" })).catch(() => ({ url: "", status: 0, raw: "" })),
+      )
+    : null;
+  const fromLlms = ((llms?.raw as string | undefined) ?? "")
+    .split("\n")
+    .filter((line) => /oauth|authoriz|scopes?\b|create (an? )?(oauth )?app|app (review|marketplace|submission)/i.test(line))
+    .sort((a, b) => Number(/oauth/i.test(b)) - Number(/oauth/i.test(a)))
+    .map((line) => line.match(/https:\/\/[^)\s"]+/)?.[0])
+    .filter((u): u is string => !!u && !!safeOrigin(u))
+    .slice(0, 4);
   const fallback = docHost
     ? [
         ...new Set([
+          ...fromLlms,
           ...fromComposio.filter((u) => /oauth|auth|integrations|apps?\b|scopes|register/i.test(new URL(u).pathname)),
           `https://${docHost}/docs/integrations/oauth/`,
           `https://${docHost}/docs/oauth/`,
