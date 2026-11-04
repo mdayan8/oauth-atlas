@@ -62,6 +62,9 @@ export function fold(parts: Part[], query: string) {
       case "check_composio":
         log.push({ id, kind: "probe", done, text: `Checking Composio managed list for ${s(i.slug, "...")}` });
         break;
+      case "try_authorize":
+        log.push({ id, kind: "probe", done, text: `Trying the authorize step at ${host(i.authorizeUrl) || "..."}` });
+        break;
       case "probe_oauth_metadata":
         log.push({ id, kind: "probe", done, text: `Probing ${host(i.origin) || "..."}/.well-known` });
         break;

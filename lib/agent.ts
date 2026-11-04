@@ -1,7 +1,7 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import { tool } from "ai";
 import { z } from "zod";
-import { readComposio, readMetadata, safeOrigin } from "./probes";
+import { readComposio, readMetadata, safeOrigin, tryAuthorize } from "./probes";
 import { Blocker, Limit, Link, Need, PathOption, Requirement, Scope, SkipPath, Source, Step, Verdict } from "./schema";
 
 export const MODEL = "claude-sonnet-5-5";
@@ -12,7 +12,7 @@ export const SYSTEM = `You investigate what it takes for a developer to register
 
 Work in this order, using parallel tool calls whenever calls do not depend on each other:
 1. set_overview (name, official domain, developer portal, one-line summary, 2 to 4 "needs" the developer's agent might have, such as read vs write, with short ids).
-2. check_composio with the Composio toolkit slug (lowercase app name, no spaces) and probe_oauth_metadata on the provider's auth origin and, if one exists, its hosted MCP server origin. Then set_skip_path.
+2. check_composio with the Composio toolkit slug (lowercase app name, no spaces) and probe_oauth_metadata on the provider's auth origin and, if one exists, its hosted MCP server origin. Then set_skip_path. Once you know the authorize endpoint, call try_authorize on it: that is your hands-on attempt, cite it as tested and say what the provider returned.
 3. web_search, then web_fetch the provider's OWN docs: app registration, scopes, app review or verification, quotas and user caps in development mode, distribution or marketplace rules.
 4. As you learn, call cite_source BEFORE any claim that uses it, then add_requirement, add_step, add_scope, add_limit, add_blocker with sourceIds. Call set_verdict as soon as you have a first read and call it again (same "when") to correct it; add harder verdicts with a "when" for situations that are harder (e.g. a restricted scope, a public launch, an individual developer).
 5. add_path_option for the 2 or 3 real routes a developer might take (easiest first), and add_link for the official pages they will need: register the app, the console, the review form or guide, support.
@@ -105,6 +105,16 @@ export function makeTools() {
         const results = await Promise.all(paths.map((p) => readMetadata(o + p)));
         results.forEach((x) => probed.add(x.url));
         return { origin: o, results };
+      },
+    }),
+    try_authorize: tool({
+      description:
+        "Attempt the first step of the real OAuth flow: open the provider's authorize endpoint (from discovery or docs) with a made-up client id. No login. Shows what the provider returns before an app is registered. Cite the result as a 'tested' source.",
+      inputSchema: z.object({ authorizeUrl: z.string().describe("e.g. https://accounts.google.com/o/oauth2/v2/auth") }),
+      execute: async ({ authorizeUrl }) => {
+        const r = await tryAuthorize(authorizeUrl);
+        probed.add(r.url);
+        return r;
       },
     }),
     web_search: anthropic.tools.webSearch_20260209({ maxUses: 6 }),

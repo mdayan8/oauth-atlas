@@ -55,3 +55,38 @@ export async function readMetadata(url: string) {
     return { url, error: String(e).slice(0, 120) };
   }
 }
+
+// A safe "attempt": open the real authorize endpoint with a made-up client id, no login, and record what
+// the provider says. It proves the flow needs a registered app and shows the error users would hit.
+export async function tryAuthorize(authorizeUrl: string) {
+  if (!safeOrigin(authorizeUrl)) return { url: authorizeUrl, error: "Only public https URLs can be probed." };
+  const u = new URL(authorizeUrl);
+  u.searchParams.set("client_id", "oauth-atlas-probe-not-a-real-client");
+  u.searchParams.set("response_type", "code");
+  u.searchParams.set("redirect_uri", "https://example.com/callback");
+  u.searchParams.set("state", "probe");
+  if (!u.searchParams.has("scope")) u.searchParams.set("scope", "openid");
+  try {
+    const res = await fetch(u, { signal: AbortSignal.timeout(8000), redirect: "manual", headers: { "user-agent": "OAuthAtlas/1.0" } });
+    const location = res.headers.get("location") ?? undefined;
+    const body = res.status < 300 || res.status >= 400 ? (await res.text()).slice(0, 20000) : "";
+    const text = body.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const hint = text.match(/[^.]{0,80}(invalid[_ ]client|client[_ ]id|unknown client|app (?:was )?not found|redirect[_ ]uri)[^.]{0,80}/i)?.[0]?.trim();
+    const next = location ? new URL(location, u) : undefined;
+    // Google packs the reason into a base64 "authError" param; keep its readable words.
+    const packed = next?.searchParams.get("authError");
+    const decoded = packed ? Buffer.from(packed, "base64").toString("latin1").replace(/[^\x20-\x7e]+/g, " ").trim().slice(0, 160) : undefined;
+    const title = body.match(/<title[^>]*>([^<]{1,120})<\/title>/i)?.[1]?.trim();
+    return {
+      url: u.origin + u.pathname,
+      status: res.status,
+      redirectsTo: next ? next.origin + next.pathname : undefined,
+      error: next?.searchParams.get("error") ?? decoded,
+      asksToSignInFirst: !!next && /login|signin|sign_in/i.test(next.pathname) && !packed,
+      pageTitle: title,
+      hint,
+    };
+  } catch (e) {
+    return { url: u.origin + u.pathname, error: String(e).slice(0, 120) };
+  }
+}
