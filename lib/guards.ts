@@ -41,6 +41,9 @@ export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?:
     const note = "No official documentation page could be read in this run, so only Composio's status and live endpoint checks are shown. Open the provider's developer docs for the steps.";
     d0.unverified = [note, ...((d0.unverified as string[] | undefined) ?? [])];
     g.verdicts?.forEach((v) => ((v as { handsOn?: string }).handsOn = "Not published"));
+    // Scope names and caps only come from docs; without any, they would be the model's memory.
+    d0.scopes = [];
+    d0.limits = [];
   }
   // The authorize attempt is evidence of the flow, not something the developer will hit.
   const d = g as Draft;

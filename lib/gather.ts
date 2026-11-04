@@ -73,7 +73,7 @@ export async function gather(app: string, emit: Emit) {
     .filter((u: string) => safeOrigin(u))
     .map((u: string) => u.split("#")[0]);
   // Developer hosts beat support sites; among those, the one Composio links most.
-  const hostScore = (h: string) => (/developer|docs|api|^dev\./.test(h) ? 2 : /support|help|status/.test(h) ? 0 : 1);
+  const hostScore = (h: string) => (/developer|docs|^dev\./.test(h) ? 3 : /\bapi\b|^api\./.test(h) ? 2 : /support|help|status/.test(h) ? 0 : 1);
   const hostCounts = fromComposio.reduce((m, u) => m.set(new URL(u).hostname, (m.get(new URL(u).hostname) ?? 0) + 1), new Map<string, number>());
   const docHost = [...hostCounts].sort((a, b) => hostScore(b[0]) - hostScore(a[0]) || b[1] - a[1])[0]?.[0];
   // Many docs sites publish llms.txt, an index of every page: the OAuth pages are picked from it directly.

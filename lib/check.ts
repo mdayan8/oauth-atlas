@@ -140,4 +140,8 @@ assert.equal(e.skip.composioManaged, "yes");
 assert.equal(e.verdicts[0].difficulty, "moderate", "no review in the evidence means nothing harder than moderate");
 assert.equal((e.scopes as { triggersReview: boolean }[])[0].triggersReview, false);
 assert.deepEqual((e.blockers as { symptom: string }[]).map((b) => b.symptom), ["Redirect URI mismatch"], "probe artifacts are not blockers");
+const bare = tidyGuide({ verdicts: [{ difficulty: "easy", waiting: "None", handsOn: "10 min" }], scopes: [{ name: "x" }], limits: [{ title: "y" }], unverified: [] }, "", undefined, "Trello", { officialPages: 0 });
+assert.deepEqual(bare.scopes, [], "no docs read means no scope names");
+assert.equal((bare.verdicts[0] as { handsOn: string }).handsOn, "Not published");
+assert.match(bare.unverified[0], /No official documentation/);
 console.log("guards: checks pass");
