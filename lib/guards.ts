@@ -11,7 +11,7 @@ export function sourcedWait(waiting: string, evidence: string) {
 
 type When = { profile?: unknown[] | null; audience?: unknown[] | null; needs?: string[] | null } | null;
 type Draft = {
-  overview?: { name?: string; domain?: string | null; needs?: { id: string }[] } | null;
+  overview?: { name?: string; domain?: string | null; needs?: { id: string }[]; summary?: string } | null;
   skip?: { mcpServer?: string | null; mcpDcr?: string; composioManaged?: string } | null;
   verdicts?: { difficulty?: string; waiting: string; when?: When }[] | null;
   unverified?: string[] | null;
@@ -38,17 +38,40 @@ export function supported(text: string, evidence: string) {
   return hits >= 2 || (words.length > 0 && hits / words.length >= 0.5);
 }
 
+// Sentences that describe our own endpoint check, which must never read as advice or a blocker.
+const PROBE = /made[- ]up|probe|authorize attempt|attempt(ed)? (the |an )?authoriz|without a registered (app|client)|not a snowflake|returned http \d{3}/i;
+export const scrub = (text: string) =>
+  text
+    .split(/(?<=[.!?])\s+/)
+    .filter((x) => !PROBE.test(x))
+    .join(" ")
+    .trim();
+
 export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?: string, app = "", found: Found = {}): T {
+  {
+    const d = g as Draft & { overview?: { summary?: string } | null; skip?: { note?: string } | null; unverified?: string[] | null };
+    if (d.overview?.summary) d.overview.summary = scrub(d.overview.summary) || d.overview.summary;
+    if (d.skip?.note) d.skip.note = scrub(d.skip.note);
+    d.verdicts?.forEach((v) => ((v as { why?: string }).why = scrub((v as { why?: string }).why ?? "")));
+    (d.steps as { detail?: string }[] | undefined)?.forEach((x) => (x.detail = scrub(x.detail ?? "")));
+    if (Array.isArray(d.unverified)) d.unverified = d.unverified.filter((x) => !PROBE.test(x));
+    if (Array.isArray(d.blockers)) d.blockers = (d.blockers as { symptom?: string; fix?: string }[]).filter((b) => !PROBE.test(`${b.symptom ?? ""} ${b.fix ?? ""}`));
+    // A verdict about Composio's managed app belongs in the skip section, not among own-app verdicts.
+    if (d.verdicts && d.verdicts.length > 1) d.verdicts = d.verdicts.filter((v) => !/composio/i.test((v as { why?: string }).why ?? ""));
+    // The same page listed twice helps no one.
+    const seen = new Set<string>();
+    if (Array.isArray(d["links"])) d["links"] = (d["links"] as { url: string }[]).filter((l) => !seen.has(l.url) && seen.add(l.url));
+  }
   {
     const d = g as Draft;
     const hay = evidence.toLowerCase();
-    (d.scopes as { name: string; sourceIds?: string[] }[] | undefined)?.forEach((x) => {
-      if (!hay.includes(x.name.toLowerCase())) x.sourceIds = [];
+    // A scope name or a cap the evidence does not contain is the model's memory: it goes, rather than
+    // standing there with an Unverified badge. Requirements are generic enough to keep, unbadged.
+    if (Array.isArray(d.scopes)) d.scopes = (d.scopes as { name: string }[]).filter((x) => /^[\w.:/-]+$/.test(x.name) && hay.includes(x.name.toLowerCase()));
+    if (Array.isArray(d.limits)) d.limits = (d.limits as { title?: string; detail?: string }[]).filter((x) => supported(`${x.title ?? ""} ${x.detail ?? ""}`, evidence));
+    (d.requirements as { label?: string; detail?: string; sourceIds?: string[] }[] | undefined)?.forEach((x) => {
+      if (!supported(`${x.label ?? ""} ${x.detail ?? ""}`, evidence)) x.sourceIds = [];
     });
-    for (const k of ["limits", "requirements"] as const)
-      (d[k] as { title?: string; label?: string; detail?: string; sourceIds?: string[] }[] | undefined)?.forEach((x) => {
-        if (!supported(`${x.title ?? x.label ?? ""} ${x.detail ?? ""}`, evidence)) x.sourceIds = [];
-      });
     // Dynamic client registration is a POST an agent makes; it is never a human step.
     (d.steps as { title?: string; detail?: string; actor?: string }[] | undefined)?.forEach((x) => {
       if (/dynamic client registration|registration endpoint|\/register\b/i.test(`${x.title ?? ""} ${x.detail ?? ""}`)) x.actor = "agent";
@@ -109,7 +132,11 @@ export function tidyGuide<T extends Draft>(g: T, evidence: string, officialUrl?:
   // "Instant" means nothing to register (an MCP server signs agents up). Anything else needs at least "easy".
   if (g.skip?.mcpDcr !== "yes") g.verdicts?.forEach((v) => v.difficulty === "instant" && (v.difficulty = "easy"));
   // The domain must look like one; otherwise use the official page's.
-  if (g.overview && !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(g.overview.domain ?? "") && officialUrl)
-    g.overview.domain = new URL(officialUrl).hostname.split(".").slice(-2).join(".");
+  if (g.overview) {
+    const ok = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(g.overview.domain ?? "");
+    const host = ok ? (g.overview.domain as string) : officialUrl ? new URL(officialUrl).hostname : "";
+    // The app's domain, not its docs subdomain: asana.com, not developers.asana.com.
+    if (host) g.overview.domain = host.toLowerCase().replace(/^(www|developers?|docs|api|dev|help|support)\./, "");
+  }
   return g;
 }

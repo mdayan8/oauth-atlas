@@ -143,7 +143,9 @@ export async function gather(app: string, emit: Emit) {
   const origins = new Set<string>();
   for (const u of [...picked.filter((h) => official(h.url)).map((h) => h.url), ...authorizeUrls].slice(0, 4)) {
     const host = new URL(u).hostname;
-    for (const h of [host, baseDomain(host), `mcp.${baseDomain(host)}`]) {
+    // mcp.<domain> only when the domain is the app's own (mcp.linear.app yes; mcp.atlassian.com is not Trello's).
+    const own = words.includes(baseDomain(host).split(".")[0]) || baseDomain(host).split(".")[0] === slug;
+    for (const h of [host, baseDomain(host), ...(own ? [`mcp.${baseDomain(host)}`] : [])]) {
       const o = safeOrigin(`https://${h}`);
       if (o) origins.add(o);
     }
@@ -173,8 +175,8 @@ export async function gather(app: string, emit: Emit) {
   if (target) {
     const r = await emit("try_authorize", { authorizeUrl: target }, () => tryAuthorize(target));
     cite(
-      { title: `Authorize attempt with a made-up client id`, url: r.url, badge: "tested" },
-      `HTTP ${r.status ?? "no answer"}${r.redirectsTo ? `, redirects to ${r.redirectsTo}` : ""}${r.error ? `, error "${r.error}"` : ""}${r.asksToSignInFirst ? ", asks the user to sign in first" : ""}${r.hint ? `, page says "${r.hint}"` : ""}.`,
+      { title: `Live check of the authorize endpoint`, url: r.url, badge: "tested" },
+      `The authorize endpoint is live. Opened without a registered app it answered HTTP ${r.status ?? "no answer"}${r.redirectsTo ? `, redirecting to ${r.redirectsTo}` : ""}${r.error ? ` with error "${r.error}"` : ""}${r.asksToSignInFirst ? " and asks the user to sign in first" : ""}${r.hint ? ` (page says "${r.hint}")` : ""}. This only proves the flow exists and needs a registered app; it is not a problem the developer will hit.`,
     );
   }
 

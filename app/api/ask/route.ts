@@ -4,6 +4,7 @@ import { friendlyError, pickModel } from "@/lib/model";
 import { fromThisSite } from "@/lib/guard";
 import { getGuide } from "@/lib/guides";
 import { AUDIENCES, Difficulty, Guide, PROFILES } from "@/lib/schema";
+import { applyPreset, defaultSituation, pickVerdict } from "@/lib/situation";
 
 export const maxDuration = 120;
 
@@ -134,6 +135,21 @@ export async function POST(req: Request) {
         const held: Parameters<typeof writer.write>[0][] = [];
         let failed = false;
         for await (const c of result.toUIMessageStream({ onError: friendlyError })) {
+          // The verdict card is the guide's own verdict for the situation the model read; the model only phrases it.
+          if (c.type === "tool-input-available" && c.toolName === "answer") {
+            const input = c.input as {
+              set_situation?: { profile?: "individual" | "startup" | "company" | null; audience?: "few" | "many" | null; needs?: string[] | null; path?: string | null } | null;
+              show_verdict?: { difficulty: string; handsOn: string; waiting: string; why: string; sourceIds?: string[] } | null;
+            };
+            const ss = input.set_situation;
+            if (ss && input.show_verdict) {
+              const known = new Set(g.needs.map((n) => n.id));
+              const needs = ss.needs?.filter((n) => known.has(n));
+              const sit = applyPreset(applyPreset(defaultSituation(g), g.paths.find((p) => p.id === ss.path)?.set ?? {}), { profile: ss.profile, audience: ss.audience, needs: needs?.length ? needs : null });
+              const v = pickVerdict(g.verdicts, sit);
+              if (v) Object.assign(input.show_verdict, { difficulty: v.difficulty, handsOn: v.handsOn, waiting: v.waiting, why: v.why, sourceIds: v.sourceIds ?? [] });
+            }
+          }
           if (lastTry) writer.write(c);
           else if (c.type === "error" || c.type === "tool-input-error") failed = true;
           else held.push(c);

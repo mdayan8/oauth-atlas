@@ -1,7 +1,7 @@
 // Run: pnpm check
 import assert from "node:assert/strict";
 import { claimBadge, matches, pickVerdict, type Situation } from "./situation.ts";
-import { sourcedWait, supported, tidyGuide } from "./guards.ts";
+import { scrub, sourcedWait, supported, tidyGuide } from "./guards.ts";
 import { fold } from "./fold.ts";
 
 const s: Situation = { profile: "individual", audience: "many", needs: ["send"] };
@@ -129,7 +129,7 @@ const e = tidyGuide(
     scopes: [{ name: "admin", triggersReview: true }],
     blockers: [{ symptom: "HTTP 404 when using a made-up client id" }, { symptom: "Redirect URI mismatch" }],
   },
-  "The docs describe scopes. No mention of any gate.",
+  "The docs describe scopes: read, write, admin. No mention of any gate.",
   undefined,
   "Linear",
   { mcp: { server: "https://mcp.linear.app", dcr: true }, composio: { managed: "yes" } },
@@ -154,8 +154,30 @@ const fab = tidyGuide(
   },
   ev,
 );
-assert.deepEqual((fab.scopes as { sourceIds: string[] }[]).map((x) => x.sourceIds), [["s2"], []], "a scope keeps its citation only if the evidence names it");
-assert.deepEqual((fab.limits as { sourceIds: string[] }[]).map((x) => x.sourceIds), [["s2"], []], "a limit keeps its citation only if the evidence supports it");
+assert.deepEqual((fab.scopes as { name: string }[]).map((x) => x.name), ["issues:create"], "a scope the evidence does not name is dropped");
+assert.deepEqual((fab.limits as { title: string }[]).map((x) => x.title), ["Tokens expire"], "a limit the evidence does not support is dropped");
 assert.equal((fab.steps as { actor: string }[])[0].actor, "agent", "dynamic registration is the agent's step");
 assert.equal(supported("Up to 100 users in testing", "Testing mode allows 100 users."), true);
+const leak = tidyGuide(
+  {
+    overview: { name: "Discord", domain: "developers.discord.com", summary: "Register an app. The probe with a made-up client id returned HTTP 400." },
+    skip: { note: "Composio manages it. We used a made-up client id and got Invalid client_id.", mcpDcr: "no" },
+    verdicts: [
+      { difficulty: "instant", waiting: "None", why: "Composio-managed OAuth is ready without registration." },
+      { difficulty: "easy", waiting: "None", why: "Self-serve console." },
+    ],
+    blockers: [{ symptom: "Authorize returns HTTP 400 and says the client ID is not a snowflake" }, { symptom: "Redirect URI mismatch" }],
+    unverified: ["The HTTP 500 from the authorize attempt used a made-up client id", "Review time"],
+    links: [{ url: "https://a.com/x" }, { url: "https://a.com/x" }],
+  },
+  "Apps go through review.",
+);
+assert.equal(leak.overview.summary, "Register an app.");
+assert.equal(leak.skip.note, "Composio manages it.");
+assert.deepEqual(leak.verdicts.map((v) => v.difficulty), ["easy"], "the Composio verdict is not an own-app verdict");
+assert.deepEqual((leak.blockers as { symptom: string }[]).map((b) => b.symptom), ["Redirect URI mismatch"]);
+assert.deepEqual(leak.unverified, ["Review time"]);
+assert.equal(leak.overview.domain, "discord.com");
+assert.equal((leak.links as unknown[]).length, 1);
+assert.equal(scrub("Fine sentence. Our probe said no. Another fine one."), "Fine sentence. Another fine one.");
 console.log("guards: checks pass");
